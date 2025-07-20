@@ -5,8 +5,11 @@ A comprehensive Java SDK for the 1inch DEX Aggregation Protocol, providing easy 
 ## Features
 
 - ✅ Java 11 compatible
+- ✅ Modern reactive programming with RxJava 3
 - ✅ Interface-driven design for easy testing and mocking
-- ✅ Both synchronous and asynchronous API methods
+- ✅ Both reactive and legacy synchronous/asynchronous API methods
+- ✅ OkHttp with HTTP/2 support and connection pooling
+- ✅ Type-safe REST API integration with Retrofit 2
 - ✅ Comprehensive error handling
 - ✅ Built-in logging with SLF4J
 - ✅ Full Swap API support
@@ -27,25 +30,57 @@ Add the following dependency to your `pom.xml`:
 
 ## Quick Start
 
+### Reactive Approach (Recommended)
+
 ```java
 import io.oneinch.sdk.client.OneInchClient;
 import io.oneinch.sdk.model.QuoteRequest;
 import io.oneinch.sdk.model.QuoteResponse;
 
 // Initialize the client with your API key
-OneInchClient client = OneInchClient.builder()
-    .apiKey("your-api-key-here")
-    .build();
+try (OneInchClient client = OneInchClient.builder()
+        .apiKey("your-api-key-here")
+        .build()) {
+    
+    // Get a quote for swapping ETH to 1INCH (reactive)
+    QuoteRequest quoteRequest = QuoteRequest.builder()
+        .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
+        .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH
+        .amount("10000000000000000")  // 0.01 ETH in wei
+        .includeTokensInfo(true)
+        .build();
+    
+    client.swap().getQuoteRx(quoteRequest)
+        .doOnSuccess(quote -> {
+            System.out.println("Expected output: " + quote.getDstAmount() + " " +
+                    (quote.getDstToken() != null ? quote.getDstToken().getSymbol() : "tokens"));
+        })
+        .doOnError(error -> System.err.println("Error: " + error.getMessage()))
+        .subscribe();
+}
+```
 
-// Get a quote for swapping ETH to 1INCH
-QuoteRequest quoteRequest = QuoteRequest.builder()
-    .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
-    .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH
-    .amount("10000000000000000")  // 0.01 ETH in wei
-    .build();
+### Legacy Approach (Synchronous)
 
-QuoteResponse quote = client.swap().getQuote(quoteRequest);
-System.out.println("Expected output: " + quote.getDstAmount());
+```java
+@SuppressWarnings("deprecation")
+public void legacyExample() {
+    try (OneInchClient client = OneInchClient.builder()
+            .apiKey("your-api-key-here")
+            .build()) {
+        
+        QuoteRequest quoteRequest = QuoteRequest.builder()
+            .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
+            .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH
+            .amount("10000000000000000")  // 0.01 ETH in wei
+            .build();
+        
+        QuoteResponse quote = client.swap().getQuote(quoteRequest);
+        System.out.println("Expected output: " + quote.getDstAmount());
+    } catch (OneInchException e) {
+        System.err.println("Error: " + e.getMessage());
+    }
+}
 ```
 
 ## API Coverage
@@ -70,72 +105,171 @@ OneInchClient client = OneInchClient.builder()
     .build();
 ```
 
-### Custom HTTP Client
+### Custom OkHttp Client
 ```java
+OkHttpClient customOkHttpClient = new OkHttpClient.Builder()
+    .connectTimeout(30, TimeUnit.SECONDS)
+    .readTimeout(30, TimeUnit.SECONDS)
+    .build();
+
 OneInchClient client = OneInchClient.builder()
     .apiKey("your-api-key")
-    .httpClient(customHttpClient)
+    .okHttpClient(customOkHttpClient)
     .build();
 ```
 
 ## Examples
 
-### Complete Swap Flow
+### Reactive Swap Flow (Recommended)
 ```java
-// 1. Check allowance
-AllowanceRequest allowanceRequest = AllowanceRequest.builder()
-    .tokenAddress("0x111111111117dc0aa78b770fa6a738034120c302")
-    .walletAddress("0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8")
-    .build();
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
-AllowanceResponse allowance = client.swap().getAllowance(allowanceRequest);
-
-// 2. Approve if necessary
-if (new BigInteger(allowance.getAllowance()).compareTo(new BigInteger("10000000000000000")) < 0) {
-    ApproveTransactionRequest approveRequest = ApproveTransactionRequest.builder()
-        .tokenAddress("0x111111111117dc0aa78b770fa6a738034120c302")
-        .amount("10000000000000000")
-        .build();
-        
-    ApproveCallDataResponse approveData = client.swap().getApproveTransaction(approveRequest);
-    // Execute approve transaction...
+try (OneInchClient client = OneInchClient.builder()
+        .apiKey("your-api-key")
+        .build()) {
+    
+    String swapAmount = "10000000000000000"; // 0.01 ETH in wei
+    String walletAddress = "0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8";
+    
+    // Reactive chaining with proper error handling
+    client.swap().getSpenderRx()
+        .doOnSuccess(spender -> System.out.println("Spender: " + spender.getAddress()))
+        .flatMap(spender -> {
+            // Check allowance
+            AllowanceRequest allowanceRequest = AllowanceRequest.builder()
+                .tokenAddress("0x111111111117dc0aa78b770fa6a738034120c302")
+                .walletAddress(walletAddress)
+                .build();
+            return client.swap().getAllowanceRx(allowanceRequest);
+        })
+        .flatMap(allowance -> {
+            // Get quote
+            QuoteRequest quoteRequest = QuoteRequest.builder()
+                .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
+                .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH
+                .amount(swapAmount)
+                .includeTokensInfo(true)
+                .includeGas(true)
+                .build();
+            return client.swap().getQuoteRx(quoteRequest);
+        })
+        .flatMap(quote -> {
+            // Get swap transaction data
+            SwapRequest swapRequest = SwapRequest.builder()
+                .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+                .dst("0x111111111117dc0aa78b770fa6a738034120c302")
+                .amount(swapAmount)
+                .from(walletAddress)
+                .origin(walletAddress)
+                .slippage(1.0)
+                .build();
+            return client.swap().getSwapRx(swapRequest);
+        })
+        .subscribe(
+            swap -> {
+                System.out.println("Swap ready!");
+                System.out.println("To: " + swap.getTx().getTo());
+                System.out.println("Value: " + swap.getTx().getValue());
+                System.out.println("Expected output: " + swap.getDstAmount());
+            },
+            error -> System.err.println("Swap flow failed: " + error.getMessage())
+        );
 }
-
-// 3. Get quote
-QuoteRequest quoteRequest = QuoteRequest.builder()
-    .src("0x111111111117dc0aa78b770fa6a738034120c302")
-    .dst("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
-    .amount("10000000000000000")
-    .build();
-
-QuoteResponse quote = client.swap().getQuote(quoteRequest);
-
-// 4. Execute swap
-SwapRequest swapRequest = SwapRequest.builder()
-    .src("0x111111111117dc0aa78b770fa6a738034120c302")
-    .dst("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
-    .amount("10000000000000000")
-    .from("0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8")
-    .origin("0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8")
-    .slippage(1.0)
-    .build();
-
-SwapResponse swap = client.swap().getSwap(swapRequest);
-// Execute swap transaction using swap.getTx()...
 ```
 
-### Async Operations
+### Parallel Reactive Operations
 ```java
-CompletableFuture<QuoteResponse> quoteFuture = client.swap().getQuoteAsync(quoteRequest);
-quoteFuture.thenAccept(quote -> {
-    System.out.println("Async quote result: " + quote.getDstAmount());
-});
+import io.reactivex.rxjava3.core.Single;
+import java.util.concurrent.TimeUnit;
+
+// Run multiple operations in parallel
+Single<SpenderResponse> spenderSingle = client.swap().getSpenderRx()
+    .subscribeOn(Schedulers.io());
+
+Single<QuoteResponse> quoteSingle = client.swap().getQuoteRx(quoteRequest)
+    .subscribeOn(Schedulers.io());
+
+Single<AllowanceResponse> allowanceSingle = client.swap().getAllowanceRx(allowanceRequest)
+    .subscribeOn(Schedulers.io());
+
+// Combine all results
+Single.zip(spenderSingle, quoteSingle, allowanceSingle,
+    (spender, quote, allowance) -> {
+        System.out.println("All operations completed!");
+        return "Success";
+    })
+    .timeout(10, TimeUnit.SECONDS)
+    .blockingGet();
+```
+
+### Legacy Swap Flow (Synchronous)
+```java
+@SuppressWarnings("deprecation")
+try (OneInchClient client = OneInchClient.builder()
+        .apiKey("your-api-key")
+        .build()) {
+    
+    // 1. Check allowance
+    AllowanceRequest allowanceRequest = AllowanceRequest.builder()
+        .tokenAddress("0x111111111117dc0aa78b770fa6a738034120c302")
+        .walletAddress("0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8")
+        .build();
+    
+    AllowanceResponse allowance = client.swap().getAllowance(allowanceRequest);
+    
+    // 2. Get quote
+    QuoteRequest quoteRequest = QuoteRequest.builder()
+        .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+        .dst("0x111111111117dc0aa78b770fa6a738034120c302")
+        .amount("10000000000000000")
+        .build();
+    
+    QuoteResponse quote = client.swap().getQuote(quoteRequest);
+    
+    // 3. Execute swap (async with CompletableFuture)
+    SwapRequest swapRequest = SwapRequest.builder()
+        .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+        .dst("0x111111111117dc0aa78b770fa6a738034120c302")
+        .amount("10000000000000000")
+        .from("0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8")
+        .origin("0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8")
+        .slippage(1.0)
+        .build();
+    
+    CompletableFuture<SwapResponse> swapFuture = client.swap().getSwapAsync(swapRequest);
+    SwapResponse swap = swapFuture.get(10, TimeUnit.SECONDS);
+    // Execute swap transaction using swap.getTx()...
+}
+```
+
+### Reactive Error Handling
+```java
+client.swap().getQuoteRx(invalidRequest)
+    .doOnSuccess(quote -> System.out.println("Quote: " + quote.getDstAmount()))
+    .doOnError(error -> {
+        if (error instanceof OneInchApiException) {
+            OneInchApiException apiError = (OneInchApiException) error;
+            System.err.println("API Error: " + apiError.getError());
+            System.err.println("Status Code: " + apiError.getStatusCode());
+        }
+    })
+    .onErrorReturn(error -> {
+        // Fallback value
+        QuoteResponse fallback = new QuoteResponse();
+        fallback.setDstAmount("0");
+        return fallback;
+    })
+    .subscribe(
+        quote -> System.out.println("Final result: " + quote.getDstAmount()),
+        error -> System.err.println("This shouldn't happen with fallback")
+    );
 ```
 
 ## Error Handling
 
-The SDK provides structured error handling:
+The SDK provides structured error handling for both reactive and legacy approaches:
 
+### Legacy Error Handling
 ```java
 try {
     QuoteResponse quote = client.swap().getQuote(quoteRequest);
@@ -146,6 +280,23 @@ try {
 } catch (OneInchException e) {
     System.err.println("SDK Error: " + e.getMessage());
 }
+```
+
+### Reactive Error Handling
+```java
+client.swap().getQuoteRx(quoteRequest)
+    .doOnError(error -> {
+        if (error instanceof OneInchApiException) {
+            OneInchApiException apiError = (OneInchApiException) error;
+            System.err.println("API Error: " + apiError.getDescription());
+        } else if (error instanceof OneInchException) {
+            System.err.println("SDK Error: " + error.getMessage());
+        }
+    })
+    .subscribe(
+        quote -> System.out.println("Success: " + quote.getDstAmount()),
+        error -> System.err.println("Failed: " + error.getMessage())
+    );
 ```
 
 ## Requirements

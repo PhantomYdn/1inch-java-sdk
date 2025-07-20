@@ -1,6 +1,7 @@
 package io.oneinch.sdk.client;
 
 import io.oneinch.sdk.service.SwapService;
+import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,6 +18,7 @@ class OneInchClientTest {
         assertNotNull(client.getHttpClient());
         assertNotNull(client.getSwapService());
         assertNotNull(client.swap());
+        assertInstanceOf(RetrofitHttpClient.class, client.getHttpClient());
     }
 
     @Test
@@ -51,6 +53,20 @@ class OneInchClientTest {
     }
 
     @Test
+    void testBuilder_WithCustomOkHttpClient() {
+        OkHttpClient customClient = new OkHttpClient.Builder().build();
+        
+        OneInchClient client = OneInchClient.builder()
+                .apiKey("test-api-key")
+                .okHttpClient(customClient)
+                .build();
+
+        assertNotNull(client);
+        assertNotNull(client.getHttpClient());
+        assertNotNull(client.getSwapService());
+    }
+
+    @Test
     void testConstructor_Direct() {
         OneInchClient client = new OneInchClient("test-api-key");
 
@@ -58,6 +74,18 @@ class OneInchClientTest {
         assertNotNull(client.getHttpClient());
         assertNotNull(client.getSwapService());
         assertInstanceOf(SwapService.class, client.swap());
+        assertInstanceOf(RetrofitHttpClient.class, client.getHttpClient());
+    }
+
+    @Test
+    void testConstructor_WithCustomOkHttpClient() {
+        OkHttpClient customClient = new OkHttpClient.Builder().build();
+        OneInchClient client = new OneInchClient("test-api-key", customClient);
+
+        assertNotNull(client);
+        assertNotNull(client.getHttpClient());
+        assertNotNull(client.getSwapService());
+        assertInstanceOf(RetrofitHttpClient.class, client.getHttpClient());
     }
 
     @Test
@@ -70,5 +98,17 @@ class OneInchClientTest {
 
         assertNotNull(swapService);
         assertSame(client.getSwapService(), swapService);
+    }
+
+    @Test
+    void testDeprecatedHttpClientMethod() {
+        // Test the deprecated httpClient method doesn't break the builder
+        OneInchClient client = OneInchClient.builder()
+                .apiKey("test-api-key")
+                .httpClient("ignored-apache-client") // This should be ignored
+                .build();
+
+        assertNotNull(client);
+        assertInstanceOf(RetrofitHttpClient.class, client.getHttpClient());
     }
 }

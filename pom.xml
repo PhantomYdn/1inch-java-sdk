@@ -13,7 +13,9 @@
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <httpclient.version>4.5.14</httpclient.version>
+    <okhttp.version>4.11.0</okhttp.version>
+    <retrofit.version>2.9.0</retrofit.version>
+    <rxjava.version>3.1.6</rxjava.version>
     <jackson.version>2.15.2</jackson.version>
     <slf4j.version>1.7.36</slf4j.version>
     <lombok.version>1.18.30</lombok.version>
@@ -22,11 +24,40 @@
   </properties>
 
   <dependencies>
-    <!-- HTTP Client -->
+    <!-- HTTP Client - OkHttp -->
     <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>${httpclient.version}</version>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
+      <version>${okhttp.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>logging-interceptor</artifactId>
+      <version>${okhttp.version}</version>
+    </dependency>
+    
+    <!-- Retrofit 2 -->
+    <dependency>
+      <groupId>com.squareup.retrofit2</groupId>
+      <artifactId>retrofit</artifactId>
+      <version>${retrofit.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.retrofit2</groupId>
+      <artifactId>converter-jackson</artifactId>
+      <version>${retrofit.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.retrofit2</groupId>
+      <artifactId>adapter-rxjava3</artifactId>
+      <version>${retrofit.version}</version>
+    </dependency>
+    
+    <!-- RxJava 3 -->
+    <dependency>
+      <groupId>io.reactivex.rxjava3</groupId>
+      <artifactId>rxjava</artifactId>
+      <version>${rxjava.version}</version>
     </dependency>
     
     <!-- JSON Processing -->

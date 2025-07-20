@@ -4,24 +4,24 @@ import io.oneinch.sdk.service.SwapService;
 import io.oneinch.sdk.service.SwapServiceImpl;
 import lombok.Builder;
 import lombok.Getter;
-import org.apache.http.impl.client.CloseableHttpClient;
+import okhttp3.OkHttpClient;
 
 @Getter
 @Builder
 public class OneInchClient implements AutoCloseable {
     
-    private final HttpClient httpClient;
+    private final RetrofitHttpClient httpClient;
     private final SwapService swapService;
     
     public OneInchClient(String apiKey) {
         this(apiKey, null);
     }
     
-    public OneInchClient(String apiKey, CloseableHttpClient customHttpClient) {
-        this.httpClient = customHttpClient != null 
-            ? new ApacheHttpClient(apiKey, customHttpClient)
-            : new ApacheHttpClient(apiKey);
-        this.swapService = new SwapServiceImpl(this.httpClient);
+    public OneInchClient(String apiKey, OkHttpClient customOkHttpClient) {
+        this.httpClient = customOkHttpClient != null 
+            ? new RetrofitHttpClient(apiKey, customOkHttpClient)
+            : new RetrofitHttpClient(apiKey);
+        this.swapService = new SwapServiceImpl(this.httpClient.getApiService());
     }
     
     public static OneInchClientBuilder builder() {
@@ -39,15 +39,23 @@ public class OneInchClient implements AutoCloseable {
     
     public static class OneInchClientBuilder {
         private String apiKey;
-        private CloseableHttpClient customHttpClient;
+        private OkHttpClient customOkHttpClient;
         
         public OneInchClientBuilder apiKey(String apiKey) {
             this.apiKey = apiKey;
             return this;
         }
         
-        public OneInchClientBuilder httpClient(CloseableHttpClient httpClient) {
-            this.customHttpClient = httpClient;
+        public OneInchClientBuilder okHttpClient(OkHttpClient okHttpClient) {
+            this.customOkHttpClient = okHttpClient;
+            return this;
+        }
+        
+        // Deprecated method for backward compatibility
+        @Deprecated
+        public OneInchClientBuilder httpClient(Object httpClient) {
+            // Ignore the old Apache HttpClient - log a warning instead
+            System.err.println("Warning: Apache HttpClient is no longer supported. Use okHttpClient() instead.");
             return this;
         }
         
@@ -55,7 +63,7 @@ public class OneInchClient implements AutoCloseable {
             if (apiKey == null || apiKey.trim().isEmpty()) {
                 throw new IllegalArgumentException("API key is required");
             }
-            return new OneInchClient(apiKey, customHttpClient);
+            return new OneInchClient(apiKey, customOkHttpClient);
         }
     }
 }

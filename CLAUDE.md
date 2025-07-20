@@ -6,7 +6,9 @@ Java SDK for the 1inch DEX Aggregation Protocol with Java 11 compatibility.
 ## Tech Stack
 - **Java Version**: 11
 - **Build System**: Maven
-- **HTTP Client**: Apache HttpClient 4.5.14
+- **HTTP Client**: OkHttp 4.11.0
+- **API Framework**: Retrofit 2.9.0
+- **Reactive Programming**: RxJava 3.1.6
 - **JSON Processing**: Jackson 2.15.2
 - **Logging**: SLF4J 1.7.36
 - **Boilerplate Reduction**: Lombok 1.18.30
@@ -24,11 +26,12 @@ src/main/java/io/oneinch/sdk/
 
 ## Key Requirements
 1. Interface-driven design (easy to mock)
-2. Both synchronous and optional asynchronous methods
-3. Proper error handling and logging
-4. Well-documented code with Javadoc
-5. Unit tests with JUnit 5
-6. API_KEY authentication required
+2. Both reactive (RxJava) and legacy synchronous/asynchronous methods
+3. Modern reactive programming patterns with Single/Observable
+4. Proper error handling and logging
+5. Well-documented code with Javadoc
+6. Unit tests with JUnit 5
+7. API_KEY authentication required
 
 ## 1inch API Endpoints (Ethereum)
 - **Base URL**: `https://api.1inch.dev/swap/v6.0/1/`
@@ -92,3 +95,17 @@ swagger/
 ```
 
 **Main Swap API**: Located at `./swagger/swap/ethereum.json` - this contains the primary API endpoints implemented in the SDK.
+
+## Architecture Notes
+
+### Reactive Programming
+The SDK uses RxJava 3 for reactive programming patterns:
+- **Preferred approach**: Use reactive methods (ending with `Rx`) that return `Single<T>`
+- **Legacy support**: Synchronous and CompletableFuture-based methods are deprecated but maintained for backward compatibility
+- **Error handling**: Structured exceptions with OneInchApiException and OneInchException
+
+### HTTP Layer
+- **OkHttp**: Modern HTTP client with connection pooling and HTTP/2 support
+- **Retrofit**: Type-safe REST client for API integration
+- **Jackson**: JSON serialization/deserialization
+- **Authentication**: Bearer token authentication via API_KEY header
