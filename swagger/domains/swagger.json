@@ -1,0 +1,145 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v2.0/lookup": {
+      "get": {
+        "operationId": "ApiV2Controller_lookup",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "query",
+            "description": "domain",
+            "schema": { "example": "vitalik.eth", "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResponseV2Dto" } } }
+          }
+        },
+        "summary": "Returns domains for address if existed",
+        "tags": ["ApiV2"]
+      }
+    },
+    "/v2.0/reverse-lookup": {
+      "get": {
+        "operationId": "ApiV2Controller_reverseLookup",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "query",
+            "description": "address",
+            "schema": { "example": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResponseReverseV2Dto" } } }
+          }
+        },
+        "summary": "Returns domain for address if existed",
+        "tags": ["ApiV2"]
+      }
+    },
+    "/v2.0/reverse-lookup-batch": {
+      "post": {
+        "operationId": "ApiV2Controller_reverseLookupBatch",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "array", "items": { "type": "string" } } } }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ResponseBatchV2ReturnTypeDto" } }
+            }
+          },
+          "404": { "description": "" }
+        },
+        "summary": "Returns domain for addresses if existed",
+        "tags": ["ApiV2"]
+      }
+    },
+    "/v2.0/get-providers-data-with-avatar": {
+      "get": {
+        "operationId": "ApiV2Controller_getAvatar",
+        "parameters": [{ "name": "addressOrDomain", "required": true, "in": "query", "schema": { "type": "string" } }],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AvatarsResponse" } } }
+          }
+        },
+        "summary": "Returns list of provider data with avatar",
+        "tags": ["ApiV2"]
+      }
+    }
+  },
+  "info": { "title": "domains", "description": "domains", "version": "2.0", "contact": {} },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "ProviderResponse": {
+        "type": "object",
+        "properties": {
+          "protocol": { "type": "string" },
+          "address": { "type": "string" },
+          "checkUrl": { "type": "string" }
+        },
+        "required": ["protocol", "address", "checkUrl"]
+      },
+      "ResponseV2Dto": {
+        "type": "object",
+        "properties": { "result": { "$ref": "#/components/schemas/ProviderResponse" } },
+        "required": ["result"]
+      },
+      "ProviderReverseResponse": {
+        "type": "object",
+        "properties": {
+          "protocol": { "type": "string" },
+          "domain": { "type": "string" },
+          "checkUrl": { "type": "string" }
+        },
+        "required": ["protocol", "domain", "checkUrl"]
+      },
+      "ResponseReverseV2Dto": {
+        "type": "object",
+        "properties": { "result": { "$ref": "#/components/schemas/ProviderReverseResponse" } },
+        "required": ["result"]
+      },
+      "ResponseBatchV2ReturnTypeDto": {
+        "type": "object",
+        "properties": {
+          "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045": {
+            "description": "return request address as key",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ProviderReverseResponse" }
+          }
+        },
+        "required": ["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"]
+      },
+      "ProviderResponseWithAvatar": {
+        "type": "object",
+        "properties": {
+          "protocol": { "type": "string" },
+          "domain": { "type": "string" },
+          "address": { "type": "string" },
+          "avatar": { "type": "object", "nullable": true }
+        },
+        "required": ["protocol", "domain", "address", "avatar"]
+      },
+      "AvatarsResponse": {
+        "type": "object",
+        "properties": { "result": { "$ref": "#/components/schemas/ProviderResponseWithAvatar" } },
+        "required": ["result"]
+      }
+    }
+  }
+}

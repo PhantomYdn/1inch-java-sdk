@@ -1,0 +1,207 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v2/supportedchains": {
+      "get": {
+        "description": "return you supported chains which our API supported",
+        "operationId": "NftDevV2Controller_supportedChain_v2",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "\n        ETHEREUM = 1,\n        POLYGON = 137,\n        ARBITRUM = 42161,\n        AVALANCHE = 43114,\n        GNOSIS = 100,\n        OPTIMISM = 10,\n        KLAYTN = 8217,\n        BASE = 8453",
+            "content": { "application/json": { "schema": { "type": "number" }, "example": [1, 100, 137] } }
+          }
+        },
+        "summary": "",
+        "tags": ["nft-v2"]
+      }
+    },
+    "/v2/byaddress": {
+      "get": {
+        "description": "get list of nfts",
+        "operationId": "NftDevV2Controller_getNfts_v2",
+        "parameters": [
+          {
+            "name": "chainIds",
+            "required": true,
+            "in": "query",
+            "description": "list of supported chains        `ETHEREUM = 1,        POLYGON = 137,        ARBITRUM = 42161,        AVALANCHE = 43114,        GNOSIS = 100,        KLAYTN = 8217,        OPTIMISM = 10,        BASE = 8453`",
+            "schema": { "type": "array", "items": { "type": "number", "enum": [1, 137, 8453, 42161, 8217, 43114, 10] } }
+          },
+          {
+            "name": "address",
+            "required": true,
+            "in": "query",
+            "description": "web3 address of owner NFTS",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "The maximum number of assets to return",
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "The offset number of assets to return",
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "openseaNextToken",
+            "required": false,
+            "in": "query",
+            "description": "The cursor for the next page of results. This is returned from a previous request.",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/AssetsResponse" } }
+              }
+            }
+          },
+          "400": { "description": "Bad Request." },
+          "401": { "description": "Unauthorized." },
+          "500": { "description": "Internal server error." }
+        },
+        "summary": "",
+        "tags": ["nft-v2"]
+      }
+    },
+    "/v2/contract": {
+      "get": {
+        "description": "get single nft with detail data collection & metadata",
+        "operationId": "NftDevV2Controller_getNftById_v2",
+        "parameters": [
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "query",
+            "description": "network chain",
+            "schema": { "enum": [1, 137, 8453, 42161, 8217, 43114, 10], "type": "number" }
+          },
+          {
+            "name": "contract",
+            "required": true,
+            "in": "query",
+            "description": "owner of NFT",
+            "schema": { "type": "string" }
+          },
+          { "name": "id", "required": true, "in": "query", "description": "NFT ID", "schema": { "type": "string" } },
+          {
+            "name": "provider",
+            "required": true,
+            "in": "query",
+            "description": "provider of NFT (opensea,rarible,poap)",
+            "schema": { "type": "string", "enum": ["OPENSEA", "RARIBLE", "POAP"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SingleNft" } } }
+          },
+          "400": { "description": "Bad Request." },
+          "401": { "description": "Unauthorized." },
+          "500": { "description": "Internal server error." }
+        },
+        "summary": "",
+        "tags": ["nft-v2"]
+      }
+    }
+  },
+  "info": { "title": "NFT Metadata Indexer API Docs", "description": "", "version": "2.0", "contact": {} },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "AssetContract": {
+        "type": "object",
+        "properties": { "address": { "type": "string" }, "schema_name": { "type": "string" } },
+        "required": ["address", "schema_name"]
+      },
+      "NftV2Model": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "constraint id chain:contract(owner):tokenId" },
+          "token_id": { "type": "string" },
+          "provider": { "type": "string", "enum": ["OPENSEA", "RARIBLE", "POAP"] },
+          "name": { "type": "string" },
+          "chainId": { "type": "number" },
+          "priority": { "type": "number" },
+          "asset_contract": { "$ref": "#/components/schemas/AssetContract" },
+          "image_url": { "type": "string" }
+        },
+        "required": ["id", "token_id", "provider", "name", "chainId", "priority", "asset_contract", "image_url"]
+      },
+      "AssetsResponse": {
+        "type": "object",
+        "properties": {
+          "assets": { "type": "array", "items": { "$ref": "#/components/schemas/NftV2Model" } },
+          "openseaNextToken": {
+            "type": "string",
+            "description": "next token for get next elements from opensea provider"
+          }
+        },
+        "required": ["assets", "openseaNextToken"]
+      },
+      "Collection": {
+        "type": "object",
+        "properties": {
+          "image_url": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" }
+        },
+        "required": ["image_url", "name", "description"]
+      },
+      "User": { "type": "object", "properties": { "username": { "type": "string" } }, "required": ["username"] },
+      "Creator": {
+        "type": "object",
+        "properties": {
+          "profile_img_url": { "type": "string" },
+          "address": { "type": "string" },
+          "user": { "$ref": "#/components/schemas/User" }
+        },
+        "required": ["profile_img_url", "address", "user"]
+      },
+      "Traits": { "type": "object", "properties": { "value": { "type": "string" } }, "required": ["value"] },
+      "SingleNft": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "token_id": { "type": "string" },
+          "name": { "type": "string" },
+          "image_url": { "type": "object" },
+          "chainId": { "type": "number" },
+          "provider": { "type": "string" },
+          "description": { "type": "string" },
+          "permalink": { "type": "string" },
+          "collection": { "$ref": "#/components/schemas/Collection" },
+          "creator": { "$ref": "#/components/schemas/Creator" },
+          "traits": { "type": "array", "items": { "$ref": "#/components/schemas/Traits" } },
+          "asset_contract": { "$ref": "#/components/schemas/AssetContract" }
+        },
+        "required": [
+          "id",
+          "token_id",
+          "name",
+          "image_url",
+          "chainId",
+          "provider",
+          "description",
+          "permalink",
+          "collection",
+          "creator",
+          "traits",
+          "asset_contract"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,635 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v1.0/details/{chain}": {
+      "get": {
+        "operationId": "DetailsController_getChainInfo",
+        "summary": "Returns details for native token",
+        "parameters": [
+          {
+            "name": "chain",
+            "required": true,
+            "in": "path",
+            "description": "Chain id of network",
+            "example": "1",
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "provider",
+            "required": false,
+            "in": "query",
+            "description": "name of chart provider (optional)",
+            "schema": { "enum": ["coinmarketcap", "coingecko"], "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return token info",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InfoDataResponse" } } }
+          },
+          "500": { "description": "Fatal server error" }
+        }
+      }
+    },
+    "/v1.0/details/{chain}/{contractAddress}": {
+      "get": {
+        "operationId": "DetailsController_getInfo",
+        "summary": "Returns details for token",
+        "parameters": [
+          {
+            "name": "chain",
+            "required": true,
+            "in": "path",
+            "description": "Chain id of network",
+            "example": "1",
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "contractAddress",
+            "required": true,
+            "in": "path",
+            "description": "Address of contract",
+            "example": "0x111111111117dC0aa78b770fA6A738034120C302",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "provider",
+            "required": false,
+            "in": "query",
+            "description": "name of chart provider (optional)",
+            "schema": { "enum": ["coinmarketcap", "coingecko"], "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return token info",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InfoDataResponse" } } }
+          },
+          "500": { "description": "Fatal server error" }
+        }
+      }
+    },
+    "/v1.0/charts/range/{chain}": {
+      "get": {
+        "operationId": "ChartsController_getNativeTokenChartByRange",
+        "summary": "Returns historical native chain token prices at USD by time range",
+        "parameters": [
+          {
+            "name": "chain",
+            "required": true,
+            "in": "path",
+            "description": "Chain id of network",
+            "example": "1",
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "description": "unix time at sec",
+            "example": 1622200267,
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "description": "unix time at sec",
+            "example": 1622203867,
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "provider",
+            "required": false,
+            "in": "query",
+            "description": "name of chart provider (optional)",
+            "schema": { "enum": ["coinmarketcap", "coingecko", "quantor"], "type": "string" }
+          },
+          {
+            "name": "from_time",
+            "required": false,
+            "in": "query",
+            "description": "from time (optional)",
+            "example": 1658841720,
+            "schema": { "type": "number" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return chart data",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ChartDataResponse" } } }
+          },
+          "500": { "description": "Fatal server error" }
+        }
+      }
+    },
+    "/v1.0/charts/range/{chain}/{tokenAddress}": {
+      "get": {
+        "operationId": "ChartsController_getTokenChartByRange",
+        "summary": "Returns historical token prices at USD by time range",
+        "parameters": [
+          {
+            "name": "chain",
+            "required": true,
+            "in": "path",
+            "description": "Chain id of network",
+            "example": "1",
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "tokenAddress",
+            "required": true,
+            "in": "path",
+            "description": "Address of token contract",
+            "example": "0x111111111117dC0aa78b770fA6A738034120C302",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "description": "unix time at sec",
+            "example": 1622200267,
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "description": "unix time at sec",
+            "example": 1622203867,
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "provider",
+            "required": false,
+            "in": "query",
+            "description": "name of chart provider (optional)",
+            "schema": { "enum": ["coinmarketcap", "coingecko", "quantor"], "type": "string" }
+          },
+          {
+            "name": "from_time",
+            "required": false,
+            "in": "query",
+            "description": "from time (optional)",
+            "example": 1658841720,
+            "schema": { "type": "number" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return chart data",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ChartDataResponse" } } }
+          },
+          "500": { "description": "Fatal server error" }
+        }
+      }
+    },
+    "/v1.0/charts/interval/{chain}": {
+      "get": {
+        "operationId": "ChartsController_getNativeTokenChartByInterval",
+        "summary": "Returns historical native chain token prices at USD by time interval",
+        "parameters": [
+          {
+            "name": "chain",
+            "required": true,
+            "in": "path",
+            "description": "Chain id of network",
+            "example": "1",
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "interval",
+            "required": true,
+            "in": "query",
+            "description": "eg. 24h,3d,14d,max",
+            "example": "24h",
+            "schema": {
+              "enum": [
+                "5m",
+                "10m",
+                "15m",
+                "30m",
+                "50m",
+                "1h",
+                "2h",
+                "3h",
+                "4h",
+                "6h",
+                "12h",
+                "24h",
+                "2d",
+                "3d",
+                "7d",
+                "14d",
+                "15d",
+                "30d",
+                "60d",
+                "90d",
+                "365d",
+                "max"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "required": false,
+            "in": "query",
+            "description": "name of chart provider (optional)",
+            "schema": { "enum": ["coinmarketcap", "coingecko", "quantor"], "type": "string" }
+          },
+          {
+            "name": "from_time",
+            "required": false,
+            "in": "query",
+            "description": "from time (optional)",
+            "example": 1658841720,
+            "schema": { "type": "number" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return chart data",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ChartDataResponse" } } }
+          },
+          "500": { "description": "Fatal server error" }
+        }
+      }
+    },
+    "/v1.0/charts/interval/{chain}/{tokenAddress}": {
+      "get": {
+        "operationId": "ChartsController_getTokenChartByInterval",
+        "summary": "Returns historical token prices at USD by time interval",
+        "parameters": [
+          {
+            "name": "chain",
+            "required": true,
+            "in": "path",
+            "description": "Chain id of network",
+            "example": "1",
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "tokenAddress",
+            "required": true,
+            "in": "path",
+            "description": "Address of token contract",
+            "example": "0x111111111117dC0aa78b770fA6A738034120C302",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "interval",
+            "required": true,
+            "in": "query",
+            "description": "eg. 24h,3d,14d,max",
+            "example": "24h",
+            "schema": {
+              "enum": [
+                "5m",
+                "10m",
+                "15m",
+                "30m",
+                "50m",
+                "1h",
+                "2h",
+                "3h",
+                "4h",
+                "6h",
+                "12h",
+                "24h",
+                "2d",
+                "3d",
+                "7d",
+                "14d",
+                "15d",
+                "30d",
+                "60d",
+                "90d",
+                "365d",
+                "max"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "required": false,
+            "in": "query",
+            "description": "name of chart provider (optional)",
+            "schema": { "enum": ["coinmarketcap", "coingecko", "quantor"], "type": "string" }
+          },
+          {
+            "name": "from_time",
+            "required": false,
+            "in": "query",
+            "description": "from time (optional)",
+            "example": 1658841720,
+            "schema": { "type": "number" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return chart data",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ChartDataResponse" } } }
+          },
+          "500": { "description": "Fatal server error" }
+        }
+      }
+    },
+    "/v1.0/prices/change/{chain}": {
+      "get": {
+        "operationId": "PricesController_getNativeTokenPriceByInterval",
+        "summary": "Returns native token price change by interval",
+        "parameters": [
+          {
+            "name": "chain",
+            "required": true,
+            "in": "path",
+            "description": "Chain id of network",
+            "example": "1",
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "interval",
+            "required": true,
+            "in": "query",
+            "description": "eg. 24h,3d,14d,max",
+            "example": "24h",
+            "schema": {
+              "enum": [
+                "5m",
+                "10m",
+                "15m",
+                "30m",
+                "50m",
+                "1h",
+                "2h",
+                "3h",
+                "4h",
+                "6h",
+                "12h",
+                "24h",
+                "2d",
+                "3d",
+                "7d",
+                "14d",
+                "15d",
+                "30d",
+                "60d",
+                "90d",
+                "365d",
+                "max"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return chart data",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/TokenPriceChangeResponseDto" } }
+            }
+          },
+          "500": { "description": "Fatal server error" }
+        }
+      },
+      "post": {
+        "operationId": "PricesController_getTokenListPriceByInterval",
+        "summary": "Returns token price change by interval for a list of tokens",
+        "parameters": [
+          {
+            "name": "chain",
+            "required": true,
+            "in": "path",
+            "description": "Chain id of network",
+            "example": "1",
+            "schema": { "type": "number" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/GetTokenListPriceRequestDto" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token price changes over the given interval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/TokenListPriceChangeResponseDto" }
+                }
+              }
+            }
+          },
+          "400": { "description": "If data format is invalid or there are validation errors" },
+          "404": { "description": "If one or more tokens were not found in the price listings" },
+          "500": { "description": "Fatal server error" }
+        }
+      }
+    },
+    "/v1.0/prices/change/{chain}/{tokenAddress}": {
+      "get": {
+        "operationId": "PricesController_getTokenPriceByInterval",
+        "summary": "Returns token price change by interval",
+        "parameters": [
+          {
+            "name": "chain",
+            "required": true,
+            "in": "path",
+            "description": "Chain id of network",
+            "example": "1",
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "tokenAddress",
+            "required": true,
+            "in": "path",
+            "description": "Address of token contract",
+            "example": "0x111111111117dC0aa78b770fA6A738034120C302",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "interval",
+            "required": true,
+            "in": "query",
+            "description": "eg. 24h,3d,14d,max",
+            "example": "24h",
+            "schema": {
+              "enum": [
+                "5m",
+                "10m",
+                "15m",
+                "30m",
+                "50m",
+                "1h",
+                "2h",
+                "3h",
+                "4h",
+                "6h",
+                "12h",
+                "24h",
+                "2d",
+                "3d",
+                "7d",
+                "14d",
+                "15d",
+                "30d",
+                "60d",
+                "90d",
+                "365d",
+                "max"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return chart data",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/TokenPriceChangeResponseDto" } }
+            }
+          },
+          "500": { "description": "Fatal server error" }
+        }
+      }
+    }
+  },
+  "info": { "title": "Token-details API", "description": "Token-details API", "version": "0.25.13", "contact": {} },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "SocialLink": {
+        "type": "object",
+        "properties": { "name": { "type": "string" }, "url": { "type": "string" }, "handle": { "type": "string" } },
+        "required": ["name", "url", "handle"]
+      },
+      "AssetsResponse": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "website": { "type": "string" },
+          "sourceCode": { "type": "string" },
+          "whitePaper": { "type": "string" },
+          "description": { "type": "string" },
+          "shortDescription": { "type": "string" },
+          "research": { "type": "string" },
+          "explorer": { "type": "string" },
+          "social_links": { "$ref": "#/components/schemas/SocialLink" }
+        },
+        "required": [
+          "name",
+          "website",
+          "sourceCode",
+          "whitePaper",
+          "description",
+          "shortDescription",
+          "research",
+          "explorer",
+          "social_links"
+        ]
+      },
+      "DetailsResponse": {
+        "type": "object",
+        "properties": {
+          "provider": { "type": "string" },
+          "providerURL": { "type": "string" },
+          "vol24": { "type": "number" },
+          "marketCap": { "type": "number" },
+          "circulatingSupply": { "type": "number" },
+          "totalSupply": { "type": "number" }
+        },
+        "required": ["provider", "providerURL", "vol24", "marketCap", "circulatingSupply", "totalSupply"]
+      },
+      "InfoDataResponse": {
+        "type": "object",
+        "properties": {
+          "assets": { "$ref": "#/components/schemas/AssetsResponse" },
+          "details": { "$ref": "#/components/schemas/DetailsResponse" }
+        },
+        "required": ["assets", "details"]
+      },
+      "ChartPointResponse": {
+        "type": "object",
+        "properties": {
+          "t": { "type": "number", "description": "unix time at sec" },
+          "v": { "type": "number", "description": "price at usd" }
+        },
+        "required": ["t", "v"]
+      },
+      "ChartDataResponse": {
+        "type": "object",
+        "properties": {
+          "d": {
+            "description": "Chart data",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ChartPointResponse" }
+          },
+          "p": { "type": "string", "description": "Chart provider (optional)" }
+        },
+        "required": ["d", "p"]
+      },
+      "TokenPriceChangeResponseDto": {
+        "type": "object",
+        "properties": { "inUSD": { "type": "number" }, "inPercent": { "type": "number" } },
+        "required": ["inUSD", "inPercent"]
+      },
+      "GetTokenListPriceRequestDto": {
+        "type": "object",
+        "properties": {
+          "tokenAddresses": {
+            "description": "Addresses of token contracts",
+            "example": ["0x111111111117dC0aa78b770fA6A738034120C302", "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"],
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "interval": {
+            "type": "string",
+            "enum": [
+              "5m",
+              "10m",
+              "15m",
+              "30m",
+              "50m",
+              "1h",
+              "2h",
+              "3h",
+              "4h",
+              "6h",
+              "12h",
+              "24h",
+              "2d",
+              "3d",
+              "7d",
+              "14d",
+              "15d",
+              "30d",
+              "60d",
+              "90d",
+              "365d",
+              "max"
+            ],
+            "description": "Time interval for price change",
+            "example": "24h"
+          }
+        },
+        "required": ["tokenAddresses", "interval"]
+      },
+      "TokenListPriceChangeResponseDto": {
+        "type": "object",
+        "properties": {
+          "tokenAddress": { "type": "string" },
+          "inUSD": { "type": "number" },
+          "inPercent": { "type": "number" }
+        },
+        "required": ["tokenAddress", "inUSD", "inPercent"]
+      }
+    }
+  }
+}

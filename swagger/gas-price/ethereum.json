@@ -1,0 +1,48 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v1.5/1": {
+      "get": {
+        "operationId": "ApiController-v1_5-ba032b2a-8fae-4e1d-a941-7b346c20f7d4",
+        "summary": "Gas Price from network",
+        "description": "Get Gas Price info from network",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "GasPrice",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Eip1559GasPriceDto" } } }
+          }
+        },
+        "tags": ["Gas Price"]
+      }
+    }
+  },
+  "info": {
+    "title": "1inch Gas Price API",
+    "description": "<h2>Ethereum Network</h2> Using 1inch Gas Price API, you can get optimize gas price from network.\n",
+    "version": "1.4",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "Eip1559GasValueDto": {
+        "type": "object",
+        "properties": { "maxPriorityFeePerGas": { "type": "string" }, "maxFeePerGas": { "type": "string" } },
+        "required": ["maxPriorityFeePerGas", "maxFeePerGas"]
+      },
+      "Eip1559GasPriceDto": {
+        "type": "object",
+        "properties": {
+          "baseFee": { "type": "string" },
+          "low": { "$ref": "#/components/schemas/Eip1559GasValueDto" },
+          "medium": { "$ref": "#/components/schemas/Eip1559GasValueDto" },
+          "high": { "$ref": "#/components/schemas/Eip1559GasValueDto" },
+          "instant": { "$ref": "#/components/schemas/Eip1559GasValueDto" }
+        },
+        "required": ["baseFee", "low", "medium", "high", "instant"]
+      }
+    }
+  }
+}

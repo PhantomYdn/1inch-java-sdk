@@ -1,0 +1,148 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v1.0/chart/line/{token0}/{token1}/{period}/{chainId}": {
+      "get": {
+        "operationId": "ApiController_getLineChart",
+        "summary": "Allows to get historical line chart data for specific token pair and period",
+        "parameters": [
+          {
+            "name": "token0",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string", "pattern": "^0x[a-fA-F0-9]{40}$" },
+            "example": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "description": "Base token address"
+          },
+          {
+            "name": "token1",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string", "pattern": "^0x[a-fA-F0-9]{40}$" },
+            "example": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+            "description": "Quote token address"
+          },
+          {
+            "name": "period",
+            "required": true,
+            "in": "path",
+            "example": "24H",
+            "description": "Period. Supported periods: 24H ,1W ,1M ,1Y ,AllTime",
+            "schema": { "type": "string", "enum": ["24H", "1W", "1M", "1Y", "AllTime"] }
+          },
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "example": 1,
+            "description": "Supported chain: 1/56/137/42161/43114/100/10/8453/324",
+            "schema": { "type": "number", "enum": [1, 56, 137, 42161, 43114, 100, 10, 8453, 324] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LinesResponse" } } }
+          }
+        },
+        "tags": ["Chart"]
+      }
+    },
+    "/v1.0/chart/aggregated/candle/{token0}/{token1}/{seconds}/{chainId}": {
+      "get": {
+        "operationId": "ApiController_getCandleChart",
+        "summary": "Allows to get historical candle chart data for specific token pair and period",
+        "parameters": [
+          {
+            "name": "token0",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string", "pattern": "^0x[a-fA-F0-9]{40}$" },
+            "example": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "description": "Base token address"
+          },
+          {
+            "name": "token1",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string", "pattern": "^0x[a-fA-F0-9]{40}$" },
+            "example": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+            "description": "Quote token address"
+          },
+          {
+            "name": "seconds",
+            "required": true,
+            "in": "path",
+            "example": 86400,
+            "description": "Period in seconds. Supported seconds: 300 ,900 ,3600 ,14400 ,86400 ,604800",
+            "schema": { "type": "number", "enum": [300, 900, 3600, 14400, 86400, 604800] }
+          },
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "example": 1,
+            "description": "Supported chain: 1/56/137/42161/43114/100/10/8453/324",
+            "schema": { "type": "number", "enum": [1, 56, 137, 42161, 43114, 100, 10, 8453, 324] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CandlesResponse" } } }
+          }
+        },
+        "tags": ["Chart"]
+      }
+    }
+  },
+  "info": {
+    "title": "1inch Charts API",
+    "description": "\n<h2>Charts API</h2>\nAPI provides with access to historical candle and line charts\n<br><br>\nSupported network: Ethereum, Binance Chain, Polygon\n",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "Line": {
+        "type": "object",
+        "properties": {
+          "time": { "type": "number", "description": "Time in seconds", "example": 1697385600 },
+          "value": { "type": "number", "description": "Price", "example": 1556.156815313485 }
+        },
+        "required": ["time", "value"]
+      },
+      "LinesResponse": {
+        "type": "object",
+        "properties": {
+          "data": { "description": "Candles array", "type": "array", "items": { "$ref": "#/components/schemas/Line" } }
+        },
+        "required": ["data"]
+      },
+      "Candle": {
+        "type": "object",
+        "properties": {
+          "time": { "type": "number", "description": "Time in seconds", "example": 1697385600 },
+          "open": { "type": "number", "description": "Candle open price", "example": 1556.156815313485 },
+          "high": { "type": "number", "description": "Candle high price", "example": 1589.1439810493962 },
+          "low": { "type": "number", "description": "Candle low price", "example": 1539.1121304866367 },
+          "close": { "type": "number", "description": "Candle close price", "example": 1558.2917685385037 }
+        },
+        "required": ["time", "open", "high", "low", "close"]
+      },
+      "CandlesResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "description": "Candles array",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Candle" }
+          }
+        },
+        "required": ["data"]
+      }
+    }
+  }
+}
