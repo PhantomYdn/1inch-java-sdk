@@ -8,10 +8,8 @@ import java.util.concurrent.CompletableFuture;
 
 public interface HttpClient {
     
-    @Deprecated
     <T> T get(String path, Map<String, Object> params, Class<T> responseType) throws OneInchException;
     
-    @Deprecated
     <T> CompletableFuture<T> getAsync(String path, Map<String, Object> params, Class<T> responseType);
     
     <T> Single<T> getRx(String path, Map<String, Object> params, Class<T> responseType);

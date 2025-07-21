@@ -51,13 +51,6 @@ public class OneInchClient implements AutoCloseable {
             return this;
         }
         
-        // Deprecated method for backward compatibility
-        @Deprecated
-        public OneInchClientBuilder httpClient(Object httpClient) {
-            // Ignore the old Apache HttpClient - log a warning instead
-            System.err.println("Warning: Apache HttpClient is no longer supported. Use okHttpClient() instead.");
-            return this;
-        }
         
         public OneInchClient build() {
             if (apiKey == null || apiKey.trim().isEmpty()) {

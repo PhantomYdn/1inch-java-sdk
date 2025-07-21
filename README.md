@@ -294,7 +294,7 @@ client.swap().getQuoteRx(invalidRequest)
 
 ## Error Handling
 
-The SDK provides structured error handling for both reactive and legacy approaches:
+The SDK provides structured error handling for all programming approaches:
 
 ### Synchronous Error Handling
 ```java
