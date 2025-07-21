@@ -60,9 +60,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ReactiveExample {
     public void getQuote() {
-        // Initialize the client with your API key
+        // Initialize the client (using ONEINCH_API_KEY environment variable)
         try (OneInchClient client = OneInchClient.builder()
-                .apiKey("your-api-key-here")
                 .build()) {
             
             // Get a quote for swapping ETH to 1INCH (reactive)
@@ -94,7 +93,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SynchronousExample {
     public void getQuote() {
         try (OneInchClient client = OneInchClient.builder()
-                .apiKey("your-api-key-here")
+                .apiKey("your-api-key-here")  // Or omit this to use ONEINCH_API_KEY env var
                 .build()) {
             
             QuoteRequest quoteRequest = QuoteRequest.builder()
@@ -128,11 +127,29 @@ public class SynchronousExample {
 ### Authentication
 You need a valid API key from 1inch. Get one at [1inch Developer Portal](https://portal.1inch.dev/).
 
+#### Using Explicit API Key
 ```java
 OneInchClient client = OneInchClient.builder()
     .apiKey("your-api-key")
     .build();
 ```
+
+#### Using Environment Variable
+Set the `ONEINCH_API_KEY` environment variable:
+```bash
+export ONEINCH_API_KEY="your-api-key-here"
+```
+
+Then create the client without explicitly providing the API key:
+```java
+// Reads API key from ONEINCH_API_KEY environment variable
+OneInchClient client = OneInchClient.builder().build();
+
+// Or use the parameterless constructor
+OneInchClient client = new OneInchClient();
+```
+
+**Priority**: Explicit API key takes precedence over environment variable.
 
 ### Custom OkHttp Client
 ```java
@@ -154,8 +171,7 @@ OneInchClient client = OneInchClient.builder()
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 try (OneInchClient client = OneInchClient.builder()
-        .apiKey("your-api-key")
-        .build()) {
+        .build()) {  // Uses ONEINCH_API_KEY environment variable
     
     String swapAmount = "10000000000000000"; // 0.01 ETH in wei
     String walletAddress = "0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8";
@@ -234,8 +250,7 @@ Single.zip(spenderSingle, quoteSingle, allowanceSingle,
 ### Synchronous Swap Flow
 ```java
 try (OneInchClient client = OneInchClient.builder()
-        .apiKey("your-api-key")
-        .build()) {
+        .build()) {  // Uses ONEINCH_API_KEY environment variable
     
     // 1. Check allowance
     AllowanceRequest allowanceRequest = AllowanceRequest.builder()
@@ -340,9 +355,39 @@ mvn clean install
 
 ## Testing
 
+### Unit Tests
+Run the mock unit tests (no API key required):
 ```bash
 mvn test
 ```
+
+### Integration Tests
+To run integration tests with real API calls:
+
+1. **Set up API key configuration**:
+   ```bash
+   # Copy the sample configuration
+   cp test.properties.sample test.properties
+   
+   # Edit test.properties and add your real API key
+   nano test.properties
+   ```
+
+2. **Add your API key to test.properties**:
+   ```properties
+   ONEINCH_API_KEY=your-actual-api-key-here
+   ```
+
+3. **Run integration tests**:
+   ```bash
+   # Run only integration tests
+   mvn test -Dtest=OneInchIntegrationTest
+   
+   # Or run all tests (unit + integration)
+   mvn test
+   ```
+
+**Note**: `test.properties` is gitignored to prevent accidental commits of API keys. Always use `test.properties.sample` as a reference for the expected format.
 
 ## License
 
