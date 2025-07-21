@@ -55,48 +55,59 @@ The SDK supports three programming approaches to fit different use cases:
 import io.oneinch.sdk.client.OneInchClient;
 import io.oneinch.sdk.model.QuoteRequest;
 import io.oneinch.sdk.model.QuoteResponse;
+import lombok.extern.slf4j.Slf4j;
 
-// Initialize the client with your API key
-try (OneInchClient client = OneInchClient.builder()
-        .apiKey("your-api-key-here")
-        .build()) {
-    
-    // Get a quote for swapping ETH to 1INCH (reactive)
-    QuoteRequest quoteRequest = QuoteRequest.builder()
-        .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
-        .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH
-        .amount("10000000000000000")  // 0.01 ETH in wei
-        .includeTokensInfo(true)
-        .build();
-    
-    client.swap().getQuoteRx(quoteRequest)
-        .doOnSuccess(quote -> {
-            System.out.println("Expected output: " + quote.getDstAmount() + " " +
-                    (quote.getDstToken() != null ? quote.getDstToken().getSymbol() : "tokens"));
-        })
-        .doOnError(error -> System.err.println("Error: " + error.getMessage()))
-        .subscribe();
+@Slf4j
+public class ReactiveExample {
+    public void getQuote() {
+        // Initialize the client with your API key
+        try (OneInchClient client = OneInchClient.builder()
+                .apiKey("your-api-key-here")
+                .build()) {
+            
+            // Get a quote for swapping ETH to 1INCH (reactive)
+            QuoteRequest quoteRequest = QuoteRequest.builder()
+                .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
+                .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH
+                .amount("10000000000000000")  // 0.01 ETH in wei
+                .includeTokensInfo(true)
+                .build();
+            
+            client.swap().getQuoteRx(quoteRequest)
+                .doOnSuccess(quote -> {
+                    log.info("Expected output: {} {}", quote.getDstAmount(),
+                            quote.getDstToken() != null ? quote.getDstToken().getSymbol() : "tokens");
+                })
+                .doOnError(error -> log.error("Error getting quote", error))
+                .subscribe();
+        }
+    }
 }
 ```
 
 ### Synchronous Approach
 
 ```java
-public void synchronousExample() {
-    try (OneInchClient client = OneInchClient.builder()
-            .apiKey("your-api-key-here")
-            .build()) {
-        
-        QuoteRequest quoteRequest = QuoteRequest.builder()
-            .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
-            .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH
-            .amount("10000000000000000")  // 0.01 ETH in wei
-            .build();
-        
-        QuoteResponse quote = client.swap().getQuote(quoteRequest);
-        System.out.println("Expected output: " + quote.getDstAmount());
-    } catch (OneInchException e) {
-        System.err.println("Error: " + e.getMessage());
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class SynchronousExample {
+    public void getQuote() {
+        try (OneInchClient client = OneInchClient.builder()
+                .apiKey("your-api-key-here")
+                .build()) {
+            
+            QuoteRequest quoteRequest = QuoteRequest.builder()
+                .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
+                .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH
+                .amount("10000000000000000")  // 0.01 ETH in wei
+                .build();
+            
+            QuoteResponse quote = client.swap().getQuote(quoteRequest);
+            log.info("Expected output: {}", quote.getDstAmount());
+        } catch (OneInchException e) {
+            log.error("Error getting quote: {}", e.getMessage());
+        }
     }
 }
 ```
@@ -151,7 +162,7 @@ try (OneInchClient client = OneInchClient.builder()
     
     // Reactive chaining with proper error handling
     client.swap().getSpenderRx()
-        .doOnSuccess(spender -> System.out.println("Spender: " + spender.getAddress()))
+        .doOnSuccess(spender -> log.info("Spender: {}", spender.getAddress()))
         .flatMap(spender -> {
             // Check allowance
             AllowanceRequest allowanceRequest = AllowanceRequest.builder()
@@ -185,12 +196,12 @@ try (OneInchClient client = OneInchClient.builder()
         })
         .subscribe(
             swap -> {
-                System.out.println("Swap ready!");
-                System.out.println("To: " + swap.getTx().getTo());
-                System.out.println("Value: " + swap.getTx().getValue());
-                System.out.println("Expected output: " + swap.getDstAmount());
+                log.info("Swap ready!");
+                log.info("To: {}", swap.getTx().getTo());
+                log.info("Value: {}", swap.getTx().getValue());
+                log.info("Expected output: {}", swap.getDstAmount());
             },
-            error -> System.err.println("Swap flow failed: " + error.getMessage())
+            error -> log.error("Swap flow failed", error)
         );
 }
 ```
@@ -213,7 +224,7 @@ Single<AllowanceResponse> allowanceSingle = client.swap().getAllowanceRx(allowan
 // Combine all results
 Single.zip(spenderSingle, quoteSingle, allowanceSingle,
     (spender, quote, allowance) -> {
-        System.out.println("All operations completed!");
+        log.info("All operations completed!");
         return "Success";
     })
     .timeout(10, TimeUnit.SECONDS)
@@ -262,12 +273,11 @@ try (OneInchClient client = OneInchClient.builder()
 ### Reactive Error Handling
 ```java
 client.swap().getQuoteRx(invalidRequest)
-    .doOnSuccess(quote -> System.out.println("Quote: " + quote.getDstAmount()))
+    .doOnSuccess(quote -> log.info("Quote: {}", quote.getDstAmount()))
     .doOnError(error -> {
         if (error instanceof OneInchApiException) {
             OneInchApiException apiError = (OneInchApiException) error;
-            System.err.println("API Error: " + apiError.getError());
-            System.err.println("Status Code: " + apiError.getStatusCode());
+            log.error("API Error: {} (Status: {})", apiError.getError(), apiError.getStatusCode());
         }
     })
     .onErrorReturn(error -> {
@@ -277,8 +287,8 @@ client.swap().getQuoteRx(invalidRequest)
         return fallback;
     })
     .subscribe(
-        quote -> System.out.println("Final result: " + quote.getDstAmount()),
-        error -> System.err.println("This shouldn't happen with fallback")
+        quote -> log.info("Final result: {}", quote.getDstAmount()),
+        error -> log.error("This shouldn't happen with fallback", error)
     );
 ```
 
@@ -291,11 +301,10 @@ The SDK provides structured error handling for both reactive and legacy approach
 try {
     QuoteResponse quote = client.swap().getQuote(quoteRequest);
 } catch (OneInchApiException e) {
-    System.err.println("API Error: " + e.getDescription());
-    System.err.println("Status Code: " + e.getStatusCode());
-    System.err.println("Request ID: " + e.getRequestId());
+    log.error("API Error: {} (Status: {}, Request ID: {})", 
+        e.getDescription(), e.getStatusCode(), e.getRequestId());
 } catch (OneInchException e) {
-    System.err.println("SDK Error: " + e.getMessage());
+    log.error("SDK Error: {}", e.getMessage());
 }
 ```
 
@@ -305,14 +314,14 @@ client.swap().getQuoteRx(quoteRequest)
     .doOnError(error -> {
         if (error instanceof OneInchApiException) {
             OneInchApiException apiError = (OneInchApiException) error;
-            System.err.println("API Error: " + apiError.getDescription());
+            log.error("API Error: {}", apiError.getDescription());
         } else if (error instanceof OneInchException) {
-            System.err.println("SDK Error: " + error.getMessage());
+            log.error("SDK Error: {}", error.getMessage());
         }
     })
     .subscribe(
-        quote -> System.out.println("Success: " + quote.getDstAmount()),
-        error -> System.err.println("Failed: " + error.getMessage())
+        quote -> log.info("Success: {}", quote.getDstAmount()),
+        error -> log.error("Failed", error)
     );
 ```
 

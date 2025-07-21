@@ -18,6 +18,7 @@
     <rxjava.version>3.1.6</rxjava.version>
     <jackson.version>2.15.2</jackson.version>
     <slf4j.version>1.7.36</slf4j.version>
+    <log4j.version>2.20.0</log4j.version>
     <lombok.version>1.18.30</lombok.version>
     <junit.version>5.9.3</junit.version>
     <mockito.version>4.11.0</mockito.version>
@@ -83,10 +84,17 @@
       <artifactId>slf4j-api</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
+    <!-- Log4j2 implementation for testing -->
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>${slf4j.version}</version>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${log4j.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>${log4j.version}</version>
       <scope>test</scope>
     </dependency>
     
