@@ -7,7 +7,7 @@ A comprehensive Java SDK for the 1inch DEX Aggregation Protocol, providing easy 
 - ✅ Java 11 compatible
 - ✅ Modern reactive programming with RxJava 3
 - ✅ Interface-driven design for easy testing and mocking
-- ✅ Both reactive and legacy synchronous/asynchronous API methods
+- ✅ Multiple programming approaches: reactive, synchronous, and asynchronous
 - ✅ OkHttp with HTTP/2 support and connection pooling
 - ✅ Type-safe REST API integration with Retrofit 2
 - ✅ Comprehensive error handling
@@ -28,9 +28,28 @@ Add the following dependency to your `pom.xml`:
 </dependency>
 ```
 
+## Programming Approaches
+
+The SDK supports three programming approaches to fit different use cases:
+
+### 🔄 Reactive (RxJava)
+- **Best for**: Complex async workflows, chaining operations, backpressure handling
+- **Returns**: `Single<T>` for reactive composition
+- **Example**: `client.swap().getQuoteRx(request)`
+
+### ⚡ Synchronous 
+- **Best for**: Simple scripts, blocking workflows, traditional programming
+- **Returns**: Direct response objects
+- **Example**: `client.swap().getQuote(request)`
+
+### 🚀 Asynchronous (CompletableFuture)
+- **Best for**: Java 8+ async patterns, parallel execution
+- **Returns**: `CompletableFuture<T>` for async composition  
+- **Example**: `client.swap().getQuoteAsync(request)`
+
 ## Quick Start
 
-### Reactive Approach (Recommended)
+### Reactive Approach
 
 ```java
 import io.oneinch.sdk.client.OneInchClient;
@@ -60,11 +79,10 @@ try (OneInchClient client = OneInchClient.builder()
 }
 ```
 
-### Legacy Approach (Synchronous)
+### Synchronous Approach
 
 ```java
-@SuppressWarnings("deprecation")
-public void legacyExample() {
+public void synchronousExample() {
     try (OneInchClient client = OneInchClient.builder()
             .apiKey("your-api-key-here")
             .build()) {
@@ -120,7 +138,7 @@ OneInchClient client = OneInchClient.builder()
 
 ## Examples
 
-### Reactive Swap Flow (Recommended)
+### Reactive Swap Flow
 ```java
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
@@ -202,9 +220,8 @@ Single.zip(spenderSingle, quoteSingle, allowanceSingle,
     .blockingGet();
 ```
 
-### Legacy Swap Flow (Synchronous)
+### Synchronous Swap Flow
 ```java
-@SuppressWarnings("deprecation")
 try (OneInchClient client = OneInchClient.builder()
         .apiKey("your-api-key")
         .build()) {
@@ -269,7 +286,7 @@ client.swap().getQuoteRx(invalidRequest)
 
 The SDK provides structured error handling for both reactive and legacy approaches:
 
-### Legacy Error Handling
+### Synchronous Error Handling
 ```java
 try {
     QuoteResponse quote = client.swap().getQuote(quoteRequest);

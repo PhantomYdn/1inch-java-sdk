@@ -26,8 +26,8 @@ src/main/java/io/oneinch/sdk/
 
 ## Key Requirements
 1. Interface-driven design (easy to mock)
-2. Both reactive (RxJava) and legacy synchronous/asynchronous methods
-3. Modern reactive programming patterns with Single/Observable
+2. Multiple programming approaches: reactive (RxJava), synchronous, and asynchronous (CompletableFuture)
+3. Support for both simple blocking calls and complex reactive workflows
 4. Proper error handling and logging
 5. Well-documented code with Javadoc
 6. Unit tests with JUnit 5
@@ -98,11 +98,26 @@ swagger/
 
 ## Architecture Notes
 
-### Reactive Programming
-The SDK uses RxJava 3 for reactive programming patterns:
-- **Preferred approach**: Use reactive methods (ending with `Rx`) that return `Single<T>`
-- **Legacy support**: Synchronous and CompletableFuture-based methods are deprecated but maintained for backward compatibility
-- **Error handling**: Structured exceptions with OneInchApiException and OneInchException
+### Programming Approaches
+The SDK provides three equally supported programming patterns:
+
+#### Reactive Programming (RxJava 3)
+- **Methods**: End with `Rx` suffix (e.g., `getQuoteRx`)
+- **Returns**: `Single<T>` for reactive composition
+- **Best for**: Complex async workflows, chaining operations, backpressure handling
+- **Error handling**: Reactive operators like `doOnError`, `onErrorResumeNext`
+
+#### Synchronous Programming
+- **Methods**: Standard method names (e.g., `getQuote`)
+- **Returns**: Direct response objects
+- **Best for**: Simple scripts, blocking workflows, traditional programming
+- **Error handling**: Throws `OneInchException` for easy try-catch patterns
+
+#### Asynchronous Programming (CompletableFuture)
+- **Methods**: End with `Async` suffix (e.g., `getQuoteAsync`)
+- **Returns**: `CompletableFuture<T>` for async composition
+- **Best for**: Java 8+ async patterns, parallel execution
+- **Error handling**: CompletionException wrapping for async error propagation
 
 ### HTTP Layer
 - **OkHttp**: Modern HTTP client with connection pooling and HTTP/2 support

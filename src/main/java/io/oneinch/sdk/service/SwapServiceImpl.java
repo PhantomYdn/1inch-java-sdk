@@ -16,7 +16,7 @@ public class SwapServiceImpl implements SwapService {
     
     private final OneInchApiService apiService;
     
-    // Reactive methods (preferred)
+    // Reactive methods
     @Override
     public Single<QuoteResponse> getQuoteRx(QuoteRequest request) {
         log.info("Getting quote (reactive) for swap from {} to {} with amount {}", 
@@ -109,9 +109,8 @@ public class SwapServiceImpl implements SwapService {
                 .onErrorResumeNext(error -> Single.error(OneInchErrorHandler.handleError(error)));
     }
     
-    // Legacy methods (backward compatibility)
+    // Synchronous methods
     @Override
-    @Deprecated
     public QuoteResponse getQuote(QuoteRequest request) throws OneInchException {
         try {
             return getQuoteRx(request).blockingGet();
@@ -121,13 +120,11 @@ public class SwapServiceImpl implements SwapService {
     }
     
     @Override
-    @Deprecated
     public CompletableFuture<QuoteResponse> getQuoteAsync(QuoteRequest request) {
         return getQuoteRx(request).toCompletionStage().toCompletableFuture();
     }
     
     @Override
-    @Deprecated
     public SwapResponse getSwap(SwapRequest request) throws OneInchException {
         try {
             return getSwapRx(request).blockingGet();
@@ -137,13 +134,11 @@ public class SwapServiceImpl implements SwapService {
     }
     
     @Override
-    @Deprecated
     public CompletableFuture<SwapResponse> getSwapAsync(SwapRequest request) {
         return getSwapRx(request).toCompletionStage().toCompletableFuture();
     }
     
     @Override
-    @Deprecated
     public SpenderResponse getSpender() throws OneInchException {
         try {
             return getSpenderRx().blockingGet();
@@ -153,13 +148,11 @@ public class SwapServiceImpl implements SwapService {
     }
     
     @Override
-    @Deprecated
     public CompletableFuture<SpenderResponse> getSpenderAsync() {
         return getSpenderRx().toCompletionStage().toCompletableFuture();
     }
     
     @Override
-    @Deprecated
     public ApproveCallDataResponse getApproveTransaction(ApproveTransactionRequest request) throws OneInchException {
         try {
             return getApproveTransactionRx(request).blockingGet();
@@ -169,13 +162,11 @@ public class SwapServiceImpl implements SwapService {
     }
     
     @Override
-    @Deprecated
     public CompletableFuture<ApproveCallDataResponse> getApproveTransactionAsync(ApproveTransactionRequest request) {
         return getApproveTransactionRx(request).toCompletionStage().toCompletableFuture();
     }
     
     @Override
-    @Deprecated
     public AllowanceResponse getAllowance(AllowanceRequest request) throws OneInchException {
         try {
             return getAllowanceRx(request).blockingGet();
@@ -185,7 +176,6 @@ public class SwapServiceImpl implements SwapService {
     }
     
     @Override
-    @Deprecated
     public CompletableFuture<AllowanceResponse> getAllowanceAsync(AllowanceRequest request) {
         return getAllowanceRx(request).toCompletionStage().toCompletableFuture();
     }

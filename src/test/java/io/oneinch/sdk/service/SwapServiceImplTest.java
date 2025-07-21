@@ -1,7 +1,6 @@
 package io.oneinch.sdk.service;
 
 import io.oneinch.sdk.client.OneInchApiService;
-import io.oneinch.sdk.exception.OneInchApiException;
 import io.oneinch.sdk.exception.OneInchException;
 import io.oneinch.sdk.model.*;
 import io.reactivex.rxjava3.core.Single;
@@ -10,9 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import retrofit2.HttpException;
-import retrofit2.Response;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -209,7 +205,7 @@ class SwapServiceImplTest {
         assertTrue(exception.getCause().getMessage().contains("Unexpected error"));
     }
 
-    // Legacy method tests for backward compatibility
+    // Synchronous and asynchronous method tests
     @Test
     void testGetQuote_Success() throws OneInchException {
         // Given

@@ -8,45 +8,115 @@ import java.util.concurrent.CompletableFuture;
 
 public interface SwapService {
     
-    // Reactive methods (preferred)
-    Single<QuoteResponse> getQuoteRx(QuoteRequest request);
-    
-    Single<SwapResponse> getSwapRx(SwapRequest request);
-    
-    Single<SpenderResponse> getSpenderRx();
-    
-    Single<ApproveCallDataResponse> getApproveTransactionRx(ApproveTransactionRequest request);
-    
-    Single<AllowanceResponse> getAllowanceRx(AllowanceRequest request);
-    
-    // Legacy methods (for backward compatibility)
-    @Deprecated
+    // Quote operations
+    /**
+     * Get a quote for token swap (synchronous).
+     * @param request Quote request parameters
+     * @return Quote response with swap details
+     * @throws OneInchException if the request fails
+     */
     QuoteResponse getQuote(QuoteRequest request) throws OneInchException;
     
-    @Deprecated
+    /**
+     * Get a quote for token swap (asynchronous with CompletableFuture).
+     * @param request Quote request parameters
+     * @return CompletableFuture containing quote response
+     */
     CompletableFuture<QuoteResponse> getQuoteAsync(QuoteRequest request);
     
-    @Deprecated
+    /**
+     * Get a quote for token swap (reactive with RxJava).
+     * @param request Quote request parameters
+     * @return Single containing quote response
+     */
+    Single<QuoteResponse> getQuoteRx(QuoteRequest request);
+    
+    // Swap operations
+    /**
+     * Get swap transaction data (synchronous).
+     * @param request Swap request parameters
+     * @return Swap response with transaction data
+     * @throws OneInchException if the request fails
+     */
     SwapResponse getSwap(SwapRequest request) throws OneInchException;
     
-    @Deprecated
+    /**
+     * Get swap transaction data (asynchronous with CompletableFuture).
+     * @param request Swap request parameters
+     * @return CompletableFuture containing swap response
+     */
     CompletableFuture<SwapResponse> getSwapAsync(SwapRequest request);
     
-    @Deprecated
+    /**
+     * Get swap transaction data (reactive with RxJava).
+     * @param request Swap request parameters
+     * @return Single containing swap response
+     */
+    Single<SwapResponse> getSwapRx(SwapRequest request);
+    
+    // Spender operations
+    /**
+     * Get the 1inch router spender address (synchronous).
+     * @return Spender response with router address
+     * @throws OneInchException if the request fails
+     */
     SpenderResponse getSpender() throws OneInchException;
     
-    @Deprecated
+    /**
+     * Get the 1inch router spender address (asynchronous with CompletableFuture).
+     * @return CompletableFuture containing spender response
+     */
     CompletableFuture<SpenderResponse> getSpenderAsync();
     
-    @Deprecated
+    /**
+     * Get the 1inch router spender address (reactive with RxJava).
+     * @return Single containing spender response
+     */
+    Single<SpenderResponse> getSpenderRx();
+    
+    // Approve operations
+    /**
+     * Get approve transaction data (synchronous).
+     * @param request Approve transaction request parameters
+     * @return Approve call data response
+     * @throws OneInchException if the request fails
+     */
     ApproveCallDataResponse getApproveTransaction(ApproveTransactionRequest request) throws OneInchException;
     
-    @Deprecated
+    /**
+     * Get approve transaction data (asynchronous with CompletableFuture).
+     * @param request Approve transaction request parameters
+     * @return CompletableFuture containing approve call data response
+     */
     CompletableFuture<ApproveCallDataResponse> getApproveTransactionAsync(ApproveTransactionRequest request);
     
-    @Deprecated
+    /**
+     * Get approve transaction data (reactive with RxJava).
+     * @param request Approve transaction request parameters
+     * @return Single containing approve call data response
+     */
+    Single<ApproveCallDataResponse> getApproveTransactionRx(ApproveTransactionRequest request);
+    
+    // Allowance operations
+    /**
+     * Check token allowance (synchronous).
+     * @param request Allowance request parameters
+     * @return Allowance response with current allowance
+     * @throws OneInchException if the request fails
+     */
     AllowanceResponse getAllowance(AllowanceRequest request) throws OneInchException;
     
-    @Deprecated
+    /**
+     * Check token allowance (asynchronous with CompletableFuture).
+     * @param request Allowance request parameters
+     * @return CompletableFuture containing allowance response
+     */
     CompletableFuture<AllowanceResponse> getAllowanceAsync(AllowanceRequest request);
+    
+    /**
+     * Check token allowance (reactive with RxJava).
+     * @param request Allowance request parameters
+     * @return Single containing allowance response
+     */
+    Single<AllowanceResponse> getAllowanceRx(AllowanceRequest request);
 }

@@ -12,11 +12,11 @@ public class QuickStartExample {
     public static void main(String[] args) {
         String apiKey = "YOUR_API_KEY_HERE";
         
-        log.info("=== Reactive Approach (Recommended) ===");
+        log.info("=== Reactive Approach ===");
         reactiveExample(apiKey);
         
-        log.info("=== Legacy Approach ===");
-        legacyExample(apiKey);
+        log.info("=== Synchronous Approach ===");
+        synchronousExample(apiKey);
     }
     
     /**
@@ -54,15 +54,14 @@ public class QuickStartExample {
     }
     
     /**
-     * Demonstrates the legacy synchronous approach for backward compatibility
+     * Demonstrates the synchronous approach
      */
-    @SuppressWarnings("deprecation")
-    public static void legacyExample(String apiKey) {
+    public static void synchronousExample(String apiKey) {
         try (OneInchClient client = OneInchClient.builder()
                 .apiKey(apiKey)
                 .build()) {
             
-            // Get a quote for swapping ETH to 1INCH (legacy)
+            // Get a quote for swapping ETH to 1INCH (synchronous)
             QuoteRequest quoteRequest = QuoteRequest.builder()
                     .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
                     .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH
@@ -70,12 +69,12 @@ public class QuickStartExample {
                     .build();
 
             QuoteResponse quote = client.swap().getQuote(quoteRequest);
-            log.info("Legacy: Expected output: {} 1INCH tokens", quote.getDstAmount());
+            log.info("Synchronous: Expected output: {} 1INCH tokens", quote.getDstAmount());
             
         } catch (OneInchException e) {
-            log.error("Legacy: Error getting quote: {}", e.getMessage());
+            log.error("Synchronous: Error getting quote: {}", e.getMessage());
         } catch (Exception e) {
-            log.error("Legacy: Unexpected error", e);
+            log.error("Synchronous: Unexpected error", e);
         }
     }
 }

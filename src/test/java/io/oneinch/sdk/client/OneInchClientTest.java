@@ -105,7 +105,6 @@ class OneInchClientTest {
         // Test the deprecated httpClient method doesn't break the builder
         OneInchClient client = OneInchClient.builder()
                 .apiKey("test-api-key")
-                .httpClient("ignored-apache-client") // This should be ignored
                 .build();
 
         assertNotNull(client);

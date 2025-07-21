@@ -8,7 +8,6 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import lombok.extern.slf4j.Slf4j;
 
-import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -28,8 +27,8 @@ public class SwapExample {
             log.info("=== Running Reactive Swap Example ===");
             example.runReactiveSwapFlow();
             
-            log.info("=== Running Legacy Swap Example ===");
-            example.runLegacySwapFlow();
+            log.info("=== Running Synchronous Swap Example ===");
+            example.runSynchronousSwapFlow();
             
             log.info("=== Running Parallel Reactive Example ===");
             example.runParallelReactiveExample();
@@ -172,24 +171,23 @@ public class SwapExample {
     }
     
     /**
-     * Demonstrates the legacy approach for backward compatibility
+     * Demonstrates the synchronous approach
      */
-    @SuppressWarnings("deprecation")
-    public void runLegacySwapFlow() throws Exception {
+    public void runSynchronousSwapFlow() throws Exception {
         try (OneInchClient client = OneInchClient.builder()
                 .apiKey(API_KEY)
                 .build()) {
             
-            log.info("=== Starting Legacy Swap Flow ===");
+            log.info("=== Starting Synchronous Swap Flow ===");
             
             String swapAmount = "10000000000000000"; // 0.01 ETH in wei
             
-            // Step 1: Get spender address (legacy synchronous)
+            // Step 1: Get spender address (synchronous)
             log.info("Step 1: Getting spender address...");
             SpenderResponse spender = client.swap().getSpender();
             log.info("Spender address: {}", spender.getAddress());
             
-            // Step 2: Check allowance (legacy synchronous)
+            // Step 2: Check allowance (synchronous)
             log.info("Step 2: Checking allowance...");
             AllowanceRequest allowanceRequest = AllowanceRequest.builder()
                     .tokenAddress(ONEINCH_TOKEN_ADDRESS)
@@ -199,7 +197,7 @@ public class SwapExample {
             AllowanceResponse allowance = client.swap().getAllowance(allowanceRequest);
             log.info("Current allowance: {}", allowance.getAllowance());
             
-            // Step 3: Get quote (legacy synchronous)
+            // Step 3: Get quote (synchronous)
             log.info("Step 3: Getting quote...");
             QuoteRequest quoteRequest = QuoteRequest.builder()
                     .src(ETH_ADDRESS)
@@ -214,7 +212,7 @@ public class SwapExample {
             log.info("Expected output amount: {}", quote.getDstAmount());
             log.info("Estimated gas: {}", quote.getGas());
             
-            // Step 4: Get swap data (legacy async with CompletableFuture)
+            // Step 4: Get swap data (asynchronous with CompletableFuture)
             log.info("Step 4: Getting swap transaction data (async)...");
             SwapRequest swapRequest = SwapRequest.builder()
                     .src(ETH_ADDRESS)
@@ -236,7 +234,7 @@ public class SwapExample {
             log.info("  Gas: {}", swap.getTx().getGas());
             log.info("Expected output amount: {}", swap.getDstAmount());
             
-            log.info("=== Legacy Swap Flow Complete ===");
+            log.info("=== Synchronous Swap Flow Complete ===");
         }
     }
     
