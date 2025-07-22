@@ -13,7 +13,7 @@ A comprehensive Java SDK for the 1inch DEX Aggregation Protocol, providing easy 
 - ✅ Comprehensive error handling
 - ✅ Built-in logging with SLF4J
 - ✅ Full Swap API support
-- ✅ Type-safe models with Jackson
+- ✅ Type-safe models with Jackson and BigInteger precision
 - ✅ Extensive unit test coverage
 
 ## Installation
@@ -27,6 +27,38 @@ Add the following dependency to your `pom.xml`:
     <version>1.0-SNAPSHOT</version>
 </dependency>
 ```
+
+## High-Precision Arithmetic
+
+The SDK uses `BigInteger` for all amount-related fields to ensure precision when handling cryptocurrency values, which can exceed the range of standard numeric types:
+
+- **Amount fields**: `QuoteRequest.amount`, `SwapRequest.amount`
+- **Response amounts**: `QuoteResponse.dstAmount`, `SwapResponse.dstAmount`
+- **Gas-related fields**: `gasPrice`, `gasLimit`, `gas`
+- **Transaction values**: `TransactionData.value`, `TransactionData.gasPrice`
+- **Token allowances**: `AllowanceResponse.allowance`
+
+```java
+import java.math.BigInteger;
+
+// Wei amounts (18 decimals for ETH)
+BigInteger oneEth = new BigInteger("1000000000000000000");
+BigInteger halfEth = new BigInteger("500000000000000000");
+
+// Gas price in wei (20 gwei)
+BigInteger gasPrice = new BigInteger("20000000000");
+
+QuoteRequest request = QuoteRequest.builder()
+    .amount(oneEth)
+    .gasPrice(gasPrice)
+    .build();
+```
+
+**Why BigInteger?**
+- Ethereum amounts are measured in wei (10^18 units per ETH)
+- Values can exceed `Long.MAX_VALUE` (9,223,372,036,854,775,807)
+- BigInteger prevents overflow and precision loss
+- Native JSON serialization support via Jackson
 
 ## Programming Approaches
 
@@ -56,6 +88,7 @@ import io.oneinch.sdk.client.OneInchClient;
 import io.oneinch.sdk.model.QuoteRequest;
 import io.oneinch.sdk.model.QuoteResponse;
 import lombok.extern.slf4j.Slf4j;
+import java.math.BigInteger;
 
 @Slf4j
 public class ReactiveExample {
@@ -68,7 +101,7 @@ public class ReactiveExample {
             QuoteRequest quoteRequest = QuoteRequest.builder()
                 .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
                 .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH
-                .amount("10000000000000000")  // 0.01 ETH in wei
+                .amount(new BigInteger("10000000000000000"))  // 0.01 ETH in wei
                 .includeTokensInfo(true)
                 .build();
             
@@ -88,6 +121,7 @@ public class ReactiveExample {
 
 ```java
 import lombok.extern.slf4j.Slf4j;
+import java.math.BigInteger;
 
 @Slf4j
 public class SynchronousExample {
@@ -99,7 +133,7 @@ public class SynchronousExample {
             QuoteRequest quoteRequest = QuoteRequest.builder()
                 .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
                 .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH
-                .amount("10000000000000000")  // 0.01 ETH in wei
+                .amount(new BigInteger("10000000000000000"))  // 0.01 ETH in wei
                 .build();
             
             QuoteResponse quote = client.swap().getQuote(quoteRequest);
@@ -169,11 +203,12 @@ OneInchClient client = OneInchClient.builder()
 ### Reactive Swap Flow
 ```java
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import java.math.BigInteger;
 
 try (OneInchClient client = OneInchClient.builder()
         .build()) {  // Uses ONEINCH_API_KEY environment variable
     
-    String swapAmount = "10000000000000000"; // 0.01 ETH in wei
+    BigInteger swapAmount = new BigInteger("10000000000000000"); // 0.01 ETH in wei
     String walletAddress = "0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8";
     
     // Reactive chaining with proper error handling
@@ -226,6 +261,7 @@ try (OneInchClient client = OneInchClient.builder()
 ```java
 import io.reactivex.rxjava3.core.Single;
 import java.util.concurrent.TimeUnit;
+import java.math.BigInteger;
 
 // Run multiple operations in parallel
 Single<SpenderResponse> spenderSingle = client.swap().getSpenderRx()
@@ -264,7 +300,7 @@ try (OneInchClient client = OneInchClient.builder()
     QuoteRequest quoteRequest = QuoteRequest.builder()
         .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
         .dst("0x111111111117dc0aa78b770fa6a738034120c302")
-        .amount("10000000000000000")
+        .amount(new BigInteger("10000000000000000"))
         .build();
     
     QuoteResponse quote = client.swap().getQuote(quoteRequest);
@@ -273,7 +309,7 @@ try (OneInchClient client = OneInchClient.builder()
     SwapRequest swapRequest = SwapRequest.builder()
         .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
         .dst("0x111111111117dc0aa78b770fa6a738034120c302")
-        .amount("10000000000000000")
+        .amount(new BigInteger("10000000000000000"))
         .from("0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8")
         .origin("0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8")
         .slippage(1.0)
@@ -298,7 +334,7 @@ client.swap().getQuoteRx(invalidRequest)
     .onErrorReturn(error -> {
         // Fallback value
         QuoteResponse fallback = new QuoteResponse();
-        fallback.setDstAmount("0");
+        fallback.setDstAmount(BigInteger.ZERO);
         return fallback;
     })
     .subscribe(
