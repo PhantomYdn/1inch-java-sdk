@@ -8,6 +8,7 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import lombok.extern.slf4j.Slf4j;
 
+import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -48,7 +49,7 @@ public class SwapExample {
             
             log.info("=== Starting Reactive Swap Flow ===");
             
-            String swapAmount = "10000000000000000"; // 0.01 ETH in wei
+            BigInteger swapAmount = new BigInteger("10000000000000000"); // 0.01 ETH in wei
             
             // Reactive chaining with proper error handling
             client.swap().getSpenderRx()
@@ -130,9 +131,9 @@ public class SwapExample {
                 .build()) {
             
             log.info("=== Starting Parallel Reactive Example ===");
-            
-            String swapAmount = "10000000000000000"; // 0.01 ETH in wei
-            
+
+            BigInteger swapAmount = new BigInteger("10000000000000000"); // 0.01 ETH in wei
+
             // Run multiple operations in parallel
             Single<SpenderResponse> spenderSingle = client.swap().getSpenderRx()
                     .subscribeOn(Schedulers.io())
@@ -179,9 +180,9 @@ public class SwapExample {
                 .build()) {
             
             log.info("=== Starting Synchronous Swap Flow ===");
-            
-            String swapAmount = "10000000000000000"; // 0.01 ETH in wei
-            
+
+            BigInteger swapAmount = new BigInteger("10000000000000000"); // 0.01 ETH in wei
+
             // Step 1: Get spender address (synchronous)
             log.info("Step 1: Getting spender address...");
             SpenderResponse spender = client.swap().getSpender();
@@ -252,7 +253,7 @@ public class SwapExample {
             QuoteRequest invalidRequest = QuoteRequest.builder()
                     .src("invalid_address")
                     .dst("invalid_address")
-                    .amount("0")
+                    .amount(BigInteger.ZERO)
                     .build();
             
             client.swap().getQuoteRx(invalidRequest)
@@ -274,7 +275,7 @@ public class SwapExample {
                     .onErrorReturn(error -> {
                         // Fallback value
                         QuoteResponse fallback = new QuoteResponse();
-                        fallback.setDstAmount("0");
+                        fallback.setDstAmount(BigInteger.ZERO);
                         return fallback;
                     })
                     .subscribe(

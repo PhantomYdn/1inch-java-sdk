@@ -3,6 +3,7 @@ package io.oneinch.sdk.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.math.BigInteger;
 import java.util.List;
 
 @Data
@@ -15,7 +16,7 @@ public class SwapResponse {
     private TokenInfo dstToken;
     
     @JsonProperty("dstAmount")
-    private String dstAmount;
+    private BigInteger dstAmount;
     
     @JsonProperty("protocols")
     private List<List<List<SelectedProtocol>>> protocols;

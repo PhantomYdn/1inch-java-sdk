@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -35,11 +36,11 @@ class SwapServiceImplTest {
         QuoteRequest request = QuoteRequest.builder()
                 .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
                 .dst("0x111111111117dc0aa78b770fa6a738034120c302")
-                .amount("10000000000000000")
+                .amount(new BigInteger("10000000000000000"))
                 .build();
 
         QuoteResponse expectedResponse = new QuoteResponse();
-        expectedResponse.setDstAmount("1000000000000000000");
+        expectedResponse.setDstAmount(new BigInteger("1000000000000000000"));
 
         when(apiService.getQuote(any(), any(), any(), any(), any(), any(), 
                 any(), any(), any(), any(), any(), any(), any(), any(), any()))
@@ -50,10 +51,10 @@ class SwapServiceImplTest {
 
         // Then
         assertNotNull(result);
-        assertEquals("1000000000000000000", result.getDstAmount());
+        assertEquals(new BigInteger("1000000000000000000"), result.getDstAmount());
         verify(apiService).getQuote(eq("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"),
                 eq("0x111111111117dc0aa78b770fa6a738034120c302"),
-                eq("10000000000000000"), any(), any(), any(), any(), any(), any(), any(), 
+                eq(new BigInteger("10000000000000000")), any(), any(), any(), any(), any(), any(), any(), 
                 any(), any(), any(), any(), any());
     }
 
@@ -63,7 +64,7 @@ class SwapServiceImplTest {
         QuoteRequest request = QuoteRequest.builder()
                 .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
                 .dst("0x111111111117dc0aa78b770fa6a738034120c302")
-                .amount("10000000000000000")
+                .amount(new BigInteger("10000000000000000"))
                 .protocols("UNISWAP_V3")
                 .fee(1.0)
                 .gasPrice("20000000000")
@@ -73,9 +74,9 @@ class SwapServiceImplTest {
                 .build();
 
         QuoteResponse expectedResponse = new QuoteResponse();
-        expectedResponse.setDstAmount("1000000000000000000");
+        expectedResponse.setDstAmount(new BigInteger("1000000000000000000"));
 
-        when(apiService.getQuote(anyString(), anyString(), anyString(), anyString(), 
+        when(apiService.getQuote(anyString(), anyString(), any(BigInteger.class), anyString(), 
                 anyDouble(), anyString(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(Single.just(expectedResponse));
 
@@ -84,7 +85,7 @@ class SwapServiceImplTest {
 
         // Then
         assertNotNull(result);
-        assertEquals("1000000000000000000", result.getDstAmount());
+        assertEquals(new BigInteger("1000000000000000000"), result.getDstAmount());
     }
 
     @Test
@@ -93,14 +94,14 @@ class SwapServiceImplTest {
         SwapRequest request = SwapRequest.builder()
                 .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
                 .dst("0x111111111117dc0aa78b770fa6a738034120c302")
-                .amount("10000000000000000")
+                .amount(new BigInteger("10000000000000000"))
                 .from("0x1234567890123456789012345678901234567890")
                 .origin("0x1234567890123456789012345678901234567890")
                 .slippage(1.0)
                 .build();
 
         SwapResponse expectedResponse = new SwapResponse();
-        expectedResponse.setDstAmount("1000000000000000000");
+        expectedResponse.setDstAmount(new BigInteger("1000000000000000000"));
 
         when(apiService.getSwap(any(), any(), any(), any(), 
                 any(), any(), any(), any(), any(), any(), 
@@ -114,7 +115,7 @@ class SwapServiceImplTest {
 
         // Then
         assertNotNull(result);
-        assertEquals("1000000000000000000", result.getDstAmount());
+        assertEquals(new BigInteger("1000000000000000000"), result.getDstAmount());
     }
 
     @Test
@@ -139,13 +140,13 @@ class SwapServiceImplTest {
         // Given
         ApproveTransactionRequest request = ApproveTransactionRequest.builder()
                 .tokenAddress("0x111111111117dc0aa78b770fa6a738034120c302")
-                .amount("10000000000000000")
+                .amount(new BigInteger("10000000000000000"))
                 .build();
 
         ApproveCallDataResponse expectedResponse = new ApproveCallDataResponse();
         expectedResponse.setData("0x095ea7b3...");
 
-        when(apiService.getApproveTransaction(anyString(), anyString()))
+        when(apiService.getApproveTransaction(anyString(), any(BigInteger.class)))
                 .thenReturn(Single.just(expectedResponse));
 
         // When
@@ -154,7 +155,7 @@ class SwapServiceImplTest {
         // Then
         assertNotNull(result);
         assertEquals("0x095ea7b3...", result.getData());
-        verify(apiService).getApproveTransaction("0x111111111117dc0aa78b770fa6a738034120c302", "10000000000000000");
+        verify(apiService).getApproveTransaction("0x111111111117dc0aa78b770fa6a738034120c302", new BigInteger("10000000000000000"));
     }
 
     @Test
@@ -186,7 +187,7 @@ class SwapServiceImplTest {
         QuoteRequest request = QuoteRequest.builder()
                 .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
                 .dst("0x111111111117dc0aa78b770fa6a738034120c302")
-                .amount("10000000000000000")
+                .amount(new BigInteger("10000000000000000"))
                 .build();
 
         RuntimeException apiError = new RuntimeException("API Error");
@@ -212,11 +213,11 @@ class SwapServiceImplTest {
         QuoteRequest request = QuoteRequest.builder()
                 .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
                 .dst("0x111111111117dc0aa78b770fa6a738034120c302")
-                .amount("10000000000000000")
+                .amount(new BigInteger("10000000000000000"))
                 .build();
 
         QuoteResponse expectedResponse = new QuoteResponse();
-        expectedResponse.setDstAmount("1000000000000000000");
+        expectedResponse.setDstAmount(new BigInteger("1000000000000000000"));
 
         when(apiService.getQuote(any(), any(), any(), any(), any(), any(), 
                 any(), any(), any(), any(), any(), any(), any(), any(), any()))
@@ -227,7 +228,7 @@ class SwapServiceImplTest {
 
         // Then
         assertNotNull(result);
-        assertEquals("1000000000000000000", result.getDstAmount());
+        assertEquals(new BigInteger("1000000000000000000"), result.getDstAmount());
     }
 
     @Test
@@ -236,11 +237,11 @@ class SwapServiceImplTest {
         QuoteRequest request = QuoteRequest.builder()
                 .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
                 .dst("0x111111111117dc0aa78b770fa6a738034120c302")
-                .amount("10000000000000000")
+                .amount(new BigInteger("10000000000000000"))
                 .build();
 
         QuoteResponse expectedResponse = new QuoteResponse();
-        expectedResponse.setDstAmount("1000000000000000000");
+        expectedResponse.setDstAmount(new BigInteger("1000000000000000000"));
 
         when(apiService.getQuote(any(), any(), any(), any(), any(), any(), 
                 any(), any(), any(), any(), any(), any(), any(), any(), any()))
@@ -252,7 +253,7 @@ class SwapServiceImplTest {
         // Then
         assertNotNull(futureResult);
         QuoteResponse result = futureResult.join();
-        assertEquals("1000000000000000000", result.getDstAmount());
+        assertEquals(new BigInteger("1000000000000000000"), result.getDstAmount());
     }
 
     @Test
@@ -261,10 +262,10 @@ class SwapServiceImplTest {
         QuoteRequest request = QuoteRequest.builder()
                 .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
                 .dst("0x111111111117dc0aa78b770fa6a738034120c302")
-                .amount("10000000000000000")
+                .amount(new BigInteger("10000000000000000"))
                 .build();
 
-        when(apiService.getQuote(anyString(), anyString(), anyString(), any(), any(), any(), 
+        when(apiService.getQuote(anyString(), anyString(), any(BigInteger.class), any(), any(), any(), 
                 any(), any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(Single.error(new RuntimeException("API Error")));
 
@@ -282,10 +283,10 @@ class SwapServiceImplTest {
         QuoteRequest request = QuoteRequest.builder()
                 .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
                 .dst("0x111111111117dc0aa78b770fa6a738034120c302")
-                .amount("10000000000000000")
+                .amount(new BigInteger("10000000000000000"))
                 .build();
 
-        when(apiService.getQuote(anyString(), anyString(), anyString(), any(), any(), any(), 
+        when(apiService.getQuote(anyString(), anyString(), any(BigInteger.class), any(), any(), any(), 
                 any(), any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(Single.error(new RuntimeException("API Error")));
 

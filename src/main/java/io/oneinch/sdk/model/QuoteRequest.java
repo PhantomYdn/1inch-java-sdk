@@ -1,5 +1,7 @@
 package io.oneinch.sdk.model;
 
+import java.math.BigInteger;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -9,7 +11,7 @@ public class QuoteRequest {
     
     private String src;
     private String dst;
-    private String amount;
+    private BigInteger amount;
     private String protocols;
     private Double fee;
     private String gasPrice;

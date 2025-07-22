@@ -1,5 +1,7 @@
 package io.oneinch.sdk.examples;
 
+import java.math.BigInteger;
+
 import io.oneinch.sdk.client.OneInchClient;
 import io.oneinch.sdk.exception.OneInchException;
 import io.oneinch.sdk.model.QuoteRequest;
@@ -31,7 +33,7 @@ public class QuickStartExample {
             QuoteRequest quoteRequest = QuoteRequest.builder()
                     .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
                     .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH
-                    .amount("10000000000000000")  // 0.01 ETH in wei
+                    .amount(new BigInteger("10000000000000000"))  // 0.01 ETH in wei
                     .includeTokensInfo(true)
                     .build();
 
@@ -65,7 +67,7 @@ public class QuickStartExample {
             QuoteRequest quoteRequest = QuoteRequest.builder()
                     .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
                     .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH
-                    .amount("10000000000000000")  // 0.01 ETH in wei
+                    .amount(new BigInteger("10000000000000000"))  // 0.01 ETH in wei
                     .build();
 
             QuoteResponse quote = client.swap().getQuote(quoteRequest);
