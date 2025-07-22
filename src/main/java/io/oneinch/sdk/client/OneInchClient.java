@@ -9,21 +9,18 @@ import okhttp3.OkHttpClient;
 @Getter
 @Builder
 public class OneInchClient implements AutoCloseable {
-    
-    private static final String API_KEY_ENV_VAR = "ONEINCH_API_KEY";
+
+    private static final String[] API_KEY_NAMES = {
+        "ONEINCH_API_KEY",
+        "oneinch.api.key",
+        "1inch.api.key"
+    };
     
     private final RetrofitHttpClient httpClient;
     private final SwapService swapService;
+
     
-    public OneInchClient() {
-        this(null, null);
-    }
-    
-    public OneInchClient(String apiKey) {
-        this(apiKey, null);
-    }
-    
-    public OneInchClient(String apiKey, OkHttpClient customOkHttpClient) {
+    private OneInchClient(String apiKey, OkHttpClient customOkHttpClient) {
         String resolvedApiKey = getApiKeyFromEnvOrExplicit(apiKey);
         this.httpClient = customOkHttpClient != null 
             ? new RetrofitHttpClient(resolvedApiKey, customOkHttpClient)
@@ -49,15 +46,21 @@ public class OneInchClient implements AutoCloseable {
         if (explicitApiKey != null && !explicitApiKey.trim().isEmpty()) {
             return explicitApiKey;
         }
-        
-        // Try to get from environment variable
-        String envApiKey = System.getenv(API_KEY_ENV_VAR);
-        if (envApiKey != null && !envApiKey.trim().isEmpty()) {
-            return envApiKey;
+
+        // Check environment variables and system properties for API key
+        for (String keyName : API_KEY_NAMES) {
+            String envApiKey = System.getenv(keyName);
+            if (envApiKey != null && !envApiKey.trim().isEmpty()) {
+                return envApiKey;
+            }
+            String propApiKey = System.getProperty(keyName);
+            if (propApiKey != null && !propApiKey.trim().isEmpty()) {
+                return propApiKey;
+            }
         }
         
         // Neither explicit nor environment variable provided
-        throw new IllegalArgumentException("API key is required. Either provide it explicitly or set the " + API_KEY_ENV_VAR + " environment variable.");
+        throw new IllegalArgumentException("API key is required. Either provide it explicitly or set the " + API_KEY_NAMES[0] + " environment variable.");
     }
     
     public static class OneInchClientBuilder {
