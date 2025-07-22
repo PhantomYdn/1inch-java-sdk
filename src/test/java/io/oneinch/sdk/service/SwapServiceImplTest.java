@@ -67,7 +67,7 @@ class SwapServiceImplTest {
                 .amount(new BigInteger("10000000000000000"))
                 .protocols("UNISWAP_V3")
                 .fee(1.0)
-                .gasPrice("20000000000")
+                .gasPrice(new BigInteger("20000000000"))
                 .includeTokensInfo(true)
                 .includeProtocols(true)
                 .includeGas(true)
@@ -76,8 +76,14 @@ class SwapServiceImplTest {
         QuoteResponse expectedResponse = new QuoteResponse();
         expectedResponse.setDstAmount(new BigInteger("1000000000000000000"));
 
-        when(apiService.getQuote(anyString(), anyString(), any(BigInteger.class), anyString(), 
-                anyDouble(), anyString(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+        when(apiService.getQuote(eq("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"), 
+                eq("0x111111111117dc0aa78b770fa6a738034120c302"), 
+                eq(new BigInteger("10000000000000000")), 
+                eq("UNISWAP_V3"), 
+                eq(1.0), 
+                eq(new BigInteger("20000000000")), 
+                any(), any(), any(), any(), 
+                eq(true), eq(true), eq(true), any(), any()))
                 .thenReturn(Single.just(expectedResponse));
 
         // When
@@ -167,7 +173,7 @@ class SwapServiceImplTest {
                 .build();
 
         AllowanceResponse expectedResponse = new AllowanceResponse();
-        expectedResponse.setAllowance("115792089237316195423570985008687907853269984665640564039457584007913129639935");
+        expectedResponse.setAllowance(new BigInteger("115792089237316195423570985008687907853269984665640564039457584007913129639935"));
 
         when(apiService.getAllowance(anyString(), anyString()))
                 .thenReturn(Single.just(expectedResponse));
@@ -177,7 +183,7 @@ class SwapServiceImplTest {
 
         // Then
         assertNotNull(result);
-        assertEquals("115792089237316195423570985008687907853269984665640564039457584007913129639935", result.getAllowance());
+        assertEquals(new BigInteger("115792089237316195423570985008687907853269984665640564039457584007913129639935"), result.getAllowance());
         verify(apiService).getAllowance("0x111111111117dc0aa78b770fa6a738034120c302", "0x1234567890123456789012345678901234567890");
     }
 

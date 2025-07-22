@@ -3,6 +3,8 @@ package io.oneinch.sdk.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.math.BigInteger;
+
 @Data
 public class TransactionData {
     
@@ -16,11 +18,11 @@ public class TransactionData {
     private String data;
     
     @JsonProperty("value")
-    private String value;
+    private BigInteger value;
     
     @JsonProperty("gasPrice")
-    private String gasPrice;
+    private BigInteger gasPrice;
     
     @JsonProperty("gas")
-    private Long gas;
+    private BigInteger gas;
 }

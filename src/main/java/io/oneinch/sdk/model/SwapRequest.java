@@ -17,11 +17,11 @@ public class SwapRequest {
     private Double slippage;
     private String protocols;
     private Double fee;
-    private String gasPrice;
+    private BigInteger gasPrice;
     private Integer complexityLevel;
     private Integer parts;
     private Integer mainRouteParts;
-    private Long gasLimit;
+    private BigInteger gasLimit;
     private Boolean includeTokensInfo;
     private Boolean includeProtocols;
     private Boolean includeGas;

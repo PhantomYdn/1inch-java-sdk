@@ -22,5 +22,5 @@ public class QuoteResponse {
     private List<List<List<SelectedProtocol>>> protocols;
     
     @JsonProperty("gas")
-    private Long gas;
+    private BigInteger gas;
 }
