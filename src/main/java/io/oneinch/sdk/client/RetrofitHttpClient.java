@@ -22,8 +22,11 @@ import java.util.concurrent.TimeUnit;
 public class RetrofitHttpClient implements HttpClient {
     
     private static final String BASE_URL = "https://api.1inch.dev/swap/v6.0/1/";
+    private static final String TOKEN_BASE_URL = "https://api.1inch.dev/";
     
     private final OneInchApiService apiService;
+    private final OneInchTokenApiService tokenApiService;
+    private final OneInchTokenDetailsApiService tokenDetailsApiService;
     private final OkHttpClient okHttpClient;
     
     public RetrofitHttpClient(String apiKey) {
@@ -33,14 +36,25 @@ public class RetrofitHttpClient implements HttpClient {
     public RetrofitHttpClient(String apiKey, OkHttpClient customOkHttpClient) {
         this.okHttpClient = customOkHttpClient;
         
-        Retrofit retrofit = new Retrofit.Builder()
+        // Swap API Retrofit instance
+        Retrofit swapRetrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .client(okHttpClient)
                 .addConverterFactory(JacksonConverterFactory.create(new ObjectMapper()))
                 .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
                 .build();
         
-        this.apiService = retrofit.create(OneInchApiService.class);
+        // Token API Retrofit instance
+        Retrofit tokenRetrofit = new Retrofit.Builder()
+                .baseUrl(TOKEN_BASE_URL)
+                .client(okHttpClient)
+                .addConverterFactory(JacksonConverterFactory.create(new ObjectMapper()))
+                .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
+                .build();
+        
+        this.apiService = swapRetrofit.create(OneInchApiService.class);
+        this.tokenApiService = tokenRetrofit.create(OneInchTokenApiService.class);
+        this.tokenDetailsApiService = tokenRetrofit.create(OneInchTokenDetailsApiService.class);
     }
     
     private static OkHttpClient createDefaultOkHttpClient(String apiKey) {
@@ -83,6 +97,14 @@ public class RetrofitHttpClient implements HttpClient {
     
     public OneInchApiService getApiService() {
         return apiService;
+    }
+    
+    public OneInchTokenApiService getTokenApiService() {
+        return tokenApiService;
+    }
+    
+    public OneInchTokenDetailsApiService getTokenDetailsApiService() {
+        return tokenDetailsApiService;
     }
     
     @Override

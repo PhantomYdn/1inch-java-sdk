@@ -33,15 +33,31 @@ src/main/java/io/oneinch/sdk/
 6. Unit tests with JUnit 5
 7. API_KEY authentication required
 
-## 1inch API Endpoints (Ethereum)
-- **Base URL**: `https://api.1inch.dev/swap/v6.0/1/`
+## 1inch API Endpoints
+
+### Swap API (Chain-Specific)
+- **Base URL**: `https://api.1inch.dev/swap/v6.0/1/` (Ethereum)
 - **Quote**: `GET /quote` - Find best quote to swap
 - **Swap**: `GET /swap` - Generate calldata for swap
 - **Approve Spender**: `GET /approve/spender` - Get router address
 - **Approve Transaction**: `GET /approve/transaction` - Generate approve calldata
 - **Allowance**: `GET /approve/allowance` - Check token allowance
-- **Liquidity Sources**: `GET /liquidity-sources` - List available protocols
-- **Tokens**: `GET /tokens` - List supported tokens
+
+### Token API (Multi-Chain)
+- **Base URL**: `https://api.1inch.dev/`
+- **Multi-Chain Tokens**: `GET /token/v1.2/multi-chain` - Get tokens across all chains
+- **Multi-Chain Token List**: `GET /token/v1.2/multi-chain/token-list` - Token list format
+- **Chain Tokens**: `GET /token/v1.2/{chainId}` - Chain-specific tokens
+- **Chain Token List**: `GET /token/v1.2/{chainId}/token-list` - Chain token list format
+- **Multi-Chain Search**: `GET /token/v1.2/search` - Search tokens across chains
+- **Chain Search**: `GET /token/v1.2/{chainId}/search` - Search tokens on specific chain
+- **Custom Tokens**: `GET /token/v1.2/{chainId}/custom` - Get multiple token details
+- **Custom Token**: `GET /token/v1.2/{chainId}/custom/{address}` - Get single token details
+
+### Token Details API (Pricing & Charts)
+- **Base URL**: `https://api.1inch.dev/`
+- **Native Token Details**: `GET /token-details/v1.0/details/{chain}` - Native token info
+- **Token Details**: `GET /token-details/v1.0/details/{chain}/{contractAddress}` - Token details with pricing
 
 ## Common Maven Commands
 ```bash
@@ -94,7 +110,98 @@ swagger/
 └── web3/web3.json                  # Web3 API
 ```
 
-**Main Swap API**: Located at `./swagger/swap/ethereum.json` - this contains the primary API endpoints implemented in the SDK.
+**Key API Files**: 
+- `./swagger/swap/ethereum.json` - Swap API endpoints
+- `./swagger/token/token.json` - Token API endpoints  
+- `./swagger/token-details/swagger.json` - Token Details API endpoints
+
+## Token API Implementation
+
+### Service Architecture
+The Token API is implemented using a dual-service architecture:
+
+#### TokenService Interface
+Provides comprehensive token operations:
+- **Multi-chain operations**: Get tokens across all supported chains
+- **Chain-specific operations**: Get tokens for specific blockchain
+- **Search functionality**: Search tokens by name/symbol across chains
+- **Custom token info**: Get detailed information for specific token addresses
+- **Token details with pricing**: Get market data, charts, and metadata
+
+#### API Service Classes
+- **OneInchTokenApiService**: Handles core token operations (lists, search, custom tokens)
+- **OneInchTokenDetailsApiService**: Handles token details with pricing/chart data
+
+### Key Features
+
+#### Multi-Chain Support
+```java
+// Get tokens across all chains
+TokenListRequest request = TokenListRequest.builder()
+    .provider("1inch")
+    .country("US")
+    .build();
+
+Map<String, ProviderTokenDto> tokens = client.token().getMultiChainTokens(request);
+```
+
+#### Token Search
+```java
+// Search tokens across multiple chains
+TokenSearchRequest searchRequest = TokenSearchRequest.builder()
+    .query("1inch")
+    .onlyPositiveRating(true)
+    .limit(10)
+    .build();
+
+List<TokenDto> results = client.token().searchMultiChainTokens(searchRequest);
+```
+
+#### BigInteger Precision
+All amount-related fields use `BigInteger` for high precision:
+- Token amounts (can exceed `Long.MAX_VALUE` for wei amounts)
+- Market cap values
+- Supply calculations
+- Price calculations
+
+#### Model Classes
+**Request Models**:
+- `TokenListRequest` - For token list operations
+- `TokenSearchRequest` - For search operations  
+- `CustomTokenRequest` - For custom token lookups
+- `TokenDetailsRequest` - For detailed token information
+
+**Response Models**:
+- `TokenListResponse` - Standard token list format
+- `TokenDto` - Individual token information with rating
+- `ProviderTokenDto` - Provider-specific token data
+- `TokenDetailsResponse` - Comprehensive token details with pricing
+- `AssetsResponse` - Token metadata (website, description, etc.)
+- `DetailsResponse` - Market data (market cap, volume, supply)
+
+### Integration Points
+
+#### Client Integration
+```java
+OneInchClient client = OneInchClient.builder()
+    .apiKey("your-api-key")
+    .build();
+
+// Access token service
+TokenService tokenService = client.token();
+
+// All three programming models supported
+Map<String, ProviderTokenDto> syncTokens = tokenService.getTokens(request);
+CompletableFuture<Map<String, ProviderTokenDto>> asyncTokens = tokenService.getTokensAsync(request);
+Single<Map<String, ProviderTokenDto>> rxTokens = tokenService.getTokensRx(request);
+```
+
+#### HTTP Client Architecture
+- **Multiple Retrofit instances**: Separate instances for different API base URLs
+- **Swap API**: `https://api.1inch.dev/swap/v6.0/1/` (chain-specific)
+- **Token API**: `https://api.1inch.dev/` (multi-chain)
+- **Shared authentication**: Same Bearer token for all APIs
+- **Connection pooling**: OkHttp connection reuse across all services
 
 ## Architecture Notes
 

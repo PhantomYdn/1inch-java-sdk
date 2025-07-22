@@ -153,8 +153,18 @@ public class SynchronousExample {
 - ✅ `getSpender()` - Get 1inch Router address
 - ✅ `getApproveTransaction()` - Generate token approval calldata
 - ✅ `getAllowance()` - Check token allowance
-- ✅ `getLiquiditySources()` - List available protocols
-- ✅ `getTokens()` - List supported tokens
+
+### Token API
+- ✅ `getMultiChainTokens()` - Get whitelisted tokens across all chains
+- ✅ `getMultiChainTokenList()` - Get multi-chain token list in standard format
+- ✅ `getTokens()` - Get whitelisted tokens for specific chain
+- ✅ `getTokenList()` - Get chain-specific token list in standard format
+- ✅ `searchMultiChainTokens()` - Search tokens across multiple chains
+- ✅ `searchTokens()` - Search tokens on specific chain
+- ✅ `getCustomTokens()` - Get token info for multiple custom addresses
+- ✅ `getCustomToken()` - Get token info for single custom address
+- ✅ `getNativeTokenDetails()` - Get native token details with pricing data
+- ✅ `getTokenDetails()` - Get token details with pricing and chart data
 
 ## Configuration
 
@@ -340,6 +350,197 @@ client.swap().getQuoteRx(invalidRequest)
     .subscribe(
         quote -> log.info("Final result: {}", quote.getDstAmount()),
         error -> log.error("This shouldn't happen with fallback", error)
+    );
+```
+
+### Token API Examples
+
+#### Get Multi-Chain Token List
+```java
+import io.oneinch.sdk.model.*;
+import java.math.BigInteger;
+
+try (OneInchClient client = OneInchClient.builder().build()) {
+    
+    // Get whitelisted tokens across all chains
+    TokenListRequest request = TokenListRequest.builder()
+            .provider("1inch")
+            .country("US")
+            .build();
+    
+    // Synchronous
+    Map<String, ProviderTokenDto> tokens = client.token().getMultiChainTokens(request);
+    log.info("Found {} tokens across all chains", tokens.size());
+    
+    // Reactive with RxJava
+    client.token().getMultiChainTokensRx(request)
+            .doOnSuccess(result -> {
+                result.values().stream()
+                        .filter(token -> "1INCH".equals(token.getSymbol()))
+                        .forEach(token -> log.info("Found 1INCH on chain {}: {}", 
+                                token.getChainId(), token.getAddress()));
+            })
+            .subscribe();
+}
+```
+
+#### Search for Tokens
+```java
+// Search for tokens across multiple chains
+TokenSearchRequest searchRequest = TokenSearchRequest.builder()
+        .query("1inch")
+        .onlyPositiveRating(true)
+        .limit(10)
+        .build();
+
+List<TokenDto> searchResults = client.token().searchMultiChainTokens(searchRequest);
+searchResults.forEach(token -> 
+    log.info("Found: {} ({}) on chain {} - Rating: {}", 
+            token.getName(), token.getSymbol(), token.getChainId(), token.getRating()));
+
+// Search on specific chain
+TokenSearchRequest ethSearchRequest = TokenSearchRequest.builder()
+        .chainId(1) // Ethereum
+        .query("USDC")
+        .onlyPositiveRating(true)
+        .build();
+
+CompletableFuture<List<TokenDto>> ethResults = client.token().searchTokensAsync(ethSearchRequest);
+ethResults.thenAccept(results -> 
+    log.info("Found {} USDC tokens on Ethereum", results.size()));
+```
+
+#### Get Token List for Specific Chain
+```java
+// Get Ethereum token list in standard format
+TokenListRequest ethRequest = TokenListRequest.builder()
+        .chainId(1) // Ethereum
+        .provider("1inch")
+        .build();
+
+TokenListResponse tokenList = client.token().getTokenList(ethRequest);
+log.info("Token list: {} (version {}.{}.{})", 
+        tokenList.getName(),
+        tokenList.getVersion().getMajor(),
+        tokenList.getVersion().getMinor(), 
+        tokenList.getVersion().getPatch());
+
+// Find specific tokens
+tokenList.getTokens().stream()
+        .filter(token -> "USDC".equals(token.getSymbol()))
+        .findFirst()
+        .ifPresent(usdc -> log.info("USDC: {} decimals at {}", 
+                usdc.getDecimals(), usdc.getAddress()));
+```
+
+#### Get Custom Token Information
+```java
+// Get single token info
+Integer chainId = 1; // Ethereum
+String tokenAddress = "0x111111111117dc0aa78b770fa6a738034120c302"; // 1INCH
+
+TokenDto tokenInfo = client.token().getCustomToken(chainId, tokenAddress);
+log.info("Token: {} ({}) - {} decimals", 
+        tokenInfo.getName(), tokenInfo.getSymbol(), tokenInfo.getDecimals());
+
+// Get multiple tokens
+CustomTokenRequest multiRequest = CustomTokenRequest.builder()
+        .chainId(1)
+        .addresses(List.of(
+                "0x111111111117dc0aa78b770fa6a738034120c302", // 1INCH
+                "0xA0b86a33E6aB6b6ce4e5a5B7db2e8Df6b1D2b9C7"  // USDC
+        ))
+        .build();
+
+Map<String, TokenInfo> tokenInfos = client.token().getCustomTokens(multiRequest);
+tokenInfos.forEach((address, info) -> 
+    log.info("Token at {}: {} ({})", address, info.getName(), info.getSymbol()));
+```
+
+#### Get Token Details with Pricing
+```java
+// Get native token (ETH) details
+TokenDetailsRequest nativeRequest = TokenDetailsRequest.builder()
+        .chainId(1) // Ethereum
+        .provider("coinmarketcap")
+        .build();
+
+TokenDetailsResponse ethDetails = client.token().getNativeTokenDetails(nativeRequest);
+log.info("ETH Details: Market Cap: ${}, 24h Volume: ${}", 
+        ethDetails.getDetails().getMarketCap(),
+        ethDetails.getDetails().getVol24());
+
+// Get token details with pricing
+TokenDetailsRequest tokenDetailsRequest = TokenDetailsRequest.builder()
+        .chainId(1)
+        .contractAddress("0x111111111117dc0aa78b770fa6a738034120c302") // 1INCH
+        .provider("coingecko")
+        .build();
+
+// Reactive approach
+client.token().getTokenDetailsRx(tokenDetailsRequest)
+        .doOnSuccess(details -> {
+            log.info("1INCH Token Details:");
+            log.info("  Website: {}", details.getAssets().getWebsite());
+            log.info("  Description: {}", details.getAssets().getShortDescription());
+            log.info("  Market Cap: ${}", details.getDetails().getMarketCap());
+            log.info("  Total Supply: {}", details.getDetails().getTotalSupply());
+        })
+        .subscribe();
+```
+
+#### Token Operations with Different Programming Models
+```java
+// Synchronous - Simple and blocking
+TokenListRequest request = TokenListRequest.builder()
+        .chainId(1)
+        .provider("1inch")
+        .build();
+
+try {
+    Map<String, ProviderTokenDto> tokens = client.token().getTokens(request);
+    // Process tokens...
+} catch (OneInchException e) {
+    log.error("Failed to get tokens: {}", e.getMessage());
+}
+
+// Asynchronous with CompletableFuture
+CompletableFuture<Map<String, ProviderTokenDto>> tokensFuture = 
+    client.token().getTokensAsync(request);
+
+tokensFuture
+    .thenAccept(tokens -> {
+        // Process tokens...
+        log.info("Received {} tokens", tokens.size());
+    })
+    .exceptionally(throwable -> {
+        log.error("Token request failed", throwable);
+        return null;
+    });
+
+// Reactive with RxJava - Best for complex chains
+client.token().getTokensRx(request)
+    .flatMap(tokens -> {
+        // Find 1INCH token
+        return Single.fromCallable(() -> 
+            tokens.values().stream()
+                .filter(t -> "1INCH".equals(t.getSymbol()))
+                .findFirst()
+                .orElse(null)
+        );
+    })
+    .filter(token -> token != null)
+    .flatMap(oneInchToken -> {
+        // Get detailed information
+        TokenDetailsRequest detailsRequest = TokenDetailsRequest.builder()
+                .chainId(oneInchToken.getChainId())
+                .contractAddress(oneInchToken.getAddress())
+                .build();
+        return client.token().getTokenDetailsRx(detailsRequest);
+    })
+    .subscribe(
+        details -> log.info("1INCH details: {}", details.getAssets().getName()),
+        error -> log.error("Chain failed", error)
     );
 ```
 

@@ -3,6 +3,7 @@ package io.oneinch.sdk.client;
 import io.oneinch.sdk.exception.OneInchException;
 import io.oneinch.sdk.model.*;
 import io.oneinch.sdk.service.SwapService;
+import io.oneinch.sdk.service.TokenService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigInteger;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Integration tests that make real API calls to 1inch.
@@ -151,5 +154,174 @@ class OneInchIntegrationTest {
         assertNotNull(response, "Async quote response should not be null");
         assertNotNull(response.getDstAmount(), "Destination amount should not be null");
         assertTrue(response.getDstAmount().compareTo(BigInteger.ZERO) > 0, "Destination amount should be positive");
+    }
+    
+    @Test
+    void testRealMultiChainTokensRequest() {
+        log.info("Testing real multi-chain tokens API call...");
+        
+        TokenListRequest request = TokenListRequest.builder()
+                .provider("1inch")
+                .build();
+        
+        try {
+            Map<String, ProviderTokenDto> tokens = client.token().getMultiChainTokens(request);
+            
+            assertNotNull(tokens, "Multi-chain tokens response should not be null");
+            assertFalse(tokens.isEmpty(), "Multi-chain tokens should contain some tokens");
+            
+            // Check a few well-known tokens
+            String oneInchAddress = null;
+            for (Map.Entry<String, ProviderTokenDto> entry : tokens.entrySet()) {
+                ProviderTokenDto token = entry.getValue();
+                if ("1INCH".equals(token.getSymbol())) {
+                    oneInchAddress = entry.getKey();
+                    break;
+                }
+            }
+            
+            if (oneInchAddress != null) {
+                ProviderTokenDto oneInchToken = tokens.get(oneInchAddress);
+                assertNotNull(oneInchToken, "1INCH token should not be null");
+                assertEquals("1INCH", oneInchToken.getSymbol());
+                assertEquals("1inch", oneInchToken.getName());
+                
+                log.info("Found 1INCH token: {} at address {}", 
+                        oneInchToken.getName(), oneInchAddress);
+            }
+            
+            log.info("Multi-chain tokens: {} tokens retrieved", tokens.size());
+        } catch (OneInchException e) {
+            log.error("Multi-chain tokens request failed: {}", e.getMessage());
+            fail("Multi-chain tokens request should not fail: " + e.getMessage());
+        }
+    }
+    
+    @Test
+    void testRealTokenListRequest() {
+        log.info("Testing real token list API call for Ethereum...");
+        
+        TokenListRequest request = TokenListRequest.builder()
+                .chainId(1) // Ethereum
+                .provider("1inch")
+                .build();
+        
+        try {
+            TokenListResponse tokenList = client.token().getTokenList(request);
+            
+            assertNotNull(tokenList, "Token list response should not be null");
+            assertNotNull(tokenList.getTokens(), "Tokens list should not be null");
+            assertFalse(tokenList.getTokens().isEmpty(), "Tokens list should contain some tokens");
+            assertNotNull(tokenList.getName(), "Token list name should not be null");
+            assertNotNull(tokenList.getVersion(), "Token list version should not be null");
+            
+            // Check for some well-known Ethereum tokens
+            boolean foundUsdc = false;
+            for (TokenInfo token : tokenList.getTokens()) {
+                if ("USDC".equals(token.getSymbol())) {
+                    foundUsdc = true;
+                    assertEquals(Integer.valueOf(6), token.getDecimals());
+                    assertNotNull(token.getAddress());
+                    log.info("Found USDC token: {} at {}", token.getName(), token.getAddress());
+                    break;
+                }
+            }
+            
+            log.info("Token list: {} tokens retrieved, USDC found: {}", 
+                    tokenList.getTokens().size(), foundUsdc);
+        } catch (OneInchException e) {
+            log.error("Token list request failed: {}", e.getMessage());
+            fail("Token list request should not fail: " + e.getMessage());
+        }
+    }
+    
+    @Test
+    void testRealTokenSearchRequest() {
+        log.info("Testing real token search API call...");
+        
+        TokenSearchRequest request = TokenSearchRequest.builder()
+                .query("1inch")
+                .onlyPositiveRating(true)
+                .limit(5)
+                .build();
+        
+        try {
+            List<TokenDto> searchResults = client.token().searchMultiChainTokens(request);
+            
+            assertNotNull(searchResults, "Search results should not be null");
+            assertFalse(searchResults.isEmpty(), "Search results should contain some tokens");
+            assertTrue(searchResults.size() <= 5, "Search results should respect limit");
+            
+            // Check that results contain 1INCH related tokens
+            boolean foundOneInch = false;
+            for (TokenDto token : searchResults) {
+                if (token.getSymbol().contains("1INCH") || token.getName().toLowerCase().contains("1inch")) {
+                    foundOneInch = true;
+                    assertNotNull(token.getAddress(), "Token address should not be null");
+                    assertNotNull(token.getChainId(), "Token chain ID should not be null");
+                    assertTrue(token.getRating() > 0, "Token rating should be positive");
+                    
+                    log.info("Found 1inch-related token: {} ({}) on chain {}", 
+                            token.getName(), token.getSymbol(), token.getChainId());
+                    break;
+                }
+            }
+            
+            assertTrue(foundOneInch, "Should find at least one 1inch-related token");
+            log.info("Token search: {} results retrieved", searchResults.size());
+        } catch (OneInchException e) {
+            log.error("Token search request failed: {}", e.getMessage());
+            fail("Token search request should not fail: " + e.getMessage());
+        }
+    }
+    
+    @Test
+    void testRealCustomTokenRequest() {
+        log.info("Testing real custom token API call...");
+        
+        // Test getting 1INCH token details
+        Integer chainId = 1; // Ethereum
+        String oneInchAddress = "0x111111111117dc0aa78b770fa6a738034120c302";
+        
+        try {
+            TokenDto token = client.token().getCustomToken(chainId, oneInchAddress);
+            
+            assertNotNull(token, "Custom token response should not be null");
+            assertEquals(chainId, token.getChainId(), "Chain ID should match");
+            assertEquals(oneInchAddress.toLowerCase(), token.getAddress().toLowerCase(), "Address should match");
+            assertEquals("1INCH", token.getSymbol(), "Symbol should be 1INCH");
+            assertNotNull(token.getName(), "Token name should not be null");
+            assertTrue(token.getName().toLowerCase().contains("1inch"), "Name should contain 1inch");
+            assertEquals(Integer.valueOf(18), token.getDecimals(), "1INCH should have 18 decimals");
+            
+            log.info("Custom token retrieved: {} ({}) - {}", 
+                    token.getName(), token.getSymbol(), token.getAddress());
+        } catch (OneInchException e) {
+            log.error("Custom token request failed: {}", e.getMessage());
+            fail("Custom token request should not fail: " + e.getMessage());
+        }
+    }
+    
+    @Test
+    void testReactiveTokenRequest() {
+        log.info("Making reactive token request for Ethereum tokens...");
+        
+        TokenListRequest request = TokenListRequest.builder()
+                .chainId(1) // Ethereum
+                .provider("1inch")
+                .build();
+        
+        client.token().getTokensRx(request)
+                .doOnSuccess(tokens -> {
+                    assertNotNull(tokens, "Reactive tokens response should not be null");
+                    assertFalse(tokens.isEmpty(), "Reactive tokens should contain some tokens");
+                    
+                    log.info("Reactive token request successful: {} tokens", tokens.size());
+                })
+                .doOnError(error -> {
+                    log.error("Reactive token request failed", error);
+                    fail("Reactive token request should not fail: " + error.getMessage());
+                })
+                .blockingGet();
     }
 }

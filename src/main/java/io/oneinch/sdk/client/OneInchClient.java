@@ -2,6 +2,8 @@ package io.oneinch.sdk.client;
 
 import io.oneinch.sdk.service.SwapService;
 import io.oneinch.sdk.service.SwapServiceImpl;
+import io.oneinch.sdk.service.TokenService;
+import io.oneinch.sdk.service.TokenServiceImpl;
 import lombok.Builder;
 import lombok.Getter;
 import okhttp3.OkHttpClient;
@@ -18,6 +20,7 @@ public class OneInchClient implements AutoCloseable {
     
     private final RetrofitHttpClient httpClient;
     private final SwapService swapService;
+    private final TokenService tokenService;
 
     
     private OneInchClient(String apiKey, OkHttpClient customOkHttpClient) {
@@ -26,6 +29,8 @@ public class OneInchClient implements AutoCloseable {
             ? new RetrofitHttpClient(resolvedApiKey, customOkHttpClient)
             : new RetrofitHttpClient(resolvedApiKey);
         this.swapService = new SwapServiceImpl(this.httpClient.getApiService());
+        this.tokenService = new TokenServiceImpl(this.httpClient.getTokenApiService(), 
+                this.httpClient.getTokenDetailsApiService());
     }
     
     public static OneInchClientBuilder builder() {
@@ -34,6 +39,10 @@ public class OneInchClient implements AutoCloseable {
     
     public SwapService swap() {
         return swapService;
+    }
+    
+    public TokenService token() {
+        return tokenService;
     }
     
     @Override
