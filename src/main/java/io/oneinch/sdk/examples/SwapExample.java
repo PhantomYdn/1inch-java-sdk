@@ -57,6 +57,7 @@ public class SwapExample {
                 .flatMap(spender -> {
                     // Step 2: Check allowance
                     AllowanceRequest allowanceRequest = AllowanceRequest.builder()
+                            .chainId(1)  // Ethereum
                             .tokenAddress(ONEINCH_TOKEN_ADDRESS)
                             .walletAddress(WALLET_ADDRESS)
                             .build();
@@ -67,6 +68,7 @@ public class SwapExample {
                 .flatMap(allowance -> {
                     // Step 3: Get quote
                     QuoteRequest quoteRequest = QuoteRequest.builder()
+                            .chainId(1)  // Ethereum
                             .src(ETH_ADDRESS)
                             .dst(ONEINCH_TOKEN_ADDRESS)
                             .amount(swapAmount)
@@ -86,6 +88,7 @@ public class SwapExample {
                 .flatMap(quote -> {
                     // Step 4: Get swap transaction data
                     SwapRequest swapRequest = SwapRequest.builder()
+                            .chainId(1)  // Ethereum
                             .src(ETH_ADDRESS)
                             .dst(ONEINCH_TOKEN_ADDRESS)
                             .amount(swapAmount)
@@ -141,6 +144,7 @@ public class SwapExample {
             
             Single<QuoteResponse> quoteSingle = client.swap().getQuoteRx(
                     QuoteRequest.builder()
+                            .chainId(1)  // Ethereum
                             .src(ETH_ADDRESS)
                             .dst(ONEINCH_TOKEN_ADDRESS)
                             .amount(swapAmount)
@@ -151,6 +155,7 @@ public class SwapExample {
             
             Single<AllowanceResponse> allowanceSingle = client.swap().getAllowanceRx(
                     AllowanceRequest.builder()
+                            .chainId(1)  // Ethereum
                             .tokenAddress(ONEINCH_TOKEN_ADDRESS)
                             .walletAddress(WALLET_ADDRESS)
                             .build()
@@ -191,6 +196,7 @@ public class SwapExample {
             // Step 2: Check allowance (synchronous)
             log.info("Step 2: Checking allowance...");
             AllowanceRequest allowanceRequest = AllowanceRequest.builder()
+                    .chainId(1)  // Ethereum
                     .tokenAddress(ONEINCH_TOKEN_ADDRESS)
                     .walletAddress(WALLET_ADDRESS)
                     .build();
@@ -201,6 +207,7 @@ public class SwapExample {
             // Step 3: Get quote (synchronous)
             log.info("Step 3: Getting quote...");
             QuoteRequest quoteRequest = QuoteRequest.builder()
+                    .chainId(1)  // Ethereum
                     .src(ETH_ADDRESS)
                     .dst(ONEINCH_TOKEN_ADDRESS)
                     .amount(swapAmount)
@@ -216,6 +223,7 @@ public class SwapExample {
             // Step 4: Get swap data (asynchronous with CompletableFuture)
             log.info("Step 4: Getting swap transaction data (async)...");
             SwapRequest swapRequest = SwapRequest.builder()
+                    .chainId(1)  // Ethereum
                     .src(ETH_ADDRESS)
                     .dst(ONEINCH_TOKEN_ADDRESS)
                     .amount(swapAmount)
@@ -251,6 +259,7 @@ public class SwapExample {
             
             // Invalid quote request to trigger an error (reactive approach)
             QuoteRequest invalidRequest = QuoteRequest.builder()
+                    .chainId(1)  // Ethereum
                     .src("invalid_address")
                     .dst("invalid_address")
                     .amount(BigInteger.ZERO)

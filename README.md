@@ -1,6 +1,6 @@
 # 1inch Java SDK
 
-A comprehensive Java SDK for the 1inch DEX Aggregation Protocol, providing easy integration with 1inch's swap services.
+A comprehensive Java SDK for the 1inch DEX Aggregation Protocol, providing easy integration with 1inch's swap, token, token-details, and orderbook services.
 
 ## Features
 
@@ -12,7 +12,10 @@ A comprehensive Java SDK for the 1inch DEX Aggregation Protocol, providing easy 
 - ✅ Type-safe REST API integration with Retrofit 2
 - ✅ Comprehensive error handling
 - ✅ Built-in logging with SLF4J
-- ✅ Full Swap API support
+- ✅ Full Swap API support with chainId path parameters
+- ✅ Complete Token API with multi-chain support
+- ✅ Token Details API with pricing and chart data
+- ✅ Orderbook API for limit order management
 - ✅ Type-safe models with Jackson and BigInteger precision
 - ✅ Extensive unit test coverage
 
@@ -99,6 +102,7 @@ public class ReactiveExample {
             
             // Get a quote for swapping ETH to 1INCH (reactive)
             QuoteRequest quoteRequest = QuoteRequest.builder()
+                .chainId(1)  // Ethereum
                 .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
                 .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH
                 .amount(new BigInteger("10000000000000000"))  // 0.01 ETH in wei
@@ -131,6 +135,7 @@ public class SynchronousExample {
                 .build()) {
             
             QuoteRequest quoteRequest = QuoteRequest.builder()
+                .chainId(1)  // Ethereum
                 .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
                 .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH
                 .amount(new BigInteger("10000000000000000"))  // 0.01 ETH in wei
@@ -147,24 +152,42 @@ public class SynchronousExample {
 
 ## API Coverage
 
-### Swap API
+### Swap API (`client.swap()`)
 - ✅ `getQuote()` - Find the best quote to swap
 - ✅ `getSwap()` - Generate calldata for swap execution
 - ✅ `getSpender()` - Get 1inch Router address
 - ✅ `getApproveTransaction()` - Generate token approval calldata
 - ✅ `getAllowance()` - Check token allowance
 
-### Token API
+### Token API (`client.token()`)
 - ✅ `getMultiChainTokens()` - Get whitelisted tokens across all chains
-- ✅ `getMultiChainTokenList()` - Get multi-chain token list in standard format
-- ✅ `getTokens()` - Get whitelisted tokens for specific chain
 - ✅ `getTokenList()` - Get chain-specific token list in standard format
+- ✅ `getTokens()` - Get whitelisted tokens for specific chain
 - ✅ `searchMultiChainTokens()` - Search tokens across multiple chains
-- ✅ `searchTokens()` - Search tokens on specific chain
 - ✅ `getCustomTokens()` - Get token info for multiple custom addresses
 - ✅ `getCustomToken()` - Get token info for single custom address
-- ✅ `getNativeTokenDetails()` - Get native token details with pricing data
-- ✅ `getTokenDetails()` - Get token details with pricing and chart data
+
+### Token Details API (`client.tokenDetails()`)
+- ✅ `getTokenDetails()` - Get token details with pricing data
+- ✅ `getTokenChart()` - Get token price chart data
+- ✅ `getTokenPriceChange()` - Get token price changes over time
+- ✅ `getNativeTokenDetails()` - Get native token details with pricing
+- ✅ `getNativeTokenChart()` - Get native token chart data
+- ✅ `getNativeTokenChartByRange()` - Get native token chart for date range
+- ✅ `getNativeTokenChartByInterval()` - Get native token chart by interval
+- ✅ `getNativeTokenPriceChange()` - Get native token price changes
+- ✅ `getMultiChainTokenPriceChange()` - Get multi-chain token price changes
+
+### Orderbook API (`client.orderbook()`)
+- ✅ `createLimitOrder()` - Create a new limit order
+- ✅ `getLimitOrdersByAddress()` - Get orders for specific address
+- ✅ `getOrderByOrderHash()` - Get order by hash
+- ✅ `getAllLimitOrders()` - Get all limit orders with filters
+- ✅ `getOrdersCount()` - Get count of orders by filters
+- ✅ `getEventsByOrderHash()` - Get events for specific order
+- ✅ `getAllEvents()` - Get all order events
+- ✅ `hasActiveOrdersWithPermit()` - Check active orders with permit
+- ✅ `getUniqueActivePairs()` - Get unique active trading pairs
 
 ## Configuration
 
@@ -210,6 +233,15 @@ OneInchClient client = OneInchClient.builder()
 
 ## Examples
 
+### Comprehensive Example Classes
+
+The SDK includes complete example classes demonstrating all APIs:
+
+- **`SwapExample.java`** - Complete swap workflows (reactive, synchronous, parallel)
+- **`TokenExample.java`** - Token list, search, and custom token operations
+- **`TokenDetailsExample.java`** - Token pricing, charts, and market data
+- **`OrderbookExample.java`** - Limit orders, events, and trading pairs
+
 ### Reactive Swap Flow
 ```java
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -222,11 +254,12 @@ try (OneInchClient client = OneInchClient.builder()
     String walletAddress = "0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8";
     
     // Reactive chaining with proper error handling
-    client.swap().getSpenderRx()
+    client.swap().getSpenderRx(1)  // Ethereum
         .doOnSuccess(spender -> log.info("Spender: {}", spender.getAddress()))
         .flatMap(spender -> {
             // Check allowance
             AllowanceRequest allowanceRequest = AllowanceRequest.builder()
+                .chainId(1)  // Ethereum
                 .tokenAddress("0x111111111117dc0aa78b770fa6a738034120c302")
                 .walletAddress(walletAddress)
                 .build();
@@ -235,6 +268,7 @@ try (OneInchClient client = OneInchClient.builder()
         .flatMap(allowance -> {
             // Get quote
             QuoteRequest quoteRequest = QuoteRequest.builder()
+                .chainId(1)  // Ethereum
                 .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
                 .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH
                 .amount(swapAmount)
@@ -246,6 +280,7 @@ try (OneInchClient client = OneInchClient.builder()
         .flatMap(quote -> {
             // Get swap transaction data
             SwapRequest swapRequest = SwapRequest.builder()
+                .chainId(1)  // Ethereum
                 .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
                 .dst("0x111111111117dc0aa78b770fa6a738034120c302")
                 .amount(swapAmount)
@@ -274,11 +309,24 @@ import java.util.concurrent.TimeUnit;
 import java.math.BigInteger;
 
 // Run multiple operations in parallel
-Single<SpenderResponse> spenderSingle = client.swap().getSpenderRx()
+Single<SpenderResponse> spenderSingle = client.swap().getSpenderRx(1)  // Ethereum
     .subscribeOn(Schedulers.io());
+
+QuoteRequest quoteRequest = QuoteRequest.builder()
+    .chainId(1)  // Ethereum
+    .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
+    .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH
+    .amount(new BigInteger("10000000000000000"))
+    .build();
 
 Single<QuoteResponse> quoteSingle = client.swap().getQuoteRx(quoteRequest)
     .subscribeOn(Schedulers.io());
+
+AllowanceRequest allowanceRequest = AllowanceRequest.builder()
+    .chainId(1)  // Ethereum
+    .tokenAddress("0x111111111117dc0aa78b770fa6a738034120c302")
+    .walletAddress("0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8")
+    .build();
 
 Single<AllowanceResponse> allowanceSingle = client.swap().getAllowanceRx(allowanceRequest)
     .subscribeOn(Schedulers.io());
@@ -300,6 +348,7 @@ try (OneInchClient client = OneInchClient.builder()
     
     // 1. Check allowance
     AllowanceRequest allowanceRequest = AllowanceRequest.builder()
+        .chainId(1)  // Ethereum
         .tokenAddress("0x111111111117dc0aa78b770fa6a738034120c302")
         .walletAddress("0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8")
         .build();
@@ -308,6 +357,7 @@ try (OneInchClient client = OneInchClient.builder()
     
     // 2. Get quote
     QuoteRequest quoteRequest = QuoteRequest.builder()
+        .chainId(1)  // Ethereum
         .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
         .dst("0x111111111117dc0aa78b770fa6a738034120c302")
         .amount(new BigInteger("10000000000000000"))
@@ -317,6 +367,7 @@ try (OneInchClient client = OneInchClient.builder()
     
     // 3. Execute swap (async with CompletableFuture)
     SwapRequest swapRequest = SwapRequest.builder()
+        .chainId(1)  // Ethereum
         .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
         .dst("0x111111111117dc0aa78b770fa6a738034120c302")
         .amount(new BigInteger("10000000000000000"))
@@ -365,17 +416,16 @@ try (OneInchClient client = OneInchClient.builder().build()) {
     // Get whitelisted tokens across all chains
     TokenListRequest request = TokenListRequest.builder()
             .provider("1inch")
-            .country("US")
             .build();
     
     // Synchronous
-    Map<String, ProviderTokenDto> tokens = client.token().getMultiChainTokens(request);
+    List<ProviderTokenDto> tokens = client.token().getMultiChainTokens(request);
     log.info("Found {} tokens across all chains", tokens.size());
     
     // Reactive with RxJava
     client.token().getMultiChainTokensRx(request)
             .doOnSuccess(result -> {
-                result.values().stream()
+                result.stream()
                         .filter(token -> "1INCH".equals(token.getSymbol()))
                         .forEach(token -> log.info("Found 1INCH on chain {}: {}", 
                                 token.getChainId(), token.getAddress()));
@@ -465,7 +515,7 @@ TokenDetailsRequest nativeRequest = TokenDetailsRequest.builder()
         .provider("coinmarketcap")
         .build();
 
-TokenDetailsResponse ethDetails = client.token().getNativeTokenDetails(nativeRequest);
+TokenDetailsResponse ethDetails = client.tokenDetails().getNativeTokenDetails(nativeRequest);
 log.info("ETH Details: Market Cap: ${}, 24h Volume: ${}", 
         ethDetails.getDetails().getMarketCap(),
         ethDetails.getDetails().getVol24());
@@ -478,7 +528,7 @@ TokenDetailsRequest tokenDetailsRequest = TokenDetailsRequest.builder()
         .build();
 
 // Reactive approach
-client.token().getTokenDetailsRx(tokenDetailsRequest)
+client.tokenDetails().getTokenDetailsRx(tokenDetailsRequest)
         .doOnSuccess(details -> {
             log.info("1INCH Token Details:");
             log.info("  Website: {}", details.getAssets().getWebsite());
@@ -536,7 +586,7 @@ client.token().getTokensRx(request)
                 .chainId(oneInchToken.getChainId())
                 .contractAddress(oneInchToken.getAddress())
                 .build();
-        return client.token().getTokenDetailsRx(detailsRequest);
+        return client.tokenDetails().getTokenDetailsRx(detailsRequest);
     })
     .subscribe(
         details -> log.info("1INCH details: {}", details.getAssets().getName()),

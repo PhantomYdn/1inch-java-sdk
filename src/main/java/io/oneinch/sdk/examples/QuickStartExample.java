@@ -31,6 +31,7 @@ public class QuickStartExample {
             
             // Get a quote for swapping ETH to 1INCH (reactive)
             QuoteRequest quoteRequest = QuoteRequest.builder()
+                    .chainId(1)  // Ethereum
                     .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
                     .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH
                     .amount(new BigInteger("10000000000000000"))  // 0.01 ETH in wei
@@ -65,6 +66,7 @@ public class QuickStartExample {
             
             // Get a quote for swapping ETH to 1INCH (synchronous)
             QuoteRequest quoteRequest = QuoteRequest.builder()
+                    .chainId(1)  // Ethereum
                     .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
                     .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH
                     .amount(new BigInteger("10000000000000000"))  // 0.01 ETH in wei
