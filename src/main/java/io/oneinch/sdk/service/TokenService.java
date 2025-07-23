@@ -14,24 +14,24 @@ public interface TokenService {
     /**
      * Get multi-chain whitelisted tokens (synchronous).
      * @param request Token list request parameters
-     * @return Map of token address to token info
+     * @return List of token info
      * @throws OneInchException if the request fails
      */
-    Map<String, ProviderTokenDto> getMultiChainTokens(TokenListRequest request) throws OneInchException;
+    List<ProviderTokenDto> getMultiChainTokens(TokenListRequest request) throws OneInchException;
     
     /**
      * Get multi-chain whitelisted tokens (asynchronous with CompletableFuture).
      * @param request Token list request parameters
-     * @return CompletableFuture containing token map
+     * @return CompletableFuture containing token list
      */
-    CompletableFuture<Map<String, ProviderTokenDto>> getMultiChainTokensAsync(TokenListRequest request);
+    CompletableFuture<List<ProviderTokenDto>> getMultiChainTokensAsync(TokenListRequest request);
     
     /**
      * Get multi-chain whitelisted tokens (reactive with RxJava).
      * @param request Token list request parameters
-     * @return Single containing token map
+     * @return Single containing token list
      */
-    Single<Map<String, ProviderTokenDto>> getMultiChainTokensRx(TokenListRequest request);
+    Single<List<ProviderTokenDto>> getMultiChainTokensRx(TokenListRequest request);
     
     /**
      * Get multi-chain whitelisted tokens in list format (synchronous).

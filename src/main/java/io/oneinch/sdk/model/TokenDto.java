@@ -3,6 +3,7 @@ package io.oneinch.sdk.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.math.BigInteger;
 import java.util.List;
 
 @Data
@@ -40,4 +41,7 @@ public class TokenDto {
     
     @JsonProperty("providers")
     private List<String> providers;
+
+    @JsonProperty("marketCap")
+    private BigInteger marketCap;
 }

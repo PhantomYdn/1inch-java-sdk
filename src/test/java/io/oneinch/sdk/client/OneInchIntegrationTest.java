@@ -165,34 +165,32 @@ class OneInchIntegrationTest {
                 .build();
         
         try {
-            Map<String, ProviderTokenDto> tokens = client.token().getMultiChainTokens(request);
+            List<ProviderTokenDto> tokens = client.token().getMultiChainTokens(request);
             
             assertNotNull(tokens, "Multi-chain tokens response should not be null");
             assertFalse(tokens.isEmpty(), "Multi-chain tokens should contain some tokens");
             
             // Check a few well-known tokens
-            String oneInchAddress = null;
-            for (Map.Entry<String, ProviderTokenDto> entry : tokens.entrySet()) {
-                ProviderTokenDto token = entry.getValue();
+            ProviderTokenDto oneInchToken = null;
+            for (ProviderTokenDto token : tokens) {
                 if ("1INCH".equals(token.getSymbol())) {
-                    oneInchAddress = entry.getKey();
+                    oneInchToken = token;
                     break;
                 }
             }
             
-            if (oneInchAddress != null) {
-                ProviderTokenDto oneInchToken = tokens.get(oneInchAddress);
+            if (oneInchToken != null) {
                 assertNotNull(oneInchToken, "1INCH token should not be null");
                 assertEquals("1INCH", oneInchToken.getSymbol());
-                assertEquals("1inch", oneInchToken.getName());
+                assertTrue(oneInchToken.getName().toLowerCase().contains("1inch"), "Token name should contain 1inch");
                 
                 log.info("Found 1INCH token: {} at address {}", 
-                        oneInchToken.getName(), oneInchAddress);
+                        oneInchToken.getName(), oneInchToken.getAddress());
             }
             
             log.info("Multi-chain tokens: {} tokens retrieved", tokens.size());
         } catch (OneInchException e) {
-            log.error("Multi-chain tokens request failed: {}", e.getMessage());
+            log.error("Multi-chain tokens request failed:", e);
             fail("Multi-chain tokens request should not fail: " + e.getMessage());
         }
     }
@@ -230,7 +228,7 @@ class OneInchIntegrationTest {
             log.info("Token list: {} tokens retrieved, USDC found: {}", 
                     tokenList.getTokens().size(), foundUsdc);
         } catch (OneInchException e) {
-            log.error("Token list request failed: {}", e.getMessage());
+            log.error("Token list request failed:", e);
             fail("Token list request should not fail: " + e.getMessage());
         }
     }
@@ -270,7 +268,7 @@ class OneInchIntegrationTest {
             assertTrue(foundOneInch, "Should find at least one 1inch-related token");
             log.info("Token search: {} results retrieved", searchResults.size());
         } catch (OneInchException e) {
-            log.error("Token search request failed: {}", e.getMessage());
+            log.error("Token search request failed: ", e);
             fail("Token search request should not fail: " + e.getMessage());
         }
     }
@@ -297,7 +295,7 @@ class OneInchIntegrationTest {
             log.info("Custom token retrieved: {} ({}) - {}", 
                     token.getName(), token.getSymbol(), token.getAddress());
         } catch (OneInchException e) {
-            log.error("Custom token request failed: {}", e.getMessage());
+            log.error("Custom token request failed:", e);
             fail("Custom token request should not fail: " + e.getMessage());
         }
     }

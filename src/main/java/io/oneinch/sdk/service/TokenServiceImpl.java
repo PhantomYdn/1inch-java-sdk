@@ -25,7 +25,7 @@ public class TokenServiceImpl implements TokenService {
     
     // Multi-chain token operations
     @Override
-    public Map<String, ProviderTokenDto> getMultiChainTokens(TokenListRequest request) throws OneInchException {
+    public List<ProviderTokenDto> getMultiChainTokens(TokenListRequest request) throws OneInchException {
         try {
             log.info("Getting multi-chain tokens with provider: {}, country: {}", 
                     request.getProvider(), request.getCountry());
@@ -37,14 +37,14 @@ public class TokenServiceImpl implements TokenService {
     }
     
     @Override
-    public CompletableFuture<Map<String, ProviderTokenDto>> getMultiChainTokensAsync(TokenListRequest request) {
+    public CompletableFuture<List<ProviderTokenDto>> getMultiChainTokensAsync(TokenListRequest request) {
         return getMultiChainTokensRx(request)
                 .toCompletionStage()
                 .toCompletableFuture();
     }
     
     @Override
-    public Single<Map<String, ProviderTokenDto>> getMultiChainTokensRx(TokenListRequest request) {
+    public Single<List<ProviderTokenDto>> getMultiChainTokensRx(TokenListRequest request) {
         log.info("Getting multi-chain tokens (reactive) with provider: {}, country: {}", 
                 request.getProvider(), request.getCountry());
         

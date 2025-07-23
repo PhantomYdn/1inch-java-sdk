@@ -49,19 +49,19 @@ class TokenServiceImplTest {
         token.setName("1inch");
         token.setAddress("0x111111111117dc0aa78b770fa6a738034120c302");
 
-        Map<String, ProviderTokenDto> expectedResponse = Map.of("0x111111111117dc0aa78b770fa6a738034120c302", token);
+        List<ProviderTokenDto> expectedResponse = List.of(token);
 
         when(tokenApiService.getMultiChainTokens(eq("1inch"), eq("US")))
                 .thenReturn(Single.just(expectedResponse));
 
         // When
-        Map<String, ProviderTokenDto> result = tokenService.getMultiChainTokensRx(request).blockingGet();
+        List<ProviderTokenDto> result = tokenService.getMultiChainTokensRx(request).blockingGet();
 
         // Then
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertTrue(result.containsKey("0x111111111117dc0aa78b770fa6a738034120c302"));
-        assertEquals("1INCH", result.get("0x111111111117dc0aa78b770fa6a738034120c302").getSymbol());
+        assertEquals("1INCH", result.get(0).getSymbol());
+        assertEquals("0x111111111117dc0aa78b770fa6a738034120c302", result.get(0).getAddress());
         verify(tokenApiService).getMultiChainTokens("1inch", "US");
     }
 
@@ -75,14 +75,15 @@ class TokenServiceImplTest {
         ProviderTokenDto token = new ProviderTokenDto();
         token.setSymbol("ETH");
         token.setName("Ethereum");
+        token.setAddress("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
 
-        Map<String, ProviderTokenDto> expectedResponse = Map.of("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", token);
+        List<ProviderTokenDto> expectedResponse = List.of(token);
 
         when(tokenApiService.getMultiChainTokens(eq("1inch"), any()))
                 .thenReturn(Single.just(expectedResponse));
 
         // When
-        Map<String, ProviderTokenDto> result = tokenService.getMultiChainTokens(request);
+        List<ProviderTokenDto> result = tokenService.getMultiChainTokens(request);
 
         // Then
         assertNotNull(result);
@@ -100,15 +101,16 @@ class TokenServiceImplTest {
 
         ProviderTokenDto token = new ProviderTokenDto();
         token.setSymbol("USDC");
+        token.setAddress("0xa0b86a33e6ab6b6ce4e5a5b7db2e8df6b1d2b9c7");
         
-        Map<String, ProviderTokenDto> expectedResponse = Map.of("0xa0b86a33e6ab6b6ce4e5a5b7db2e8df6b1d2b9c7", token);
+        List<ProviderTokenDto> expectedResponse = List.of(token);
 
         when(tokenApiService.getMultiChainTokens(any(), any()))
                 .thenReturn(Single.just(expectedResponse));
 
         // When
-        CompletableFuture<Map<String, ProviderTokenDto>> future = tokenService.getMultiChainTokensAsync(request);
-        Map<String, ProviderTokenDto> result = future.join();
+        CompletableFuture<List<ProviderTokenDto>> future = tokenService.getMultiChainTokensAsync(request);
+        List<ProviderTokenDto> result = future.join();
 
         // Then
         assertNotNull(result);

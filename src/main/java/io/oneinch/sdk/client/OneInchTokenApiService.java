@@ -13,7 +13,7 @@ public interface OneInchTokenApiService {
     
     // Multi-chain token operations
     @GET("token/v1.2/multi-chain")
-    Single<Map<String, ProviderTokenDto>> getMultiChainTokens(
+    Single<List<ProviderTokenDto>> getMultiChainTokens(
             @Query("provider") String provider,
             @Query("country") String country
     );

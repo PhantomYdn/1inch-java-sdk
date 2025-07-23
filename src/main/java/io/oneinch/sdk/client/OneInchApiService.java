@@ -9,7 +9,7 @@ import java.math.BigInteger;
 
 public interface OneInchApiService {
     
-    @GET("quote")
+    @GET("swap/v6.0/1/quote")
     Single<QuoteResponse> getQuote(
             @Query("src") String src,
             @Query("dst") String dst,
@@ -28,7 +28,7 @@ public interface OneInchApiService {
             @Query("excludedProtocols") String excludedProtocols
     );
     
-    @GET("swap")
+    @GET("swap/v6.0/1/swap")
     Single<SwapResponse> getSwap(
             @Query("src") String src,
             @Query("dst") String dst,
@@ -56,16 +56,16 @@ public interface OneInchApiService {
             @Query("usePermit2") Boolean usePermit2
     );
     
-    @GET("approve/spender")
+    @GET("swap/v6.0/1/approve/spender")
     Single<SpenderResponse> getSpender();
     
-    @GET("approve/transaction")
+    @GET("swap/v6.0/1/approve/transaction")
     Single<ApproveCallDataResponse> getApproveTransaction(
             @Query("tokenAddress") String tokenAddress,
             @Query("amount") BigInteger amount
     );
     
-    @GET("approve/allowance")
+    @GET("swap/v6.0/1/approve/allowance")
     Single<AllowanceResponse> getAllowance(
             @Query("tokenAddress") String tokenAddress,
             @Query("walletAddress") String walletAddress
