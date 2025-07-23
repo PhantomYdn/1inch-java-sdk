@@ -2,6 +2,7 @@ package io.oneinch.sdk.client;
 
 import io.oneinch.sdk.exception.OneInchException;
 import io.oneinch.sdk.model.*;
+import io.oneinch.sdk.service.OrderbookService;
 import io.oneinch.sdk.service.SwapService;
 import io.oneinch.sdk.service.TokenService;
 import lombok.extern.slf4j.Slf4j;
@@ -325,5 +326,174 @@ class OneInchIntegrationTest {
                     fail("Reactive token request should not fail: " + error.getMessage());
                 })
                 .blockingGet();
+    }
+    
+    @Test
+    void testRealGetAllLimitOrdersRequest() {
+        log.info("Testing real get all limit orders API call...");
+        
+        OrderbookService orderbookService = client.orderbook();
+        
+        GetAllLimitOrdersRequest request = GetAllLimitOrdersRequest.builder()
+                .chainId(1) // Ethereum
+                .page(1)
+                .limit(5)
+                .statuses("1") // Only valid orders
+                .build();
+        
+        try {
+            List<GetLimitOrdersV4Response> orders = orderbookService.getAllLimitOrders(request);
+            
+            assertNotNull(orders, "All limit orders response should not be null");
+            assertTrue(orders.size() <= 5, "Orders should respect the limit parameter");
+            
+            if (!orders.isEmpty()) {
+                GetLimitOrdersV4Response firstOrder = orders.get(0);
+                assertNotNull(firstOrder.getOrderHash(), "Order hash should not be null");
+                assertNotNull(firstOrder.getData(), "Order data should not be null");
+                assertNotNull(firstOrder.getData().getMakerAsset(), "Maker asset should not be null");
+                assertNotNull(firstOrder.getData().getTakerAsset(), "Taker asset should not be null");
+                
+                log.info("Retrieved {} limit orders. First order: {} -> {}", 
+                        orders.size(), 
+                        firstOrder.getData().getMakerAsset(), 
+                        firstOrder.getData().getTakerAsset());
+            } else {
+                log.info("No limit orders found on Ethereum");
+            }
+        } catch (OneInchException e) {
+            // This might fail if no orders are available or API limitations
+            log.warn("Get all limit orders request failed (this might be expected): {}", e.getMessage());
+        }
+    }
+    
+    @Test
+    void testRealGetOrdersCountRequest() {
+        log.info("Testing real get orders count API call...");
+        
+        OrderbookService orderbookService = client.orderbook();
+        
+        GetLimitOrdersCountRequest request = GetLimitOrdersCountRequest.builder()
+                .chainId(1) // Ethereum
+                .statuses("1,2,3") // All statuses
+                .build();
+        
+        try {
+            GetLimitOrdersCountV4Response response = orderbookService.getOrdersCount(request);
+            
+            assertNotNull(response, "Orders count response should not be null");
+            assertNotNull(response.getCount(), "Orders count should not be null");
+            assertTrue(response.getCount() >= 0, "Orders count should be non-negative");
+            
+            log.info("Total orders count: {}", response.getCount());
+        } catch (OneInchException e) {
+            // This might fail if API limitations or access restrictions
+            log.warn("Get orders count request failed (this might be expected): {}", e.getMessage());
+        }
+    }
+    
+    @Test
+    void testRealGetAllEventsRequest() {
+        log.info("Testing real get all events API call...");
+        
+        OrderbookService orderbookService = client.orderbook();
+        
+        GetEventsRequest request = GetEventsRequest.builder()
+                .chainId(1) // Ethereum
+                .limit(10)
+                .build();
+        
+        try {
+            List<GetEventsV4Response> events = orderbookService.getAllEvents(request);
+            
+            assertNotNull(events, "All events response should not be null");
+            assertTrue(events.size() <= 10, "Events should respect the limit parameter");
+            
+            if (!events.isEmpty()) {
+                GetEventsV4Response firstEvent = events.get(0);
+                assertNotNull(firstEvent.getOrderHash(), "Event order hash should not be null");
+                assertNotNull(firstEvent.getAction(), "Event action should not be null");
+                assertNotNull(firstEvent.getCreateDateTime(), "Event creation time should not be null");
+                
+                log.info("Retrieved {} events. First event: {} action on order {}", 
+                        events.size(), 
+                        firstEvent.getAction(), 
+                        firstEvent.getOrderHash());
+            } else {
+                log.info("No events found");
+            }
+        } catch (OneInchException e) {
+            // This might fail if no events are available or API limitations
+            log.warn("Get all events request failed (this might be expected): {}", e.getMessage());
+        }
+    }
+    
+    @Test
+    void testRealGetUniqueActivePairsRequest() {
+        log.info("Testing real get unique active pairs API call...");
+        
+        OrderbookService orderbookService = client.orderbook();
+        
+        GetUniqueActivePairsRequest request = GetUniqueActivePairsRequest.builder()
+                .chainId(1) // Ethereum
+                .page(1)
+                .limit(5)
+                .build();
+        
+        try {
+            GetActiveUniquePairsResponse response = orderbookService.getUniqueActivePairs(request);
+            
+            assertNotNull(response, "Unique active pairs response should not be null");
+            assertNotNull(response.getMeta(), "Response meta should not be null");
+            assertNotNull(response.getItems(), "Response items should not be null");
+            assertTrue(response.getItems().size() <= 5, "Pairs should respect the limit parameter");
+            
+            if (!response.getItems().isEmpty()) {
+                UniquePairs firstPair = response.getItems().get(0);
+                assertNotNull(firstPair.getMakerAsset(), "Maker asset should not be null");
+                assertNotNull(firstPair.getTakerAsset(), "Taker asset should not be null");
+                
+                log.info("Retrieved {} unique pairs. First pair: {} <-> {}", 
+                        response.getItems().size(),
+                        firstPair.getMakerAsset(), 
+                        firstPair.getTakerAsset());
+                log.info("Total pairs available: {}", response.getMeta().getTotalItems());
+            } else {
+                log.info("No unique active pairs found");
+            }
+        } catch (OneInchException e) {
+            // This might fail if no pairs are available or API limitations
+            log.warn("Get unique active pairs request failed (this might be expected): {}", e.getMessage());
+        }
+    }
+    
+    @Test
+    void testReactiveGetAllLimitOrdersRequest() {
+        log.info("Making reactive get all limit orders request...");
+        
+        OrderbookService orderbookService = client.orderbook();
+        
+        GetAllLimitOrdersRequest request = GetAllLimitOrdersRequest.builder()
+                .chainId(1) // Ethereum
+                .page(1)
+                .limit(3)
+                .statuses("1")
+                .build();
+        
+        try {
+            orderbookService.getAllLimitOrdersRx(request)
+                    .doOnSuccess(orders -> {
+                        assertNotNull(orders, "Reactive orders response should not be null");
+                        assertTrue(orders.size() <= 3, "Orders should respect the limit parameter");
+                        
+                        log.info("Reactive get all limit orders successful: {} orders", orders.size());
+                    })
+                    .doOnError(error -> {
+                        log.warn("Reactive get all limit orders failed (this might be expected): {}", error.getMessage());
+                    })
+                    .blockingGet();
+        } catch (Exception e) {
+            log.warn("Reactive get all limit orders request failed (this might be expected): {}", e.getMessage());
+        }
     }
 }

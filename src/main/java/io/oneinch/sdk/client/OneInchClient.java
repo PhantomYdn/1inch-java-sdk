@@ -19,6 +19,7 @@ public class OneInchClient implements AutoCloseable {
     private final SwapService swapService;
     private final TokenService tokenService;
     private final TokenDetailsService tokenDetailsService;
+    private final OrderbookService orderbookService;
 
     
     private OneInchClient(String apiKey, OkHttpClient customOkHttpClient) {
@@ -29,6 +30,7 @@ public class OneInchClient implements AutoCloseable {
         this.swapService = new SwapServiceImpl(this.httpClient.getSwapApiService());
         this.tokenService = new TokenServiceImpl(this.httpClient.getTokenApiService());
         this.tokenDetailsService = new TokenDetailsServiceImpl(this.httpClient.getTokenDetailsApiService());
+        this.orderbookService = new OrderbookServiceImpl(this.httpClient.getOrderbookApiService());
     }
     
     public static OneInchClientBuilder builder() {
@@ -45,6 +47,10 @@ public class OneInchClient implements AutoCloseable {
     
     public TokenDetailsService tokenDetails() {
         return tokenDetailsService;
+    }
+    
+    public OrderbookService orderbook() {
+        return orderbookService;
     }
     
     @Override
