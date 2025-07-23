@@ -150,7 +150,7 @@ public class TokenServiceImpl implements TokenService {
     
     // Token search operations
     @Override
-    public List<TokenDto> searchMultiChainTokens(TokenSearchRequest request) throws OneInchException {
+    public List<Token> searchMultiChainTokens(TokenSearchRequest request) throws OneInchException {
         try {
             log.info("Searching multi-chain tokens with query: {}, limit: {}", 
                     request.getQuery(), request.getLimit());
@@ -162,14 +162,14 @@ public class TokenServiceImpl implements TokenService {
     }
     
     @Override
-    public CompletableFuture<List<TokenDto>> searchMultiChainTokensAsync(TokenSearchRequest request) {
+    public CompletableFuture<List<Token>> searchMultiChainTokensAsync(TokenSearchRequest request) {
         return searchMultiChainTokensRx(request)
                 .toCompletionStage()
                 .toCompletableFuture();
     }
     
     @Override
-    public Single<List<TokenDto>> searchMultiChainTokensRx(TokenSearchRequest request) {
+    public Single<List<Token>> searchMultiChainTokensRx(TokenSearchRequest request) {
         log.info("Searching multi-chain tokens (reactive) with query: {}, limit: {}", 
                 request.getQuery(), request.getLimit());
         
@@ -183,7 +183,7 @@ public class TokenServiceImpl implements TokenService {
     }
     
     @Override
-    public List<TokenDto> searchTokens(TokenSearchRequest request) throws OneInchException {
+    public List<Token> searchTokens(TokenSearchRequest request) throws OneInchException {
         validateChainId(request.getChainId());
         try {
             log.info("Searching tokens on chain {} with query: {}, limit: {}", 
@@ -196,14 +196,14 @@ public class TokenServiceImpl implements TokenService {
     }
     
     @Override
-    public CompletableFuture<List<TokenDto>> searchTokensAsync(TokenSearchRequest request) {
+    public CompletableFuture<List<Token>> searchTokensAsync(TokenSearchRequest request) {
         return searchTokensRx(request)
                 .toCompletionStage()
                 .toCompletableFuture();
     }
     
     @Override
-    public Single<List<TokenDto>> searchTokensRx(TokenSearchRequest request) {
+    public Single<List<Token>> searchTokensRx(TokenSearchRequest request) {
         validateChainId(request.getChainId());
         log.info("Searching tokens (reactive) on chain {} with query: {}, limit: {}", 
                 request.getChainId(), request.getQuery(), request.getLimit());
@@ -221,7 +221,7 @@ public class TokenServiceImpl implements TokenService {
     
     // Custom token operations
     @Override
-    public Map<String, TokenInfo> getCustomTokens(CustomTokenRequest request) throws OneInchException {
+    public Map<String, Token> getCustomTokens(CustomTokenRequest request) throws OneInchException {
         validateChainId(request.getChainId());
         validateAddresses(request.getAddresses());
         try {
@@ -235,14 +235,14 @@ public class TokenServiceImpl implements TokenService {
     }
     
     @Override
-    public CompletableFuture<Map<String, TokenInfo>> getCustomTokensAsync(CustomTokenRequest request) {
+    public CompletableFuture<Map<String, Token>> getCustomTokensAsync(CustomTokenRequest request) {
         return getCustomTokensRx(request)
                 .toCompletionStage()
                 .toCompletableFuture();
     }
     
     @Override
-    public Single<Map<String, TokenInfo>> getCustomTokensRx(CustomTokenRequest request) {
+    public Single<Map<String, Token>> getCustomTokensRx(CustomTokenRequest request) {
         validateChainId(request.getChainId());
         validateAddresses(request.getAddresses());
         log.info("Getting custom tokens (reactive) for chain {} with addresses: {}", 
@@ -256,7 +256,7 @@ public class TokenServiceImpl implements TokenService {
     }
     
     @Override
-    public TokenDto getCustomToken(Integer chainId, String address) throws OneInchException {
+    public Token getCustomToken(Integer chainId, String address) throws OneInchException {
         validateChainId(chainId);
         validateAddress(address);
         try {
@@ -269,14 +269,14 @@ public class TokenServiceImpl implements TokenService {
     }
     
     @Override
-    public CompletableFuture<TokenDto> getCustomTokenAsync(Integer chainId, String address) {
+    public CompletableFuture<Token> getCustomTokenAsync(Integer chainId, String address) {
         return getCustomTokenRx(chainId, address)
                 .toCompletionStage()
                 .toCompletableFuture();
     }
     
     @Override
-    public Single<TokenDto> getCustomTokenRx(Integer chainId, String address) {
+    public Single<Token> getCustomTokenRx(Integer chainId, String address) {
         validateChainId(chainId);
         validateAddress(address);
         log.info("Getting custom token (reactive) for chain {} with address: {}", chainId, address);

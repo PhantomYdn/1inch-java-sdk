@@ -10,10 +10,10 @@ import java.util.List;
 public class QuoteResponse {
     
     @JsonProperty("srcToken")
-    private TokenInfo srcToken;
+    private Token srcToken;
     
     @JsonProperty("dstToken")
-    private TokenInfo dstToken;
+    private Token dstToken;
     
     @JsonProperty("dstAmount")
     private BigInteger dstAmount;

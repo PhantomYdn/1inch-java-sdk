@@ -28,7 +28,7 @@ public class TokenListResponse {
     private String timestamp;
     
     @JsonProperty("tokens")
-    private List<TokenInfo> tokens;
+    private List<Token> tokens;
     
     @JsonProperty("version")
     private VersionDto version;

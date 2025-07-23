@@ -41,7 +41,7 @@ public interface OneInchTokenApiService {
     
     // Token search operations
     @GET("token/v1.2/search")
-    Single<List<TokenDto>> searchMultiChainTokens(
+    Single<List<Token>> searchMultiChainTokens(
             @Query("query") String query,
             @Query("ignore_listed") Boolean ignoreListed,
             @Query("only_positive_rating") Boolean onlyPositiveRating,
@@ -49,7 +49,7 @@ public interface OneInchTokenApiService {
     );
     
     @GET("token/v1.2/{chainId}/search")
-    Single<List<TokenDto>> searchTokens(
+    Single<List<Token>> searchTokens(
             @Path("chainId") Integer chainId,
             @Query("query") String query,
             @Query("ignore_listed") Boolean ignoreListed,
@@ -59,13 +59,13 @@ public interface OneInchTokenApiService {
     
     // Custom token operations
     @GET("token/v1.2/{chainId}/custom")
-    Single<Map<String, TokenInfo>> getCustomTokens(
+    Single<Map<String, Token>> getCustomTokens(
             @Path("chainId") Integer chainId,
             @Query("addresses") List<String> addresses
     );
     
     @GET("token/v1.2/{chainId}/custom/{address}")
-    Single<TokenDto> getCustomToken(
+    Single<Token> getCustomToken(
             @Path("chainId") Integer chainId,
             @Path("address") String address
     );

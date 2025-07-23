@@ -215,7 +215,7 @@ class OneInchIntegrationTest {
             
             // Check for some well-known Ethereum tokens
             boolean foundUsdc = false;
-            for (TokenInfo token : tokenList.getTokens()) {
+            for (Token token : tokenList.getTokens()) {
                 if ("USDC".equals(token.getSymbol())) {
                     foundUsdc = true;
                     assertEquals(Integer.valueOf(6), token.getDecimals());
@@ -244,7 +244,7 @@ class OneInchIntegrationTest {
                 .build();
         
         try {
-            List<TokenDto> searchResults = client.token().searchMultiChainTokens(request);
+            List<Token> searchResults = client.token().searchMultiChainTokens(request);
             
             assertNotNull(searchResults, "Search results should not be null");
             assertFalse(searchResults.isEmpty(), "Search results should contain some tokens");
@@ -252,7 +252,7 @@ class OneInchIntegrationTest {
             
             // Check that results contain 1INCH related tokens
             boolean foundOneInch = false;
-            for (TokenDto token : searchResults) {
+            for (Token token : searchResults) {
                 if (token.getSymbol().contains("1INCH") || token.getName().toLowerCase().contains("1inch")) {
                     foundOneInch = true;
                     assertNotNull(token.getAddress(), "Token address should not be null");
@@ -282,7 +282,7 @@ class OneInchIntegrationTest {
         String oneInchAddress = "0x111111111117dc0aa78b770fa6a738034120c302";
         
         try {
-            TokenDto token = client.token().getCustomToken(chainId, oneInchAddress);
+            Token token = client.token().getCustomToken(chainId, oneInchAddress);
             
             assertNotNull(token, "Custom token response should not be null");
             assertEquals(chainId, token.getChainId(), "Chain ID should match");

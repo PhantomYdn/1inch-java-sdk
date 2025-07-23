@@ -2,13 +2,15 @@ package io.oneinch.sdk.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Data;
 
+import java.math.BigInteger;
 import java.util.List;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TokenInfo {
+public class Token {
     
     @JsonProperty("chainId")
     private Integer chainId;
@@ -37,6 +39,16 @@ public class TokenInfo {
     @JsonProperty("isFoT")
     private Boolean isFoT;
     
+    @JsonProperty("rating")
+    private Double rating;
+    
+    @JsonProperty("providers")
+    private List<String> providers;
+    
+    @JsonProperty("marketCap")
+    private BigInteger marketCap;
+    
     @JsonProperty("tags")
-    private List<String> tags;
+    @JsonDeserialize(using = FlexibleTagsDeserializer.class)
+    private List<Object> tags;
 }

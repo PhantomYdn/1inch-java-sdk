@@ -107,21 +107,21 @@ public interface TokenService {
      * @return List of matching tokens
      * @throws OneInchException if the request fails
      */
-    List<TokenDto> searchMultiChainTokens(TokenSearchRequest request) throws OneInchException;
+    List<Token> searchMultiChainTokens(TokenSearchRequest request) throws OneInchException;
     
     /**
      * Search tokens across multiple chains (asynchronous with CompletableFuture).
      * @param request Token search request parameters
      * @return CompletableFuture containing list of matching tokens
      */
-    CompletableFuture<List<TokenDto>> searchMultiChainTokensAsync(TokenSearchRequest request);
+    CompletableFuture<List<Token>> searchMultiChainTokensAsync(TokenSearchRequest request);
     
     /**
      * Search tokens across multiple chains (reactive with RxJava).
      * @param request Token search request parameters
      * @return Single containing list of matching tokens
      */
-    Single<List<TokenDto>> searchMultiChainTokensRx(TokenSearchRequest request);
+    Single<List<Token>> searchMultiChainTokensRx(TokenSearchRequest request);
     
     /**
      * Search tokens on specific chain (synchronous).
@@ -129,21 +129,21 @@ public interface TokenService {
      * @return List of matching tokens
      * @throws OneInchException if the request fails
      */
-    List<TokenDto> searchTokens(TokenSearchRequest request) throws OneInchException;
+    List<Token> searchTokens(TokenSearchRequest request) throws OneInchException;
     
     /**
      * Search tokens on specific chain (asynchronous with CompletableFuture).
      * @param request Token search request parameters (chainId required)
      * @return CompletableFuture containing list of matching tokens
      */
-    CompletableFuture<List<TokenDto>> searchTokensAsync(TokenSearchRequest request);
+    CompletableFuture<List<Token>> searchTokensAsync(TokenSearchRequest request);
     
     /**
      * Search tokens on specific chain (reactive with RxJava).
      * @param request Token search request parameters (chainId required)
      * @return Single containing list of matching tokens
      */
-    Single<List<TokenDto>> searchTokensRx(TokenSearchRequest request);
+    Single<List<Token>> searchTokensRx(TokenSearchRequest request);
     
     // Custom token operations
     /**
@@ -152,21 +152,21 @@ public interface TokenService {
      * @return Map of token address to token info
      * @throws OneInchException if the request fails
      */
-    Map<String, TokenInfo> getCustomTokens(CustomTokenRequest request) throws OneInchException;
+    Map<String, Token> getCustomTokens(CustomTokenRequest request) throws OneInchException;
     
     /**
      * Get multiple custom tokens by addresses (asynchronous with CompletableFuture).
      * @param request Custom token request parameters
      * @return CompletableFuture containing token map
      */
-    CompletableFuture<Map<String, TokenInfo>> getCustomTokensAsync(CustomTokenRequest request);
+    CompletableFuture<Map<String, Token>> getCustomTokensAsync(CustomTokenRequest request);
     
     /**
      * Get multiple custom tokens by addresses (reactive with RxJava).
      * @param request Custom token request parameters
      * @return Single containing token map
      */
-    Single<Map<String, TokenInfo>> getCustomTokensRx(CustomTokenRequest request);
+    Single<Map<String, Token>> getCustomTokensRx(CustomTokenRequest request);
     
     /**
      * Get single custom token by address (synchronous).
@@ -175,7 +175,7 @@ public interface TokenService {
      * @return Token details
      * @throws OneInchException if the request fails
      */
-    TokenDto getCustomToken(Integer chainId, String address) throws OneInchException;
+    Token getCustomToken(Integer chainId, String address) throws OneInchException;
     
     /**
      * Get single custom token by address (asynchronous with CompletableFuture).
@@ -183,7 +183,7 @@ public interface TokenService {
      * @param address Token contract address
      * @return CompletableFuture containing token details
      */
-    CompletableFuture<TokenDto> getCustomTokenAsync(Integer chainId, String address);
+    CompletableFuture<Token> getCustomTokenAsync(Integer chainId, String address);
     
     /**
      * Get single custom token by address (reactive with RxJava).
@@ -191,7 +191,7 @@ public interface TokenService {
      * @param address Token contract address
      * @return Single containing token details
      */
-    Single<TokenDto> getCustomTokenRx(Integer chainId, String address);
+    Single<Token> getCustomTokenRx(Integer chainId, String address);
     
     // Token details operations
     /**

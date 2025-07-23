@@ -165,17 +165,17 @@ class TokenServiceImplTest {
                 .limit(10)
                 .build();
 
-        TokenDto token = new TokenDto();
+        Token token = new Token();
         token.setSymbol("1INCH");
         token.setName("1inch");
 
-        List<TokenDto> expectedResponse = List.of(token);
+        List<Token> expectedResponse = List.of(token);
 
         when(tokenApiService.searchMultiChainTokens(eq("1inch"), any(), eq(true), eq(10)))
                 .thenReturn(Single.just(expectedResponse));
 
         // When
-        List<TokenDto> result = tokenService.searchMultiChainTokensRx(request).blockingGet();
+        List<Token> result = tokenService.searchMultiChainTokensRx(request).blockingGet();
 
         // Then
         assertNotNull(result);
@@ -190,7 +190,7 @@ class TokenServiceImplTest {
         Integer chainId = 1;
         String address = "0x111111111117dc0aa78b770fa6a738034120c302";
 
-        TokenDto expectedToken = new TokenDto();
+        Token expectedToken = new Token();
         expectedToken.setChainId(chainId);
         expectedToken.setAddress(address);
         expectedToken.setSymbol("1INCH");
@@ -199,7 +199,7 @@ class TokenServiceImplTest {
                 .thenReturn(Single.just(expectedToken));
 
         // When
-        TokenDto result = tokenService.getCustomTokenRx(chainId, address).blockingGet();
+        Token result = tokenService.getCustomTokenRx(chainId, address).blockingGet();
 
         // Then
         assertNotNull(result);
