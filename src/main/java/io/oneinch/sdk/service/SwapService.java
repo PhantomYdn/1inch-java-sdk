@@ -60,19 +60,19 @@ public interface SwapService {
      * @return Spender response with router address
      * @throws OneInchException if the request fails
      */
-    SpenderResponse getSpender() throws OneInchException;
+    SpenderResponse getSpender(Integer chainId) throws OneInchException;
     
     /**
      * Get the 1inch router spender address (asynchronous with CompletableFuture).
      * @return CompletableFuture containing spender response
      */
-    CompletableFuture<SpenderResponse> getSpenderAsync();
+    CompletableFuture<SpenderResponse> getSpenderAsync(Integer chainId);
     
     /**
      * Get the 1inch router spender address (reactive with RxJava).
      * @return Single containing spender response
      */
-    Single<SpenderResponse> getSpenderRx();
+    Single<SpenderResponse> getSpenderRx(Integer chainId);
     
     // Approve operations
     /**

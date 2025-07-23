@@ -26,7 +26,7 @@ public class OneInchClient implements AutoCloseable {
         this.httpClient = customOkHttpClient != null 
             ? new RetrofitHttpClient(resolvedApiKey, customOkHttpClient)
             : new RetrofitHttpClient(resolvedApiKey);
-        this.swapService = new SwapServiceImpl(this.httpClient.getApiService());
+        this.swapService = new SwapServiceImpl(this.httpClient.getSwapApiService());
         this.tokenService = new TokenServiceImpl(this.httpClient.getTokenApiService());
         this.tokenDetailsService = new TokenDetailsServiceImpl(this.httpClient.getTokenDetailsApiService());
     }

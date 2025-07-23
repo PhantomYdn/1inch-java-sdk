@@ -3,14 +3,16 @@ package io.oneinch.sdk.client;
 import io.oneinch.sdk.model.*;
 import io.reactivex.rxjava3.core.Single;
 import retrofit2.http.GET;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 import java.math.BigInteger;
 
-public interface OneInchApiService {
+public interface OneInchSwapApiService {
     
-    @GET("swap/v6.0/1/quote")
+    @GET("swap/v6.0/{chain}/quote")
     Single<QuoteResponse> getQuote(
+            @Path("chain") Integer chainId,
             @Query("src") String src,
             @Query("dst") String dst,
             @Query("amount") BigInteger amount,
@@ -27,9 +29,10 @@ public interface OneInchApiService {
             @Query("connectorTokens") String connectorTokens,
             @Query("excludedProtocols") String excludedProtocols
     );
-    
-    @GET("swap/v6.0/1/swap")
+
+    @GET("swap/v6.0/{chain}/swap")
     Single<SwapResponse> getSwap(
+            @Path("chain") Integer chainId,
             @Query("src") String src,
             @Query("dst") String dst,
             @Query("amount") BigInteger amount,
@@ -56,17 +59,21 @@ public interface OneInchApiService {
             @Query("usePermit2") Boolean usePermit2
     );
     
-    @GET("swap/v6.0/1/approve/spender")
-    Single<SpenderResponse> getSpender();
+    @GET("swap/v6.0/{chain}/approve/spender")
+    Single<SpenderResponse> getSpender(
+        @Path("chain") Integer chainId
+    );
     
-    @GET("swap/v6.0/1/approve/transaction")
+    @GET("swap/v6.0/{chain}/approve/transaction")
     Single<ApproveCallDataResponse> getApproveTransaction(
+            @Path("chain") Integer chainId,
             @Query("tokenAddress") String tokenAddress,
             @Query("amount") BigInteger amount
     );
-    
-    @GET("swap/v6.0/1/approve/allowance")
+
+    @GET("swap/v6.0/{chain}/approve/allowance")
     Single<AllowanceResponse> getAllowance(
+            @Path("chain") Integer chainId,
             @Query("tokenAddress") String tokenAddress,
             @Query("walletAddress") String walletAddress
     );

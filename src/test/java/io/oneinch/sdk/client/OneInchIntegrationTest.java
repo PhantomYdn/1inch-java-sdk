@@ -46,6 +46,7 @@ class OneInchIntegrationTest {
         
         // ETH to 1INCH quote request
         QuoteRequest request = QuoteRequest.builder()
+                .chainId(1)  // Ethereum
                 .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
                 .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH token
                 .amount(new BigInteger("1000000000000000000"))  // 1 ETH in wei
@@ -76,7 +77,7 @@ class OneInchIntegrationTest {
         SwapService swapService = client.swap();
         
         log.info("Getting 1inch router spender address...");
-        SpenderResponse response = swapService.getSpender();
+        SpenderResponse response = swapService.getSpender(1);
         
         assertNotNull(response, "Spender response should not be null");
         assertNotNull(response.getAddress(), "Spender address should not be null");
@@ -92,6 +93,7 @@ class OneInchIntegrationTest {
         
         // Check allowance for a common token (1INCH) and wallet
         AllowanceRequest request = AllowanceRequest.builder()
+                .chainId(1)  // Ethereum
                 .tokenAddress("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH token
                 .walletAddress("0x1111111254eeb25477b68fb85ed929f73a960582")  // 1inch router address as example
                 .build();
@@ -112,6 +114,7 @@ class OneInchIntegrationTest {
         SwapService swapService = client.swap();
         
         QuoteRequest request = QuoteRequest.builder()
+                .chainId(1)  // Ethereum
                 .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
                 .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH token
                 .amount(new BigInteger("100000000000000000"))  // 0.1 ETH in wei
@@ -134,6 +137,7 @@ class OneInchIntegrationTest {
         SwapService swapService = client.swap();
         
         QuoteRequest request = QuoteRequest.builder()
+                .chainId(1)  // Ethereum
                 .src("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")  // ETH
                 .dst("0x111111111117dc0aa78b770fa6a738034120c302")  // 1INCH token
                 .amount(new BigInteger("500000000000000000"))  // 0.5 ETH in wei

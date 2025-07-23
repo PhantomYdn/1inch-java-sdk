@@ -23,7 +23,7 @@ public class RetrofitHttpClient implements HttpClient {
     
     private static final String BASE_URL = "https://api.1inch.dev/";
     
-    private final OneInchApiService apiService;
+    private final OneInchSwapApiService apiService;
     private final OneInchTokenApiService tokenApiService;
     private final OneInchTokenDetailsApiService tokenDetailsApiService;
     private final OkHttpClient okHttpClient;
@@ -43,7 +43,7 @@ public class RetrofitHttpClient implements HttpClient {
                 .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
                 .build();
         
-        this.apiService = retrofit.create(OneInchApiService.class);
+        this.apiService = retrofit.create(OneInchSwapApiService.class);
         this.tokenApiService = retrofit.create(OneInchTokenApiService.class);
         this.tokenDetailsApiService = retrofit.create(OneInchTokenDetailsApiService.class);
     }
@@ -86,7 +86,7 @@ public class RetrofitHttpClient implements HttpClient {
                 .toCompletableFuture();
     }
     
-    public OneInchApiService getApiService() {
+    public OneInchSwapApiService getSwapApiService() {
         return apiService;
     }
     

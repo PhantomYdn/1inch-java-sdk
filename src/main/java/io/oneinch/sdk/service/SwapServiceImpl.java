@@ -1,6 +1,6 @@
 package io.oneinch.sdk.service;
 
-import io.oneinch.sdk.client.OneInchApiService;
+import io.oneinch.sdk.client.OneInchSwapApiService;
 import io.oneinch.sdk.client.OneInchErrorHandler;
 import io.oneinch.sdk.exception.OneInchException;
 import io.oneinch.sdk.model.*;
@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 public class SwapServiceImpl implements SwapService {
     
-    private final OneInchApiService apiService;
+    private final OneInchSwapApiService apiService;
     
     // Reactive methods
     @Override
@@ -23,6 +23,7 @@ public class SwapServiceImpl implements SwapService {
                 request.getSrc(), request.getDst(), request.getAmount());
         
         return apiService.getQuote(
+                request.getChainId(),
                 request.getSrc(),
                 request.getDst(),
                 request.getAmount(),
@@ -49,6 +50,7 @@ public class SwapServiceImpl implements SwapService {
                 request.getSrc(), request.getDst(), request.getAmount(), request.getFrom());
         
         return apiService.getSwap(
+                request.getChainId(),
                 request.getSrc(),
                 request.getDst(),
                 request.getAmount(),
@@ -79,9 +81,9 @@ public class SwapServiceImpl implements SwapService {
     }
     
     @Override
-    public Single<SpenderResponse> getSpenderRx() {
+    public Single<SpenderResponse> getSpenderRx(Integer chainId) {
         log.info("Getting spender address (reactive)");
-        return apiService.getSpender()
+        return apiService.getSpender(chainId)
                 .doOnSuccess(response -> log.debug("Spender address: {}", response.getAddress()))
                 .doOnError(error -> log.error("Spender request failed", error))
                 .onErrorResumeNext(error -> Single.error(OneInchErrorHandler.handleError(error)));
@@ -92,7 +94,7 @@ public class SwapServiceImpl implements SwapService {
         log.info("Getting approve transaction (reactive) for token {} with amount {}", 
                 request.getTokenAddress(), request.getAmount());
         
-        return apiService.getApproveTransaction(request.getTokenAddress(), request.getAmount())
+        return apiService.getApproveTransaction(request.getChainId(), request.getTokenAddress(), request.getAmount())
                 .doOnSuccess(response -> log.debug("Approve transaction data: {}", response.getData()))
                 .doOnError(error -> log.error("Approve transaction request failed", error))
                 .onErrorResumeNext(error -> Single.error(OneInchErrorHandler.handleError(error)));
@@ -103,7 +105,7 @@ public class SwapServiceImpl implements SwapService {
         log.info("Getting allowance (reactive) for token {} and wallet {}", 
                 request.getTokenAddress(), request.getWalletAddress());
         
-        return apiService.getAllowance(request.getTokenAddress(), request.getWalletAddress())
+        return apiService.getAllowance(request.getChainId(), request.getTokenAddress(), request.getWalletAddress())
                 .doOnSuccess(response -> log.debug("Allowance: {}", response.getAllowance()))
                 .doOnError(error -> log.error("Allowance request failed", error))
                 .onErrorResumeNext(error -> Single.error(OneInchErrorHandler.handleError(error)));
@@ -139,17 +141,17 @@ public class SwapServiceImpl implements SwapService {
     }
     
     @Override
-    public SpenderResponse getSpender() throws OneInchException {
+    public SpenderResponse getSpender(Integer chainId) throws OneInchException {
         try {
-            return getSpenderRx().blockingGet();
+            return getSpenderRx(chainId).blockingGet();
         } catch (Exception e) {
             throw new OneInchException("Spender request failed", e);
         }
     }
     
     @Override
-    public CompletableFuture<SpenderResponse> getSpenderAsync() {
-        return getSpenderRx().toCompletionStage().toCompletableFuture();
+    public CompletableFuture<SpenderResponse> getSpenderAsync(Integer chainId) {
+        return getSpenderRx(chainId).toCompletionStage().toCompletableFuture();
     }
     
     @Override

@@ -9,6 +9,7 @@ import lombok.Data;
 @Builder
 public class SwapRequest {
     
+    private Integer chainId;
     private String src;
     private String dst;
     private BigInteger amount;

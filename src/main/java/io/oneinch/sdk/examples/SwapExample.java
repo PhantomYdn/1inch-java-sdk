@@ -52,7 +52,7 @@ public class SwapExample {
             BigInteger swapAmount = new BigInteger("10000000000000000"); // 0.01 ETH in wei
             
             // Reactive chaining with proper error handling
-            client.swap().getSpenderRx()
+            client.swap().getSpenderRx(1)
                 .doOnSuccess(spender -> log.info("Spender address: {}", spender.getAddress()))
                 .flatMap(spender -> {
                     // Step 2: Check allowance
@@ -135,7 +135,7 @@ public class SwapExample {
             BigInteger swapAmount = new BigInteger("10000000000000000"); // 0.01 ETH in wei
 
             // Run multiple operations in parallel
-            Single<SpenderResponse> spenderSingle = client.swap().getSpenderRx()
+            Single<SpenderResponse> spenderSingle = client.swap().getSpenderRx(1)
                     .subscribeOn(Schedulers.io())
                     .doOnSuccess(spender -> log.info("Parallel: Got spender {}", spender.getAddress()));
             
@@ -185,7 +185,7 @@ public class SwapExample {
 
             // Step 1: Get spender address (synchronous)
             log.info("Step 1: Getting spender address...");
-            SpenderResponse spender = client.swap().getSpender();
+            SpenderResponse spender = client.swap().getSpender(1);
             log.info("Spender address: {}", spender.getAddress());
             
             // Step 2: Check allowance (synchronous)
