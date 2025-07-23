@@ -1,7 +1,6 @@
 package io.oneinch.sdk.service;
 
 import io.oneinch.sdk.client.OneInchTokenApiService;
-import io.oneinch.sdk.client.OneInchTokenDetailsApiService;
 import io.oneinch.sdk.exception.OneInchException;
 import io.oneinch.sdk.model.*;
 import io.reactivex.rxjava3.core.Single;
@@ -15,12 +14,9 @@ import java.util.concurrent.CompletableFuture;
 public class TokenServiceImpl implements TokenService {
     
     private final OneInchTokenApiService tokenApiService;
-    private final OneInchTokenDetailsApiService tokenDetailsApiService;
     
-    public TokenServiceImpl(OneInchTokenApiService tokenApiService, 
-                           OneInchTokenDetailsApiService tokenDetailsApiService) {
+    public TokenServiceImpl(OneInchTokenApiService tokenApiService) {
         this.tokenApiService = tokenApiService;
-        this.tokenDetailsApiService = tokenDetailsApiService;
     }
     
     // Multi-chain token operations
@@ -286,78 +282,6 @@ public class TokenServiceImpl implements TokenService {
                         chainId, address, response.getSymbol()))
                 .doOnError(error -> log.error("Custom token request failed for chain {} and address {}", 
                         chainId, address, error));
-    }
-    
-    // Token details operations
-    @Override
-    public TokenDetailsResponse getNativeTokenDetails(TokenDetailsRequest request) throws OneInchException {
-        validateChainId(request.getChainId());
-        try {
-            log.info("Getting native token details for chain {} with provider: {}", 
-                    request.getChainId(), request.getProvider());
-            return getNativeTokenDetailsRx(request).blockingGet();
-        } catch (Exception e) {
-            log.error("Native token details request failed for chain {}", request.getChainId(), e);
-            throw new OneInchException("Failed to get native token details for chain " + request.getChainId(), e);
-        }
-    }
-    
-    @Override
-    public CompletableFuture<TokenDetailsResponse> getNativeTokenDetailsAsync(TokenDetailsRequest request) {
-        return getNativeTokenDetailsRx(request)
-                .toCompletionStage()
-                .toCompletableFuture();
-    }
-    
-    @Override
-    public Single<TokenDetailsResponse> getNativeTokenDetailsRx(TokenDetailsRequest request) {
-        validateChainId(request.getChainId());
-        log.info("Getting native token details (reactive) for chain {} with provider: {}", 
-                request.getChainId(), request.getProvider());
-        
-        return tokenDetailsApiService.getNativeTokenDetails(request.getChainId(), request.getProvider())
-                .doOnSuccess(response -> log.debug("Native token details retrieved for chain {}", 
-                        request.getChainId()))
-                .doOnError(error -> log.error("Native token details request failed for chain {}", 
-                        request.getChainId(), error));
-    }
-    
-    @Override
-    public TokenDetailsResponse getTokenDetails(TokenDetailsRequest request) throws OneInchException {
-        validateChainId(request.getChainId());
-        validateAddress(request.getContractAddress());
-        try {
-            log.info("Getting token details for chain {} and contract {} with provider: {}", 
-                    request.getChainId(), request.getContractAddress(), request.getProvider());
-            return getTokenDetailsRx(request).blockingGet();
-        } catch (Exception e) {
-            log.error("Token details request failed for chain {} and contract {}", 
-                    request.getChainId(), request.getContractAddress(), e);
-            throw new OneInchException("Failed to get token details for chain " + request.getChainId() 
-                    + " and contract " + request.getContractAddress(), e);
-        }
-    }
-    
-    @Override
-    public CompletableFuture<TokenDetailsResponse> getTokenDetailsAsync(TokenDetailsRequest request) {
-        return getTokenDetailsRx(request)
-                .toCompletionStage()
-                .toCompletableFuture();
-    }
-    
-    @Override
-    public Single<TokenDetailsResponse> getTokenDetailsRx(TokenDetailsRequest request) {
-        validateChainId(request.getChainId());
-        validateAddress(request.getContractAddress());
-        log.info("Getting token details (reactive) for chain {} and contract {} with provider: {}", 
-                request.getChainId(), request.getContractAddress(), request.getProvider());
-        
-        return tokenDetailsApiService.getTokenDetails(request.getChainId(), 
-                request.getContractAddress(), request.getProvider())
-                .doOnSuccess(response -> log.debug("Token details retrieved for chain {} and contract {}", 
-                        request.getChainId(), request.getContractAddress()))
-                .doOnError(error -> log.error("Token details request failed for chain {} and contract {}", 
-                        request.getChainId(), request.getContractAddress(), error));
     }
     
     // Validation methods

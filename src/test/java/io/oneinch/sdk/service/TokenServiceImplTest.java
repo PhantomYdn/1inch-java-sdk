@@ -1,7 +1,6 @@
 package io.oneinch.sdk.service;
 
 import io.oneinch.sdk.client.OneInchTokenApiService;
-import io.oneinch.sdk.client.OneInchTokenDetailsApiService;
 import io.oneinch.sdk.exception.OneInchException;
 import io.oneinch.sdk.model.*;
 import io.reactivex.rxjava3.core.Single;
@@ -26,14 +25,12 @@ class TokenServiceImplTest {
     @Mock
     private OneInchTokenApiService tokenApiService;
 
-    @Mock
-    private OneInchTokenDetailsApiService tokenDetailsApiService;
 
     private TokenServiceImpl tokenService;
 
     @BeforeEach
     void setUp() {
-        tokenService = new TokenServiceImpl(tokenApiService, tokenDetailsApiService);
+        tokenService = new TokenServiceImpl(tokenApiService);
     }
 
     @Test
@@ -219,61 +216,6 @@ class TokenServiceImplTest {
         assertThrows(IllegalArgumentException.class, 
                 () -> tokenService.getCustomToken(chainId, address));
         verifyNoInteractions(tokenApiService);
-    }
-
-    @Test
-    void testGetTokenDetailsRx_Success() {
-        // Given
-        TokenDetailsRequest request = TokenDetailsRequest.builder()
-                .chainId(1)
-                .contractAddress("0x111111111117dc0aa78b770fa6a738034120c302")
-                .provider("coinmarketcap")
-                .build();
-
-        TokenDetailsResponse expectedResponse = new TokenDetailsResponse();
-        AssetsResponse assets = new AssetsResponse();
-        assets.setName("1inch");
-        expectedResponse.setAssets(assets);
-
-        when(tokenDetailsApiService.getTokenDetails(eq(1), 
-                eq("0x111111111117dc0aa78b770fa6a738034120c302"), eq("coinmarketcap")))
-                .thenReturn(Single.just(expectedResponse));
-
-        // When
-        TokenDetailsResponse result = tokenService.getTokenDetailsRx(request).blockingGet();
-
-        // Then
-        assertNotNull(result);
-        assertNotNull(result.getAssets());
-        assertEquals("1inch", result.getAssets().getName());
-        verify(tokenDetailsApiService).getTokenDetails(1, 
-                "0x111111111117dc0aa78b770fa6a738034120c302", "coinmarketcap");
-    }
-
-    @Test
-    void testGetNativeTokenDetailsRx_Success() {
-        // Given
-        TokenDetailsRequest request = TokenDetailsRequest.builder()
-                .chainId(1)
-                .provider("coingecko")
-                .build();
-
-        TokenDetailsResponse expectedResponse = new TokenDetailsResponse();
-        AssetsResponse assets = new AssetsResponse();
-        assets.setName("Ethereum");
-        expectedResponse.setAssets(assets);
-
-        when(tokenDetailsApiService.getNativeTokenDetails(eq(1), eq("coingecko")))
-                .thenReturn(Single.just(expectedResponse));
-
-        // When
-        TokenDetailsResponse result = tokenService.getNativeTokenDetailsRx(request).blockingGet();
-
-        // Then
-        assertNotNull(result);
-        assertNotNull(result.getAssets());
-        assertEquals("Ethereum", result.getAssets().getName());
-        verify(tokenDetailsApiService).getNativeTokenDetails(1, "coingecko");
     }
 
     @Test

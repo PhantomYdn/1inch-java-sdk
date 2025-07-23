@@ -193,48 +193,4 @@ public interface TokenService {
      */
     Single<Token> getCustomTokenRx(Integer chainId, String address);
     
-    // Token details operations
-    /**
-     * Get native token details (synchronous).
-     * @param request Token details request parameters
-     * @return Token details response
-     * @throws OneInchException if the request fails
-     */
-    TokenDetailsResponse getNativeTokenDetails(TokenDetailsRequest request) throws OneInchException;
-    
-    /**
-     * Get native token details (asynchronous with CompletableFuture).
-     * @param request Token details request parameters
-     * @return CompletableFuture containing token details response
-     */
-    CompletableFuture<TokenDetailsResponse> getNativeTokenDetailsAsync(TokenDetailsRequest request);
-    
-    /**
-     * Get native token details (reactive with RxJava).
-     * @param request Token details request parameters
-     * @return Single containing token details response
-     */
-    Single<TokenDetailsResponse> getNativeTokenDetailsRx(TokenDetailsRequest request);
-    
-    /**
-     * Get token details with contract address (synchronous).
-     * @param request Token details request parameters (contractAddress required)
-     * @return Token details response
-     * @throws OneInchException if the request fails
-     */
-    TokenDetailsResponse getTokenDetails(TokenDetailsRequest request) throws OneInchException;
-    
-    /**
-     * Get token details with contract address (asynchronous with CompletableFuture).
-     * @param request Token details request parameters (contractAddress required)
-     * @return CompletableFuture containing token details response
-     */
-    CompletableFuture<TokenDetailsResponse> getTokenDetailsAsync(TokenDetailsRequest request);
-    
-    /**
-     * Get token details with contract address (reactive with RxJava).
-     * @param request Token details request parameters (contractAddress required)
-     * @return Single containing token details response
-     */
-    Single<TokenDetailsResponse> getTokenDetailsRx(TokenDetailsRequest request);
 }
