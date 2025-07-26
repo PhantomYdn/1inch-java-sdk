@@ -9,7 +9,10 @@ class OneInchClientTest {
 
     @Test
     void testBuilderSuccess() {
-        OneInchClient client = OneInchClient.builder().build();
+        // For unit tests, we provide a test API key to avoid requiring real credentials
+        OneInchClient client = OneInchClient.builder()
+                .apiKey("test-api-key-for-unit-testing")
+                .build();
 
         assertNotNull(client);
         assertNotNull(client.getHttpClient());

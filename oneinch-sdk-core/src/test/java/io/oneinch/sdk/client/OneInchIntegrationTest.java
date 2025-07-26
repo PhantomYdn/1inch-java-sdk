@@ -31,12 +31,25 @@ class OneInchIntegrationTest {
     
     @BeforeEach
     void setUp() {
-        // This will use the ONEINCH_API_KEY from system properties (loaded from test.properties)
+        // Check if API key is available before creating client
+        String apiKey = System.getProperty("ONEINCH_API_KEY");
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            throw new IllegalStateException(
+                "API key is required for integration tests. " +
+                "Please add ONEINCH_API_KEY to the .env file in the project root directory, " +
+                "or set it as an environment variable. " +
+                "Get your API key from https://portal.1inch.dev/"
+            );
+        }
+        
         try {
             client = OneInchClient.builder().build();
-        } catch (IllegalArgumentException e) {
-            // API key not available, tests will be skipped
-            log.warn("No API key available for integration tests: {}", e.getMessage());
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                "Failed to initialize OneInchClient for integration tests. " +
+                "Please ensure ONEINCH_API_KEY is set correctly in .env file. " +
+                "Error: " + e.getMessage(), e
+            );
         }
     }
     

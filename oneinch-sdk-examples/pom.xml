@@ -1,0 +1,89 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.oneinch.sdk</groupId>
+    <artifactId>oneinch-sdk</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>oneinch-sdk-examples</artifactId>
+  <packaging>jar</packaging>
+  <name>1inch Java SDK Examples</name>
+  <description>Example applications demonstrating 1inch Java SDK usage</description>
+
+  <dependencies>
+    <!-- Core SDK dependency -->
+    <dependency>
+      <groupId>io.oneinch.sdk</groupId>
+      <artifactId>oneinch-sdk-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- Logging implementation for examples -->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+    </dependency>
+
+    <!-- Lombok for examples -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <configuration>
+          <mainClass>io.oneinch.sdk.examples.QuickStartExample</mainClass>
+        </configuration>
+        <executions>
+          <execution>
+            <id>swap-example</id>
+            <configuration>
+              <mainClass>io.oneinch.sdk.examples.SwapExample</mainClass>
+            </configuration>
+          </execution>
+          <execution>
+            <id>token-example</id>
+            <configuration>
+              <mainClass>io.oneinch.sdk.examples.TokenExample</mainClass>
+            </configuration>
+          </execution>
+          <execution>
+            <id>token-details-example</id>
+            <configuration>
+              <mainClass>io.oneinch.sdk.examples.TokenDetailsExample</mainClass>
+            </configuration>
+          </execution>
+          <execution>
+            <id>orderbook-example</id>
+            <configuration>
+              <mainClass>io.oneinch.sdk.examples.OrderbookExample</mainClass>
+            </configuration>
+          </execution>
+          <execution>
+            <id>quickstart-example</id>
+            <configuration>
+              <mainClass>io.oneinch.sdk.examples.QuickStartExample</mainClass>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

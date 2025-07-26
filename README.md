@@ -19,16 +19,42 @@ A comprehensive Java SDK for the 1inch DEX Aggregation Protocol, providing easy 
 - ✅ Type-safe models with Jackson and BigInteger precision
 - ✅ Extensive unit test coverage
 
+## Project Structure
+
+This project is organized as a multi-module Maven project:
+
+- **`oneinch-sdk-core`** - The core SDK functionality with all APIs and models
+- **`oneinch-sdk-examples`** - Example applications demonstrating SDK usage
+
 ## Installation
 
-Add the following dependency to your `pom.xml`:
+Add the core SDK dependency to your `pom.xml`:
 
 ```xml
 <dependency>
     <groupId>io.oneinch.sdk</groupId>
-    <artifactId>oneinch-sdk</artifactId>
+    <artifactId>oneinch-sdk-core</artifactId>
     <version>1.0-SNAPSHOT</version>
 </dependency>
+```
+
+## Building from Source
+
+### Build Everything
+```bash
+git clone https://github.com/1inch/1inch-java-sdk.git
+cd 1inch-java-sdk
+mvn clean install
+```
+
+### Build Only Core SDK
+```bash
+mvn clean install -pl oneinch-sdk-core
+```
+
+### Build Only Examples  
+```bash
+mvn clean install -pl oneinch-sdk-examples
 ```
 
 ## High-Precision Arithmetic
@@ -241,6 +267,31 @@ The SDK includes complete example classes demonstrating all APIs:
 - **`TokenExample.java`** - Token list, search, and custom token operations
 - **`TokenDetailsExample.java`** - Token pricing, charts, and market data
 - **`OrderbookExample.java`** - Limit orders, events, and trading pairs
+
+#### Running Examples
+
+To run the examples, first set your API key:
+```bash
+export ONEINCH_API_KEY="your-api-key-here"
+```
+
+Then run specific examples:
+```bash
+# Run the QuickStart example
+mvn exec:java -pl oneinch-sdk-examples
+
+# Run the Swap example
+mvn exec:java -pl oneinch-sdk-examples -Dexec.mainClass="io.oneinch.sdk.examples.SwapExample"
+
+# Run the Token example
+mvn exec:java -pl oneinch-sdk-examples -Dexec.mainClass="io.oneinch.sdk.examples.TokenExample"
+
+# Run the Token Details example
+mvn exec:java -pl oneinch-sdk-examples -Dexec.mainClass="io.oneinch.sdk.examples.TokenDetailsExample"
+
+# Run the Orderbook example
+mvn exec:java -pl oneinch-sdk-examples -Dexec.mainClass="io.oneinch.sdk.examples.OrderbookExample"
+```
 
 ### Reactive Swap Flow
 ```java
@@ -645,7 +696,11 @@ mvn clean install
 ### Unit Tests
 Run the mock unit tests (no API key required):
 ```bash
+# Test all modules
 mvn test
+
+# Test only core SDK
+mvn test -pl oneinch-sdk-core
 ```
 
 ### Integration Tests
@@ -668,9 +723,9 @@ To run integration tests with real API calls:
 3. **Run integration tests**:
    ```bash
    # Run only integration tests
-   mvn test -Dtest=OneInchIntegrationTest
+   mvn test -pl oneinch-sdk-core -Dtest=OneInchIntegrationTest
    
-   # Or run all tests (unit + integration)
+   # Or run all tests (unit + integration) 
    mvn test
    ```
 
