@@ -29,5 +29,5 @@ public class TokenActionDto {
     private BigInteger amount;
 
     @JsonProperty("direction")
-    private TokenActionDirection direction;
+    private String direction;
 }

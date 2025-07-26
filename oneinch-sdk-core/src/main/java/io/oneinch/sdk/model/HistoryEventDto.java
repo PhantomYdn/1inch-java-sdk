@@ -15,10 +15,10 @@ public class HistoryEventDto {
     private String address;
 
     @JsonProperty("type")
-    private HistoryEventType type;
+    private String type;
 
     @JsonProperty("rating")
-    private EventRating rating;
+    private String rating;
 
     @JsonProperty("timeMs")
     private Long timeMs;

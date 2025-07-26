@@ -27,10 +27,10 @@ public class TransactionDetailsDto {
     private Long blockTimeSec;
 
     @JsonProperty("status")
-    private TransactionStatus status;
+    private String status;
 
     @JsonProperty("type")
-    private TransactionType type;
+    private String type;
 
     @JsonProperty("tokenActions")
     private List<TokenActionDto> tokenActions;

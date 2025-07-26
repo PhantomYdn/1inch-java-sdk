@@ -283,6 +283,7 @@ The SDK includes complete example classes demonstrating all APIs:
 - **`TokenDetailsExample.java`** - Token pricing, charts, and market data
 - **`OrderbookExample.java`** - Limit orders, events, and trading pairs
 - **`HistoryExample.java`** - Transaction history tracking and analysis
+- **`HistoryConsoleExample.java`** - Command-line tool for displaying transaction history
 
 #### Running Examples
 
@@ -310,6 +311,9 @@ mvn exec:java -pl oneinch-sdk-examples -Dexec.mainClass="io.oneinch.sdk.examples
 
 # Run the History example
 mvn exec:java -pl oneinch-sdk-examples -Dexec.mainClass="io.oneinch.sdk.examples.HistoryExample"
+
+# Run the History Console example (requires address argument)
+mvn exec:java -pl oneinch-sdk-examples -Dexec.mainClass="io.oneinch.sdk.examples.HistoryConsoleExample" -Dexec.args="0x111111111117dc0aa78b770fa6a738034120c302"
 ```
 
 ### Reactive Swap Flow
@@ -663,6 +667,80 @@ client.token().getTokensRx(request)
         error -> log.error("Chain failed", error)
     );
 ```
+
+### History Console Tool
+
+The SDK includes a convenient command-line tool for exploring transaction history:
+
+#### Usage
+```bash
+# Basic usage - get 10 recent transactions on Ethereum
+mvn exec:java -pl oneinch-sdk-examples \
+  -Dexec.mainClass="io.oneinch.sdk.examples.HistoryConsoleExample" \
+  -Dexec.args="0x111111111117dc0aa78b770fa6a738034120c302"
+
+# Get 20 transactions on Polygon (chain ID 137)
+mvn exec:java -pl oneinch-sdk-examples \
+  -Dexec.mainClass="io.oneinch.sdk.examples.HistoryConsoleExample" \
+  -Dexec.args="0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8 137 20"
+
+# Get 50 transactions on BSC (chain ID 56)
+mvn exec:java -pl oneinch-sdk-examples \
+  -Dexec.mainClass="io.oneinch.sdk.examples.HistoryConsoleExample" \
+  -Dexec.args="0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8 56 50"
+```
+
+#### Arguments
+- **address** (required) - Ethereum address to query
+- **chainId** (optional) - Blockchain network ID (default: 1 for Ethereum)
+  - `1` = Ethereum, `137` = Polygon, `56` = BSC, `42161` = Arbitrum
+- **limit** (optional) - Number of events to fetch (default: 10, max: 10000)
+
+#### Sample Output
+```
+═══════════════════════════════════════════════════════════════════════════════
+📜 TRANSACTION HISTORY
+═══════════════════════════════════════════════════════════════════════════════
+Address: 0x111111111117dc0aa78b770fa6a738034120c302
+Chain:   Ethereum (1)
+Events:  3 transactions found
+═══════════════════════════════════════════════════════════════════════════════
+
+📋 Event #1 [2023-09-21 15:42:31 UTC]
+   ID: 7279741913753607 | Type: Transaction | Rating: ✅ Reliable
+   Transaction: 0xdd87f...bfc
+   Type: Swap Exact Input | Status: ✅ Completed
+   Chain: Ethereum (1) | Block: 18,182,982
+   Fee: 0.001234 ETH
+
+   Token Actions:
+     ← 1.0 ETH (0x266e...db7 → 0x03f7...329)
+     → 1,337.89 1INCH (0x03f7...329 → 0x266e...db7)
+
+────────────────────────────────────────────────────────────────────────────────
+
+📋 Event #2 [2023-09-20 09:15:22 UTC]
+   ID: 7279741913753606 | Type: Transaction | Rating: ✅ Reliable
+   Transaction: 0xabc12...def
+   Type: Transfer | Status: ✅ Completed
+   Chain: Ethereum (1) | Block: 18,181,445
+   Fee: 0.000456 ETH
+
+   Token Actions:
+     → 100.0 TOKEN (0x123a...789 → 0x456b...012)
+
+═══════════════════════════════════════════════════════════════════════════════
+✅ Successfully displayed 3 transaction events
+═══════════════════════════════════════════════════════════════════════════════
+```
+
+#### Features
+- **Human-readable formatting** - Clean, easy-to-read transaction display
+- **Multi-chain support** - Works with Ethereum, Polygon, BSC, Arbitrum, and more
+- **Token action details** - Shows token transfers with amounts and directions
+- **Error handling** - Clear error messages for common issues
+- **Address validation** - Validates Ethereum address format
+- **Flexible parameters** - Configurable chain ID and result limits
 
 ### History API Examples
 

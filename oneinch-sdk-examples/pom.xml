@@ -82,6 +82,12 @@
               <mainClass>io.oneinch.sdk.examples.QuickStartExample</mainClass>
             </configuration>
           </execution>
+          <execution>
+            <id>history-console-example</id>
+            <configuration>
+              <mainClass>io.oneinch.sdk.examples.HistoryConsoleExample</mainClass>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>
