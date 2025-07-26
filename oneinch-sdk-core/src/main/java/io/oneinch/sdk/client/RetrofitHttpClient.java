@@ -29,6 +29,7 @@ public class RetrofitHttpClient implements HttpClient {
     private final OneInchTokenDetailsApiService tokenDetailsApiService;
     private final OneInchOrderbookApiService orderbookApiService;
     private final OneInchHistoryApiService historyApiService;
+    private final PortfolioApiClient portfolioApiService;
     private final OkHttpClient okHttpClient;
     
     public RetrofitHttpClient(String apiKey) {
@@ -51,6 +52,7 @@ public class RetrofitHttpClient implements HttpClient {
         this.tokenDetailsApiService = retrofit.create(OneInchTokenDetailsApiService.class);
         this.orderbookApiService = retrofit.create(OneInchOrderbookApiService.class);
         this.historyApiService = retrofit.create(OneInchHistoryApiService.class);
+        this.portfolioApiService = retrofit.create(PortfolioApiClient.class);
     }
     
     private static OkHttpClient createDefaultOkHttpClient(String apiKey) {
@@ -109,6 +111,10 @@ public class RetrofitHttpClient implements HttpClient {
     
     public OneInchHistoryApiService getHistoryApiService() {
         return historyApiService;
+    }
+    
+    public PortfolioApiClient getPortfolioApiService() {
+        return portfolioApiService;
     }
     
     @Override
