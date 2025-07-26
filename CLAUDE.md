@@ -35,29 +35,48 @@ src/main/java/io/oneinch/sdk/
 
 ## 1inch API Endpoints
 
-### Swap API (Chain-Specific)
-- **Base URL**: `https://api.1inch.dev/swap/v6.0/1/` (Ethereum)
-- **Quote**: `GET /quote` - Find best quote to swap
-- **Swap**: `GET /swap` - Generate calldata for swap
-- **Approve Spender**: `GET /approve/spender` - Get router address
-- **Approve Transaction**: `GET /approve/transaction` - Generate approve calldata
-- **Allowance**: `GET /approve/allowance` - Check token allowance
-
-### Token API (Multi-Chain)
+### Swap API (Chain-Specific) 
+ChainId is required as path parameter - each chain has separate endpoints:
 - **Base URL**: `https://api.1inch.dev/`
+- **Quote**: `GET /swap/v6.0/{chainId}/quote` - Find best quote to swap on specific chain
+- **Swap**: `GET /swap/v6.0/{chainId}/swap` - Generate calldata for swap on specific chain
+- **Approve Spender**: `GET /swap/v6.0/{chainId}/approve/spender` - Get router address for specific chain
+- **Approve Transaction**: `GET /swap/v6.0/{chainId}/approve/transaction` - Generate approve calldata for specific chain
+- **Allowance**: `GET /swap/v6.0/{chainId}/approve/allowance` - Check token allowance on specific chain
+
+### Token API (Multi-Chain + Chain-Specific)
+Supports both multi-chain operations and chain-specific queries:
+- **Base URL**: `https://api.1inch.dev/`
+
+**Multi-Chain Operations:**
 - **Multi-Chain Tokens**: `GET /token/v1.2/multi-chain` - Get tokens across all chains
-- **Multi-Chain Token List**: `GET /token/v1.2/multi-chain/token-list` - Token list format
+- **Multi-Chain Token List**: `GET /token/v1.2/multi-chain/token-list` - Token list format across all chains
+- **Multi-Chain Search**: `GET /token/v1.2/search` - Search tokens across chains
+
+**Chain-Specific Operations (chainId as path parameter):**
 - **Chain Tokens**: `GET /token/v1.2/{chainId}` - Chain-specific tokens
 - **Chain Token List**: `GET /token/v1.2/{chainId}/token-list` - Chain token list format
-- **Multi-Chain Search**: `GET /token/v1.2/search` - Search tokens across chains
 - **Chain Search**: `GET /token/v1.2/{chainId}/search` - Search tokens on specific chain
-- **Custom Tokens**: `GET /token/v1.2/{chainId}/custom` - Get multiple token details
-- **Custom Token**: `GET /token/v1.2/{chainId}/custom/{address}` - Get single token details
+- **Custom Tokens**: `GET /token/v1.2/{chainId}/custom` - Get multiple token details on specific chain
+- **Custom Token**: `GET /token/v1.2/{chainId}/custom/{address}` - Get single token details on specific chain
 
-### Token Details API (Pricing & Charts)
+### Token Details API (Chain-Specific)
+ChainId is required as path parameter for all operations:
 - **Base URL**: `https://api.1inch.dev/`
-- **Native Token Details**: `GET /token-details/v1.0/details/{chain}` - Native token info
-- **Token Details**: `GET /token-details/v1.0/details/{chain}/{contractAddress}` - Token details with pricing
+- **Native Token Details**: `GET /token-details/v1.0/details/{chainId}` - Native token info for specific chain
+- **Token Details**: `GET /token-details/v1.0/details/{chainId}/{contractAddress}` - Token details with pricing for specific chain
+- **Charts**: `GET /token-details/v1.0/charts/*/{chainId}/*` - Chart data for tokens on specific chain
+
+### Orderbook API (Chain-Specific)
+ChainId is required as path parameter for all operations:
+- **Base URL**: `https://api.1inch.dev/`
+- **Create Order**: `POST /orderbook/v4.0/{chainId}` - Create limit order on specific chain
+- **Get Orders**: `GET /orderbook/v4.0/{chainId}/*` - All order operations require specific chain
+
+### History API (Multi-Chain)
+ChainId is optional query parameter - can work across chains:
+- **Base URL**: `https://api.1inch.dev/`
+- **History Events**: `GET /history/v2.0/history/{address}/events?chainId={chainId}` - Get transaction history (chainId optional)
 
 ## Common Maven Commands
 ```bash
@@ -75,6 +94,8 @@ mvn install         # Install to local repository
 - Gas prices are in wei
 
 ## Swagger Documentation
+- API Swagger documentation can be found in ./swagger/ folder in corresponding sub folder.
+
 All API specifications are organized in the `./swagger/` directory with full OpenAPI 3.0 schema definitions:
 
 ```
@@ -114,6 +135,7 @@ swagger/
 - `./swagger/swap/ethereum.json` - Swap API endpoints
 - `./swagger/token/token.json` - Token API endpoints  
 - `./swagger/token-details/swagger.json` - Token Details API endpoints
+- `./swagger/history/swagger.json` - History API endpoints
 
 ## Token API Implementation
 
@@ -197,11 +219,101 @@ Single<Map<String, ProviderTokenDto>> rxTokens = tokenService.getTokensRx(reques
 ```
 
 #### HTTP Client Architecture
-- **Multiple Retrofit instances**: Separate instances for different API base URLs
-- **Swap API**: `https://api.1inch.dev/swap/v6.0/1/` (chain-specific)
-- **Token API**: `https://api.1inch.dev/` (multi-chain)
+- **Single Retrofit instance**: All APIs use the same base URL and client
+- **Base URL**: `https://api.1inch.dev/` (unified for all APIs)
 - **Shared authentication**: Same Bearer token for all APIs
 - **Connection pooling**: OkHttp connection reuse across all services
+
+**API Routing Strategy:**
+- **Chain-Specific APIs**: ChainId in path parameter (`/swap/v6.0/{chainId}/`, `/orderbook/v4.0/{chainId}/`, `/token-details/v1.0/*/{chainId}/`)
+- **Multi-Chain APIs**: ChainId as optional query parameter (`/history/v2.0/history/{address}/events?chainId=1`)
+- **Hybrid APIs**: Token API supports both multi-chain endpoints (`/token/v1.2/multi-chain`) and chain-specific endpoints (`/token/v1.2/{chainId}`)
+
+## History API Implementation
+
+### Service Architecture
+The History API provides transaction history for user addresses with comprehensive filtering capabilities.
+
+#### HistoryService Interface
+Provides transaction history operations:
+- **Address-based history**: Get transaction events for specific addresses
+- **Time filtering**: Filter events by timestamp ranges
+- **Token filtering**: Filter events by specific token addresses
+- **Chain filtering**: Filter events by blockchain network
+- **Pagination**: Control result sets with limit parameters
+
+### Key Features
+
+#### Transaction History Retrieval
+```java
+// Get recent transaction history for an address
+HistoryEventsRequest request = HistoryEventsRequest.builder()
+    .address("0x111111111117dc0aa78b770fa6a738034120c302")
+    .limit(10)
+    .chainId(1) // Ethereum
+    .build();
+
+HistoryResponseDto response = client.history().getHistoryEvents(request);
+```
+
+#### Time-based Filtering
+```java
+// Get history for specific time range
+HistoryEventsRequest request = HistoryEventsRequest.builder()
+    .address("0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8")
+    .fromTimestampMs("1694754179096")
+    .toTimestampMs("1695283931212")
+    .limit(50)
+    .build();
+
+HistoryResponseDto response = client.history().getHistoryEvents(request);
+```
+
+#### Model Classes
+**Request Models**:
+- `HistoryEventsRequest` - For history event queries with filtering
+
+**Response Models**:
+- `HistoryResponseDto` - Main response wrapper with events and cache counter
+- `HistoryEventDto` - Individual transaction event
+- `TransactionDetailsDto` - Detailed transaction information
+- `TransactionDetailsMetaDto` - Additional transaction metadata
+- `TokenActionDto` - Token transfer/action details
+
+**Enum Models**:
+- `TransactionType` - Transaction types (Transfer, SwapExactInput, Approve, etc.)
+- `HistoryEventType` - Event types (Transaction, LimitOrder, FusionSwap)
+- `TokenActionDirection` - Token action directions (In, Out, Self, On)
+- `EventRating` - Event ratings (Reliable, Scam)
+- `TransactionStatus` - Transaction status (Completed, Failed, etc.)
+
+#### BigInteger Precision
+All amount-related fields use `BigInteger` for high precision:
+- Token amounts in wei
+- Fee amounts
+- Transaction values
+- Gas prices and limits
+
+### Integration Points
+
+#### Client Integration
+```java
+OneInchClient client = OneInchClient.builder()
+    .apiKey("your-api-key")
+    .build();
+
+// Access history service
+HistoryService historyService = client.history();
+
+// All three programming models supported
+HistoryResponseDto syncHistory = historyService.getHistoryEvents(request);
+CompletableFuture<HistoryResponseDto> asyncHistory = historyService.getHistoryEventsAsync(request);
+Single<HistoryResponseDto> rxHistory = historyService.getHistoryEventsRx(request);
+```
+
+#### API Service Classes
+- **OneInchHistoryApiService**: Retrofit interface for History API endpoints
+- **HistoryServiceImpl**: Service implementation with error handling and logging
 
 ## Architecture Notes
 
@@ -231,3 +343,14 @@ The SDK provides three equally supported programming patterns:
 - **Retrofit**: Type-safe REST client for API integration
 - **Jackson**: JSON serialization/deserialization
 - **Authentication**: Bearer token authentication via API_KEY header
+
+## Memories
+
+### Development Practices
+- Prior to adding new model types into model: always check - is it possible to reuse some of the existing model types.
+
+### Memory Updates
+- Always update README.md and CLAUDE.md when some impacting changes are happening.
+
+### Recent Changes
+- **History API Support Added**: Comprehensive History API implementation with transaction history tracking, filtering by time/token/chain, and full support for all three programming models (reactive, synchronous, asynchronous). Includes complete model classes, service layer, client integration, and extensive integration tests.

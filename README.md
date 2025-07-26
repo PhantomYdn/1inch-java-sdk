@@ -1,6 +1,6 @@
 # 1inch Java SDK
 
-A comprehensive Java SDK for the 1inch DEX Aggregation Protocol, providing easy integration with 1inch's swap, token, token-details, and orderbook services.
+A comprehensive Java SDK for the 1inch DEX Aggregation Protocol, providing easy integration with 1inch's swap, token, token-details, orderbook, and history services.
 
 ## Features
 
@@ -16,6 +16,7 @@ A comprehensive Java SDK for the 1inch DEX Aggregation Protocol, providing easy 
 - ✅ Complete Token API with multi-chain support
 - ✅ Token Details API with pricing and chart data
 - ✅ Orderbook API for limit order management
+- ✅ History API for transaction history tracking
 - ✅ Type-safe models with Jackson and BigInteger precision
 - ✅ Extensive unit test coverage
 
@@ -178,42 +179,56 @@ public class SynchronousExample {
 
 ## API Coverage
 
-### Swap API (`client.swap()`)
-- ✅ `getQuote()` - Find the best quote to swap
-- ✅ `getSwap()` - Generate calldata for swap execution
-- ✅ `getSpender()` - Get 1inch Router address
-- ✅ `getApproveTransaction()` - Generate token approval calldata
-- ✅ `getAllowance()` - Check token allowance
+### Swap API (`client.swap()`) - **Chain-Specific**
+All Swap API operations require a specific chainId and operate on that blockchain:
+- ✅ `getQuote(chainId, ...)` - Find the best quote to swap on specific chain
+- ✅ `getSwap(chainId, ...)` - Generate calldata for swap execution on specific chain
+- ✅ `getSpender(chainId)` - Get 1inch Router address for specific chain
+- ✅ `getApproveTransaction(chainId, ...)` - Generate token approval calldata for specific chain
+- ✅ `getAllowance(chainId, ...)` - Check token allowance on specific chain
 
-### Token API (`client.token()`)
+### Token API (`client.token()`) - **Multi-Chain + Chain-Specific**
+Supports both multi-chain operations and chain-specific queries:
+
+**Multi-Chain Operations:**
 - ✅ `getMultiChainTokens()` - Get whitelisted tokens across all chains
-- ✅ `getTokenList()` - Get chain-specific token list in standard format
-- ✅ `getTokens()` - Get whitelisted tokens for specific chain
+- ✅ `getMultiChainTokenList()` - Get token list across all chains
 - ✅ `searchMultiChainTokens()` - Search tokens across multiple chains
-- ✅ `getCustomTokens()` - Get token info for multiple custom addresses
-- ✅ `getCustomToken()` - Get token info for single custom address
 
-### Token Details API (`client.tokenDetails()`)
-- ✅ `getTokenDetails()` - Get token details with pricing data
-- ✅ `getTokenChart()` - Get token price chart data
-- ✅ `getTokenPriceChange()` - Get token price changes over time
-- ✅ `getNativeTokenDetails()` - Get native token details with pricing
-- ✅ `getNativeTokenChart()` - Get native token chart data
-- ✅ `getNativeTokenChartByRange()` - Get native token chart for date range
-- ✅ `getNativeTokenChartByInterval()` - Get native token chart by interval
-- ✅ `getNativeTokenPriceChange()` - Get native token price changes
-- ✅ `getMultiChainTokenPriceChange()` - Get multi-chain token price changes
+**Chain-Specific Operations:**
+- ✅ `getTokens(chainId, ...)` - Get whitelisted tokens for specific chain
+- ✅ `getTokenList(chainId, ...)` - Get chain-specific token list in standard format
+- ✅ `searchTokens(chainId, ...)` - Search tokens on specific chain
+- ✅ `getCustomTokens(chainId, ...)` - Get token info for multiple custom addresses on specific chain
+- ✅ `getCustomToken(chainId, address)` - Get token info for single custom address on specific chain
 
-### Orderbook API (`client.orderbook()`)
-- ✅ `createLimitOrder()` - Create a new limit order
-- ✅ `getLimitOrdersByAddress()` - Get orders for specific address
-- ✅ `getOrderByOrderHash()` - Get order by hash
-- ✅ `getAllLimitOrders()` - Get all limit orders with filters
-- ✅ `getOrdersCount()` - Get count of orders by filters
-- ✅ `getEventsByOrderHash()` - Get events for specific order
-- ✅ `getAllEvents()` - Get all order events
-- ✅ `hasActiveOrdersWithPermit()` - Check active orders with permit
-- ✅ `getUniqueActivePairs()` - Get unique active trading pairs
+### Token Details API (`client.tokenDetails()`) - **Chain-Specific**
+All Token Details operations require a specific chainId:
+- ✅ `getTokenDetails(chainId, address, ...)` - Get token details with pricing data for specific chain
+- ✅ `getTokenChart(chainId, address, ...)` - Get token price chart data for specific chain
+- ✅ `getTokenPriceChange(chainId, address, ...)` - Get token price changes over time for specific chain
+- ✅ `getNativeTokenDetails(chainId, ...)` - Get native token details with pricing for specific chain
+- ✅ `getNativeTokenChart(chainId, ...)` - Get native token chart data for specific chain
+- ✅ `getNativeTokenChartByRange(chainId, ...)` - Get native token chart for date range on specific chain
+- ✅ `getNativeTokenChartByInterval(chainId, ...)` - Get native token chart by interval for specific chain
+- ✅ `getNativeTokenPriceChange(chainId, ...)` - Get native token price changes for specific chain
+- ✅ `getMultiChainTokenPriceChange(tokens)` - Get multi-chain token price changes (accepts list of chain/token pairs)
+
+### Orderbook API (`client.orderbook()`) - **Chain-Specific**  
+All Orderbook operations require a specific chainId:
+- ✅ `createLimitOrder(chainId, ...)` - Create a new limit order on specific chain
+- ✅ `getLimitOrdersByAddress(chainId, address, ...)` - Get orders for specific address on specific chain
+- ✅ `getOrderByOrderHash(chainId, orderHash)` - Get order by hash on specific chain
+- ✅ `getAllLimitOrders(chainId, ...)` - Get all limit orders with filters on specific chain
+- ✅ `getOrdersCount(chainId, ...)` - Get count of orders by filters on specific chain
+- ✅ `getEventsByOrderHash(chainId, orderHash, ...)` - Get events for specific order on specific chain
+- ✅ `getAllEvents(chainId, ...)` - Get all order events on specific chain
+- ✅ `hasActiveOrdersWithPermit(chainId, ...)` - Check active orders with permit on specific chain
+- ✅ `getUniqueActivePairs(chainId, ...)` - Get unique active trading pairs on specific chain
+
+### History API (`client.history()`) - **Multi-Chain**
+History operations can work across chains with optional chainId filtering:
+- ✅ `getHistoryEvents(address, chainId?, ...)` - Get transaction history for an address with optional chain filtering
 
 ## Configuration
 
@@ -267,6 +282,7 @@ The SDK includes complete example classes demonstrating all APIs:
 - **`TokenExample.java`** - Token list, search, and custom token operations
 - **`TokenDetailsExample.java`** - Token pricing, charts, and market data
 - **`OrderbookExample.java`** - Limit orders, events, and trading pairs
+- **`HistoryExample.java`** - Transaction history tracking and analysis
 
 #### Running Examples
 
@@ -291,6 +307,9 @@ mvn exec:java -pl oneinch-sdk-examples -Dexec.mainClass="io.oneinch.sdk.examples
 
 # Run the Orderbook example
 mvn exec:java -pl oneinch-sdk-examples -Dexec.mainClass="io.oneinch.sdk.examples.OrderbookExample"
+
+# Run the History example
+mvn exec:java -pl oneinch-sdk-examples -Dexec.mainClass="io.oneinch.sdk.examples.HistoryExample"
 ```
 
 ### Reactive Swap Flow
@@ -642,6 +661,176 @@ client.token().getTokensRx(request)
     .subscribe(
         details -> log.info("1INCH details: {}", details.getAssets().getName()),
         error -> log.error("Chain failed", error)
+    );
+```
+
+### History API Examples
+
+#### Get Transaction History for Address
+```java
+import io.oneinch.sdk.model.*;
+import java.util.List;
+
+try (OneInchClient client = OneInchClient.builder().build()) {
+    
+    // Get recent transaction history for an address
+    String walletAddress = "0x111111111117dc0aa78b770fa6a738034120c302"; // 1INCH token contract
+    
+    HistoryEventsRequest request = HistoryEventsRequest.builder()
+            .address(walletAddress)
+            .limit(10)
+            .chainId(1) // Ethereum
+            .build();
+    
+    // Synchronous
+    HistoryResponseDto response = client.history().getHistoryEvents(request);
+    log.info("Found {} history events", response.getItems().size());
+    
+    // Process each event
+    for (HistoryEventDto event : response.getItems()) {
+        log.info("Event ID: {}, Type: {}, Rating: {}", 
+                event.getId(), event.getType(), event.getRating());
+        
+        if (event.getDetails() != null) {
+            TransactionDetailsDto details = event.getDetails();
+            log.info("  Transaction: {} on chain {}", 
+                    details.getTxHash(), details.getChainId());
+            log.info("  Block: {}, Status: {}, Type: {}", 
+                    details.getBlockNumber(), details.getStatus(), details.getType());
+            
+            // Analyze token actions
+            if (details.getTokenActions() != null) {
+                for (TokenActionDto tokenAction : details.getTokenActions()) {
+                    log.info("    Token Action: {} {} tokens {} -> {}", 
+                            tokenAction.getDirection(),
+                            tokenAction.getAmount(),
+                            tokenAction.getFromAddress(),
+                            tokenAction.getToAddress());
+                }
+            }
+        }
+    }
+}
+```
+
+#### History with Time and Token Filters
+```java
+// Get history for specific time range and token
+HistoryEventsRequest filteredRequest = HistoryEventsRequest.builder()
+        .address("0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8")
+        .limit(20)
+        .chainId(1) // Ethereum
+        .tokenAddress("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") // ETH transactions only
+        .fromTimestampMs("1694754179096") // From timestamp in milliseconds
+        .toTimestampMs("1695283931212")   // To timestamp in milliseconds
+        .build();
+
+// Reactive approach with error handling
+client.history().getHistoryEventsRx(filteredRequest)
+        .doOnSuccess(response -> {
+            log.info("Found {} filtered events in time range", response.getItems().size());
+            
+            // Group by transaction type
+            Map<TransactionType, Long> typeCount = response.getItems().stream()
+                .filter(event -> event.getDetails() != null)
+                .collect(Collectors.groupingBy(
+                    event -> event.getDetails().getType(),
+                    Collectors.counting()
+                ));
+                
+            typeCount.forEach((type, count) -> 
+                log.info("  {}: {} transactions", type, count));
+        })
+        .doOnError(error -> log.error("Failed to get filtered history", error))
+        .subscribe();
+```
+
+#### Reactive History Analysis Chain
+```java
+// Complex reactive chain for analyzing transaction patterns
+String targetAddress = "0x111111111117dc0aa78b770fa6a738034120c302";
+
+client.history().getHistoryEventsRx(
+    HistoryEventsRequest.builder()
+        .address(targetAddress)
+        .limit(100)
+        .chainId(1)
+        .build()
+)
+.map(response -> response.getItems())
+.flatMapObservable(events -> Observable.fromIterable(events))
+.filter(event -> event.getDetails() != null)
+.filter(event -> event.getDetails().getType() == TransactionType.SWAP_EXACT_INPUT)
+.groupBy(event -> event.getDetails().getFromAddress()) // Group by sender
+.flatMapSingle(group -> 
+    group.reduce(new HashMap<String, BigInteger>(), (acc, event) -> {
+        // Accumulate swap volumes by sender
+        if (event.getDetails().getTokenActions() != null) {
+            for (TokenActionDto action : event.getDetails().getTokenActions()) {
+                if (action.getDirection() == TokenActionDirection.OUT) {
+                    acc.merge(group.getKey(), action.getAmount(), BigInteger::add);
+                }
+            }
+        }
+        return acc;
+    })
+    .map(volumeMap -> Map.entry(group.getKey(), volumeMap.values().stream()
+        .reduce(BigInteger.ZERO, BigInteger::add)))
+)
+.toList()
+.subscribe(
+    senderVolumes -> {
+        log.info("Top swap senders by volume:");
+        senderVolumes.stream()
+            .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
+            .limit(5)
+            .forEach(entry -> log.info("  {}: {} wei total volume", 
+                entry.getKey(), entry.getValue()));
+    },
+    error -> log.error("Analysis failed", error)
+);
+```
+
+#### History with All Programming Models
+```java
+HistoryEventsRequest request = HistoryEventsRequest.builder()
+        .address("0x111111111117dc0aa78b770fa6a738034120c302")
+        .limit(5)
+        .chainId(1)
+        .build();
+
+// Synchronous - Simple and blocking
+try {
+    HistoryResponseDto response = client.history().getHistoryEvents(request);
+    log.info("Sync: {} events retrieved", response.getItems().size());
+} catch (OneInchException e) {
+    log.error("Sync failed: {}", e.getMessage());
+}
+
+// Asynchronous with CompletableFuture
+CompletableFuture<HistoryResponseDto> historyFuture = 
+    client.history().getHistoryEventsAsync(request);
+
+historyFuture
+    .thenAccept(response -> 
+        log.info("Async: {} events retrieved", response.getItems().size()))
+    .exceptionally(throwable -> {
+        log.error("Async failed", throwable);
+        return null;
+    });
+
+// Reactive with RxJava - Best for complex workflows
+client.history().getHistoryEventsRx(request)
+    .flatMapObservable(response -> Observable.fromIterable(response.getItems()))
+    .filter(event -> event.getRating() == EventRating.RELIABLE)
+    .filter(event -> event.getDetails() != null)
+    .filter(event -> event.getDetails().getType() == TransactionType.TRANSFER)
+    .take(3) // Limit to first 3 reliable transfers
+    .toList()
+    .subscribe(
+        reliableTransfers -> log.info("Reactive: Found {} reliable transfers", 
+            reliableTransfers.size()),
+        error -> log.error("Reactive failed", error)
     );
 ```
 

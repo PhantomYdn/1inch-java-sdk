@@ -21,12 +21,14 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class RetrofitHttpClient implements HttpClient {
     
+    
     private static final String BASE_URL = "https://api.1inch.dev/";
     
     private final OneInchSwapApiService apiService;
     private final OneInchTokenApiService tokenApiService;
     private final OneInchTokenDetailsApiService tokenDetailsApiService;
     private final OneInchOrderbookApiService orderbookApiService;
+    private final OneInchHistoryApiService historyApiService;
     private final OkHttpClient okHttpClient;
     
     public RetrofitHttpClient(String apiKey) {
@@ -48,6 +50,7 @@ public class RetrofitHttpClient implements HttpClient {
         this.tokenApiService = retrofit.create(OneInchTokenApiService.class);
         this.tokenDetailsApiService = retrofit.create(OneInchTokenDetailsApiService.class);
         this.orderbookApiService = retrofit.create(OneInchOrderbookApiService.class);
+        this.historyApiService = retrofit.create(OneInchHistoryApiService.class);
     }
     
     private static OkHttpClient createDefaultOkHttpClient(String apiKey) {
@@ -102,6 +105,10 @@ public class RetrofitHttpClient implements HttpClient {
     
     public OneInchOrderbookApiService getOrderbookApiService() {
         return orderbookApiService;
+    }
+    
+    public OneInchHistoryApiService getHistoryApiService() {
+        return historyApiService;
     }
     
     @Override

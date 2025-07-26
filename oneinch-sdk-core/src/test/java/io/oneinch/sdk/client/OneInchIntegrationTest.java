@@ -2,6 +2,7 @@ package io.oneinch.sdk.client;
 
 import io.oneinch.sdk.exception.OneInchException;
 import io.oneinch.sdk.model.*;
+import io.oneinch.sdk.service.HistoryService;
 import io.oneinch.sdk.service.OrderbookService;
 import io.oneinch.sdk.service.SwapService;
 import io.oneinch.sdk.service.TokenService;
@@ -507,6 +508,163 @@ class OneInchIntegrationTest {
                     .blockingGet();
         } catch (Exception e) {
             log.warn("Reactive get all limit orders request failed (this might be expected): {}", e.getMessage());
+        }
+    }
+    
+    @Test
+    void testRealHistoryEventsRequest() {
+        log.info("Testing real history events API call...");
+        
+        HistoryService historyService = client.history();
+        
+        // Use a well-known address with some transaction history
+        String testAddress = "0x111111111117dc0aa78b770fa6a738034120c302"; // 1INCH token contract address
+        
+        HistoryEventsRequest request = HistoryEventsRequest.builder()
+                .address(testAddress)
+                .limit(5)
+                .chainId(1) // Ethereum
+                .build();
+        
+        try {
+            HistoryResponseDto response = historyService.getHistoryEvents(request);
+            
+            assertNotNull(response, "History response should not be null");
+            assertNotNull(response.getItems(), "History items should not be null");
+            assertTrue(response.getItems().size() <= 5, "History items should respect limit parameter");
+            assertNotNull(response.getCacheCounter(), "Cache counter should not be null");
+            
+            if (!response.getItems().isEmpty()) {
+                HistoryEventDto firstEvent = response.getItems().get(0);
+                assertNotNull(firstEvent.getId(), "Event ID should not be null");
+                assertNotNull(firstEvent.getAddress(), "Event address should not be null");
+                assertNotNull(firstEvent.getType(), "Event type should not be null");
+                assertNotNull(firstEvent.getRating(), "Event rating should not be null");
+                assertNotNull(firstEvent.getTimeMs(), "Event time should not be null");
+                
+                if (firstEvent.getDetails() != null) {
+                    TransactionDetailsDto details = firstEvent.getDetails();
+                    assertNotNull(details.getTxHash(), "Transaction hash should not be null");
+                    assertNotNull(details.getChainId(), "Chain ID should not be null");
+                    
+                    log.info("Found history event: type={}, txHash={}, chainId={}", 
+                            firstEvent.getType(), 
+                            details.getTxHash(), 
+                            details.getChainId());
+                }
+            }
+            
+            log.info("History events request successful: {} events retrieved", response.getItems().size());
+        } catch (OneInchException e) {
+            log.warn("History events request failed (this might be expected): {}", e.getMessage());
+        }
+    }
+    
+    @Test
+    void testReactiveHistoryEventsRequest() {
+        log.info("Making reactive history events request...");
+        
+        HistoryService historyService = client.history();
+        
+        String testAddress = "0x111111111117dc0aa78b770fa6a738034120c302"; // 1INCH token contract
+        
+        HistoryEventsRequest request = HistoryEventsRequest.builder()
+                .address(testAddress)
+                .limit(3)
+                .chainId(1) // Ethereum
+                .build();
+        
+        try {
+            historyService.getHistoryEventsRx(request)
+                    .doOnSuccess(response -> {
+                        assertNotNull(response, "Reactive history response should not be null");
+                        assertNotNull(response.getItems(), "Reactive history items should not be null");
+                        assertTrue(response.getItems().size() <= 3, "History items should respect limit parameter");
+                        
+                        log.info("Reactive history events successful: {} events", response.getItems().size());
+                    })
+                    .doOnError(error -> {
+                        log.warn("Reactive history events failed (this might be expected): {}", error.getMessage());
+                    })
+                    .blockingGet();
+        } catch (Exception e) {
+            log.warn("Reactive history events request failed (this might be expected): {}", e.getMessage());
+        }
+    }
+    
+    @Test
+    void testAsyncHistoryEventsRequest() throws Exception {
+        log.info("Making async history events request...");
+        
+        HistoryService historyService = client.history();
+        
+        String testAddress = "0x111111111117dc0aa78b770fa6a738034120c302"; // 1INCH token contract
+        
+        HistoryEventsRequest request = HistoryEventsRequest.builder()
+                .address(testAddress)
+                .limit(2)
+                .chainId(1) // Ethereum
+                .build();
+        
+        try {
+            HistoryResponseDto response = historyService.getHistoryEventsAsync(request)
+                    .whenComplete((historyResponse, throwable) -> {
+                        if (throwable != null) {
+                            log.warn("Async history events failed (this might be expected): {}", throwable.getMessage());
+                        } else {
+                            log.info("Async history events successful: {} events", historyResponse.getItems().size());
+                        }
+                    })
+                    .get();
+            
+            if (response != null) {
+                assertNotNull(response, "Async history response should not be null");
+                assertNotNull(response.getItems(), "Async history items should not be null");
+                assertTrue(response.getItems().size() <= 2, "History items should respect limit parameter");
+            }
+        } catch (Exception e) {
+            log.warn("Async history events request failed (this might be expected): {}", e.getMessage());
+        }
+    }
+    
+    @Test
+    void testHistoryEventsWithFilters() {
+        log.info("Testing history events with additional filters...");
+        
+        HistoryService historyService = client.history();
+        
+        String testAddress = "0x111111111117dc0aa78b770fa6a738034120c302";
+        
+        HistoryEventsRequest request = HistoryEventsRequest.builder()
+                .address(testAddress)
+                .limit(10)
+                .chainId(1) // Ethereum
+                .tokenAddress("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") // ETH
+                .build();
+        
+        try {
+            HistoryResponseDto response = historyService.getHistoryEvents(request);
+            
+            assertNotNull(response, "Filtered history response should not be null");
+            assertNotNull(response.getItems(), "Filtered history items should not be null");
+            assertTrue(response.getItems().size() <= 10, "History items should respect limit parameter");
+            
+            log.info("Filtered history events request successful: {} events retrieved", 
+                    response.getItems().size());
+                    
+            // Check if any events have token actions with the specified token
+            for (HistoryEventDto event : response.getItems()) {
+                if (event.getDetails() != null && event.getDetails().getTokenActions() != null) {
+                    for (TokenActionDto tokenAction : event.getDetails().getTokenActions()) {
+                        log.debug("Token action: address={}, direction={}, amount={}", 
+                                tokenAction.getAddress(), 
+                                tokenAction.getDirection(), 
+                                tokenAction.getAmount());
+                    }
+                }
+            }
+        } catch (OneInchException e) {
+            log.warn("Filtered history events request failed (this might be expected): {}", e.getMessage());
         }
     }
 }
