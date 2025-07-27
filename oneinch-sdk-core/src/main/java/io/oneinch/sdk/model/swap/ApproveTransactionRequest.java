@@ -1,0 +1,14 @@
+package io.oneinch.sdk.model.swap;
+
+import lombok.Builder;
+import lombok.Data;
+
+import java.math.BigInteger;
+
+@Data
+@Builder
+public class ApproveTransactionRequest {
+    private Integer chainId;
+    private String tokenAddress;
+    private BigInteger amount;
+}

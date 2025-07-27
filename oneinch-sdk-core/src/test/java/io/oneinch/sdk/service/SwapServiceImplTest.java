@@ -2,7 +2,7 @@ package io.oneinch.sdk.service;
 
 import io.oneinch.sdk.client.OneInchSwapApiService;
 import io.oneinch.sdk.exception.OneInchException;
-import io.oneinch.sdk.model.*;
+import io.oneinch.sdk.model.swap.*;
 import io.reactivex.rxjava3.core.Single;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

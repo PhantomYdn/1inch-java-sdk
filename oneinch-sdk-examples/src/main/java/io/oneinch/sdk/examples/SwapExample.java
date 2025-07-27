@@ -3,7 +3,7 @@ package io.oneinch.sdk.examples;
 import io.oneinch.sdk.client.OneInchClient;
 import io.oneinch.sdk.exception.OneInchApiException;
 import io.oneinch.sdk.exception.OneInchException;
-import io.oneinch.sdk.model.*;
+import io.oneinch.sdk.model.swap.*;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import lombok.extern.slf4j.Slf4j;

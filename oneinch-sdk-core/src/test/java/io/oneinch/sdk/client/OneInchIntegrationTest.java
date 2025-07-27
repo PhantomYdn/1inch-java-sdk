@@ -1,7 +1,11 @@
 package io.oneinch.sdk.client;
 
 import io.oneinch.sdk.exception.OneInchException;
-import io.oneinch.sdk.model.*;
+import io.oneinch.sdk.model.Token;
+import io.oneinch.sdk.model.history.*;
+import io.oneinch.sdk.model.orderbook.*;
+import io.oneinch.sdk.model.swap.*;
+import io.oneinch.sdk.model.token.*;
 import io.oneinch.sdk.service.HistoryService;
 import io.oneinch.sdk.service.OrderbookService;
 import io.oneinch.sdk.service.SwapService;

@@ -2,7 +2,11 @@ package io.oneinch.sdk.examples;
 
 import io.oneinch.sdk.client.OneInchClient;
 import io.oneinch.sdk.exception.OneInchException;
-import io.oneinch.sdk.model.*;
+import io.oneinch.sdk.model.ApiStatusResponse;
+import io.oneinch.sdk.model.ResponseEnvelope;
+import io.oneinch.sdk.model.history.HistoryMetrics;
+import io.oneinch.sdk.model.portfolio.*;
+import io.oneinch.sdk.model.tokendetails.CurrentValueResponse;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;

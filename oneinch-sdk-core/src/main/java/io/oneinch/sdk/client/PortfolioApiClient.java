@@ -1,6 +1,10 @@
 package io.oneinch.sdk.client;
 
-import io.oneinch.sdk.model.*;
+import io.oneinch.sdk.model.ApiStatusResponse;
+import io.oneinch.sdk.model.ResponseEnvelope;
+import io.oneinch.sdk.model.history.HistoryMetrics;
+import io.oneinch.sdk.model.portfolio.*;
+import io.oneinch.sdk.model.tokendetails.CurrentValueResponse;
 import io.reactivex.rxjava3.core.Single;
 import retrofit2.http.GET;
 import retrofit2.http.Query;

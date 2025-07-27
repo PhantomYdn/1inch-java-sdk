@@ -1,8 +1,8 @@
 package io.oneinch.sdk.service;
 
 import io.oneinch.sdk.exception.OneInchException;
-import io.oneinch.sdk.model.HistoryEventsRequest;
-import io.oneinch.sdk.model.HistoryResponseDto;
+import io.oneinch.sdk.model.history.HistoryEventsRequest;
+import io.oneinch.sdk.model.history.HistoryResponseDto;
 import io.reactivex.rxjava3.core.Single;
 
 import java.util.concurrent.CompletableFuture;

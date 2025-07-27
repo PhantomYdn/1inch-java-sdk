@@ -2,7 +2,7 @@ package io.oneinch.sdk.examples;
 
 import io.oneinch.sdk.client.OneInchClient;
 import io.oneinch.sdk.exception.OneInchException;
-import io.oneinch.sdk.model.*;
+import io.oneinch.sdk.model.balance.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigInteger;

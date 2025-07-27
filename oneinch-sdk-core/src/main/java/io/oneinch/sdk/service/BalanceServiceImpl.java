@@ -2,7 +2,7 @@ package io.oneinch.sdk.service;
 
 import io.oneinch.sdk.client.OneInchBalanceApiService;
 import io.oneinch.sdk.exception.OneInchException;
-import io.oneinch.sdk.model.*;
+import io.oneinch.sdk.model.balance.*;
 import io.reactivex.rxjava3.core.Single;
 import lombok.extern.slf4j.Slf4j;
 

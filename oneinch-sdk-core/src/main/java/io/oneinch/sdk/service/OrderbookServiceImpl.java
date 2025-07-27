@@ -2,7 +2,7 @@ package io.oneinch.sdk.service;
 
 import io.oneinch.sdk.client.OneInchOrderbookApiService;
 import io.oneinch.sdk.exception.OneInchException;
-import io.oneinch.sdk.model.*;
+import io.oneinch.sdk.model.orderbook.*;
 import io.reactivex.rxjava3.core.Single;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

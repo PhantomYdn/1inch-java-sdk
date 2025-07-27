@@ -4,8 +4,8 @@ import java.math.BigInteger;
 
 import io.oneinch.sdk.client.OneInchClient;
 import io.oneinch.sdk.exception.OneInchException;
-import io.oneinch.sdk.model.QuoteRequest;
-import io.oneinch.sdk.model.QuoteResponse;
+import io.oneinch.sdk.model.swap.QuoteRequest;
+import io.oneinch.sdk.model.swap.QuoteResponse;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

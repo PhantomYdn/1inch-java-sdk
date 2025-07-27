@@ -2,7 +2,8 @@ package io.oneinch.sdk.service;
 
 import io.oneinch.sdk.client.OneInchTokenApiService;
 import io.oneinch.sdk.exception.OneInchException;
-import io.oneinch.sdk.model.*;
+import io.oneinch.sdk.model.Token;
+import io.oneinch.sdk.model.token.*;
 import io.reactivex.rxjava3.core.Single;
 import lombok.extern.slf4j.Slf4j;
 

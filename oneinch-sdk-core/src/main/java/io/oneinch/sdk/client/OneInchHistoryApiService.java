@@ -1,6 +1,6 @@
 package io.oneinch.sdk.client;
 
-import io.oneinch.sdk.model.HistoryResponseDto;
+import io.oneinch.sdk.model.history.HistoryResponseDto;
 import io.reactivex.rxjava3.core.Single;
 import retrofit2.http.GET;
 import retrofit2.http.Path;

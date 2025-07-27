@@ -1,7 +1,11 @@
 package io.oneinch.sdk.service;
 
 import io.oneinch.sdk.exception.OneInchException;
-import io.oneinch.sdk.model.*;
+import io.oneinch.sdk.model.ApiStatusResponse;
+import io.oneinch.sdk.model.ResponseEnvelope;
+import io.oneinch.sdk.model.history.HistoryMetrics;
+import io.oneinch.sdk.model.portfolio.*;
+import io.oneinch.sdk.model.tokendetails.CurrentValueResponse;
 import io.reactivex.rxjava3.core.Single;
 
 import java.util.List;
