@@ -4,6 +4,7 @@ import io.oneinch.sdk.model.*;
 import io.reactivex.rxjava3.core.Single;
 import retrofit2.http.*;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +18,7 @@ public interface OneInchBalanceApiService {
      * GET /balance/v1.2/{chainId}/balances/{walletAddress}
      */
     @GET("balance/v1.2/{chainId}/balances/{walletAddress}")
-    Single<Map<String, String>> getBalances(
+    Single<Map<String, BigInteger>> getBalances(
             @Path("chainId") Integer chainId,
             @Path("walletAddress") String walletAddress
     );
@@ -27,7 +28,7 @@ public interface OneInchBalanceApiService {
      * POST /balance/v1.2/{chainId}/balances/{walletAddress}
      */
     @POST("balance/v1.2/{chainId}/balances/{walletAddress}")
-    Single<Map<String, String>> getCustomBalances(
+    Single<Map<String, BigInteger>> getCustomBalances(
             @Path("chainId") Integer chainId,
             @Path("walletAddress") String walletAddress,
             @Body CustomTokensBalanceRequest tokens
@@ -38,7 +39,7 @@ public interface OneInchBalanceApiService {
      * GET /balance/v1.2/{chainId}/allowances/{spender}/{walletAddress}
      */
     @GET("balance/v1.2/{chainId}/allowances/{spender}/{walletAddress}")
-    Single<Map<String, String>> getAllowances(
+    Single<Map<String, BigInteger>> getAllowances(
             @Path("chainId") Integer chainId,
             @Path("spender") String spender,
             @Path("walletAddress") String walletAddress
@@ -49,7 +50,7 @@ public interface OneInchBalanceApiService {
      * POST /balance/v1.2/{chainId}/allowances/{spender}/{walletAddress}
      */
     @POST("balance/v1.2/{chainId}/allowances/{spender}/{walletAddress}")
-    Single<Map<String, String>> getCustomAllowances(
+    Single<Map<String, BigInteger>> getCustomAllowances(
             @Path("chainId") Integer chainId,
             @Path("spender") String spender,
             @Path("walletAddress") String walletAddress,
@@ -96,7 +97,7 @@ public interface OneInchBalanceApiService {
      * POST /balance/v1.2/{chainId}/balances/multiple/walletsAndTokens
      */
     @POST("balance/v1.2/{chainId}/balances/multiple/walletsAndTokens")
-    Single<Map<String, Map<String, String>>> getBalancesByMultipleWallets(
+    Single<Map<String, Map<String, BigInteger>>> getBalancesByMultipleWallets(
             @Path("chainId") Integer chainId,
             @Body CustomTokensAndWalletsBalanceRequest request
     );

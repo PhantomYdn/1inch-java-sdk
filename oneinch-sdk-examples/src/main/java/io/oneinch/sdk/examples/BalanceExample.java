@@ -5,6 +5,7 @@ import io.oneinch.sdk.exception.OneInchException;
 import io.oneinch.sdk.model.*;
 import lombok.extern.slf4j.Slf4j;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +56,7 @@ public class BalanceExample {
                     .walletAddress(SAMPLE_WALLET)
                     .build();
             
-            Map<String, String> balances = client.balance().getBalances(request);
+            Map<String, BigInteger> balances = client.balance().getBalances(request);
             
             log.info("Found {} token balances for wallet {}", balances.size(), SAMPLE_WALLET);
             balances.entrySet().stream()
@@ -80,7 +81,7 @@ public class BalanceExample {
                     .tokens(Arrays.asList(USDC_TOKEN, USDT_TOKEN))
                     .build();
             
-            Map<String, String> balances = client.balance().getCustomBalances(request);
+            Map<String, BigInteger> balances = client.balance().getCustomBalances(request);
             
             log.info("Custom token balances for wallet {}:", SAMPLE_WALLET);
             balances.forEach((token, balance) -> 
@@ -104,11 +105,11 @@ public class BalanceExample {
                     .walletAddress(SAMPLE_WALLET)
                     .build();
             
-            Map<String, String> allowances = client.balance().getAllowances(request);
+            Map<String, BigInteger> allowances = client.balance().getAllowances(request);
             
             log.info("Found {} token allowances for spender {}", allowances.size(), SAMPLE_SPENDER);
             allowances.entrySet().stream()
-                    .filter(entry -> !entry.getValue().equals("0"))
+                    .filter(entry -> !entry.getValue().equals(BigInteger.ZERO))
                     .limit(5)
                     .forEach(entry -> log.info("  Token {}: {} wei allowance", entry.getKey(), entry.getValue()));
         }
@@ -131,7 +132,7 @@ public class BalanceExample {
                     .tokens(Arrays.asList(USDC_TOKEN, USDT_TOKEN))
                     .build();
             
-            Map<String, String> allowances = client.balance().getCustomAllowances(request);
+            Map<String, BigInteger> allowances = client.balance().getCustomAllowances(request);
             
             log.info("Custom token allowances for spender {}:", SAMPLE_SPENDER);
             allowances.forEach((token, allowance) -> 
@@ -222,7 +223,7 @@ public class BalanceExample {
                     .tokens(Arrays.asList(USDC_TOKEN, USDT_TOKEN))
                     .build();
             
-            Map<String, Map<String, String>> multiWalletBalances = client.balance().getBalancesByMultipleWallets(request);
+            Map<String, Map<String, BigInteger>> multiWalletBalances = client.balance().getBalancesByMultipleWallets(request);
             
             log.info("Multi-wallet balance data:");
             multiWalletBalances.forEach((wallet, tokenBalances) -> {
@@ -253,7 +254,7 @@ public class BalanceExample {
                     .doOnSuccess(balances -> {
                         log.info("Reactive: Found {} token balances", balances.size());
                         balances.entrySet().stream()
-                                .filter(entry -> !entry.getValue().equals("0"))
+                                .filter(entry -> !entry.getValue().equals(BigInteger.ZERO))
                                 .limit(3)
                                 .forEach(entry -> log.info("  Reactive: Token {}: {} wei", 
                                         entry.getKey(), entry.getValue()));

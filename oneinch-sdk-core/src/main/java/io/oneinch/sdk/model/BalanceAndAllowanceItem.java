@@ -2,6 +2,8 @@ package io.oneinch.sdk.model;
 
 import lombok.Data;
 
+import java.math.BigInteger;
+
 /**
  * Balance and allowance item for a specific token
  */
@@ -9,12 +11,12 @@ import lombok.Data;
 public class BalanceAndAllowanceItem {
     
     /**
-     * Token balance as string (in wei)
+     * Token balance in wei (high precision)
      */
-    private String balance;
+    private BigInteger balance;
     
     /**
-     * Token allowance as string (in wei)
+     * Token allowance in wei (high precision)
      */
-    private String allowance;
+    private BigInteger allowance;
 }

@@ -6,6 +6,7 @@ import io.oneinch.sdk.model.*;
 import io.reactivex.rxjava3.core.Single;
 import lombok.extern.slf4j.Slf4j;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -25,7 +26,7 @@ public class BalanceServiceImpl implements BalanceService {
     // Basic balance operations
 
     @Override
-    public Map<String, String> getBalances(BalanceRequest request) throws OneInchException {
+    public Map<String, BigInteger> getBalances(BalanceRequest request) throws OneInchException {
         try {
             log.debug("Getting balances for wallet {} on chain {}", request.getWalletAddress(), request.getChainId());
             return balanceApiService.getBalances(request.getChainId(), request.getWalletAddress())
@@ -37,7 +38,7 @@ public class BalanceServiceImpl implements BalanceService {
     }
 
     @Override
-    public CompletableFuture<Map<String, String>> getBalancesAsync(BalanceRequest request) {
+    public CompletableFuture<Map<String, BigInteger>> getBalancesAsync(BalanceRequest request) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return getBalances(request);
@@ -48,7 +49,7 @@ public class BalanceServiceImpl implements BalanceService {
     }
 
     @Override
-    public Single<Map<String, String>> getBalancesRx(BalanceRequest request) {
+    public Single<Map<String, BigInteger>> getBalancesRx(BalanceRequest request) {
         log.debug("Getting balances (reactive) for wallet {} on chain {}", request.getWalletAddress(), request.getChainId());
         return balanceApiService.getBalances(request.getChainId(), request.getWalletAddress())
                 .doOnError(error -> log.error("Failed to get balances (reactive) for wallet {} on chain {}", 
@@ -58,7 +59,7 @@ public class BalanceServiceImpl implements BalanceService {
     // Custom balance operations
 
     @Override
-    public Map<String, String> getCustomBalances(CustomBalanceRequest request) throws OneInchException {
+    public Map<String, BigInteger> getCustomBalances(CustomBalanceRequest request) throws OneInchException {
         try {
             log.debug("Getting custom balances for wallet {} on chain {} for {} tokens", 
                     request.getWalletAddress(), request.getChainId(), request.getTokens().size());
@@ -75,7 +76,7 @@ public class BalanceServiceImpl implements BalanceService {
     }
 
     @Override
-    public CompletableFuture<Map<String, String>> getCustomBalancesAsync(CustomBalanceRequest request) {
+    public CompletableFuture<Map<String, BigInteger>> getCustomBalancesAsync(CustomBalanceRequest request) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return getCustomBalances(request);
@@ -86,7 +87,7 @@ public class BalanceServiceImpl implements BalanceService {
     }
 
     @Override
-    public Single<Map<String, String>> getCustomBalancesRx(CustomBalanceRequest request) {
+    public Single<Map<String, BigInteger>> getCustomBalancesRx(CustomBalanceRequest request) {
         log.debug("Getting custom balances (reactive) for wallet {} on chain {} for {} tokens", 
                 request.getWalletAddress(), request.getChainId(), request.getTokens().size());
         CustomTokensBalanceRequest tokenRequest = CustomTokensBalanceRequest.builder()
@@ -100,7 +101,7 @@ public class BalanceServiceImpl implements BalanceService {
     // Allowance operations
 
     @Override
-    public Map<String, String> getAllowances(AllowanceBalanceRequest request) throws OneInchException {
+    public Map<String, BigInteger> getAllowances(AllowanceBalanceRequest request) throws OneInchException {
         try {
             log.debug("Getting allowances for wallet {} spender {} on chain {}", 
                     request.getWalletAddress(), request.getSpender(), request.getChainId());
@@ -114,7 +115,7 @@ public class BalanceServiceImpl implements BalanceService {
     }
 
     @Override
-    public CompletableFuture<Map<String, String>> getAllowancesAsync(AllowanceBalanceRequest request) {
+    public CompletableFuture<Map<String, BigInteger>> getAllowancesAsync(AllowanceBalanceRequest request) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return getAllowances(request);
@@ -125,7 +126,7 @@ public class BalanceServiceImpl implements BalanceService {
     }
 
     @Override
-    public Single<Map<String, String>> getAllowancesRx(AllowanceBalanceRequest request) {
+    public Single<Map<String, BigInteger>> getAllowancesRx(AllowanceBalanceRequest request) {
         log.debug("Getting allowances (reactive) for wallet {} spender {} on chain {}", 
                 request.getWalletAddress(), request.getSpender(), request.getChainId());
         return balanceApiService.getAllowances(request.getChainId(), request.getSpender(), request.getWalletAddress())
@@ -136,7 +137,7 @@ public class BalanceServiceImpl implements BalanceService {
     // Custom allowance operations
 
     @Override
-    public Map<String, String> getCustomAllowances(CustomAllowanceBalanceRequest request) throws OneInchException {
+    public Map<String, BigInteger> getCustomAllowances(CustomAllowanceBalanceRequest request) throws OneInchException {
         try {
             log.debug("Getting custom allowances for wallet {} spender {} on chain {} for {} tokens", 
                     request.getWalletAddress(), request.getSpender(), request.getChainId(), request.getTokens().size());
@@ -154,7 +155,7 @@ public class BalanceServiceImpl implements BalanceService {
     }
 
     @Override
-    public CompletableFuture<Map<String, String>> getCustomAllowancesAsync(CustomAllowanceBalanceRequest request) {
+    public CompletableFuture<Map<String, BigInteger>> getCustomAllowancesAsync(CustomAllowanceBalanceRequest request) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return getCustomAllowances(request);
@@ -165,7 +166,7 @@ public class BalanceServiceImpl implements BalanceService {
     }
 
     @Override
-    public Single<Map<String, String>> getCustomAllowancesRx(CustomAllowanceBalanceRequest request) {
+    public Single<Map<String, BigInteger>> getCustomAllowancesRx(CustomAllowanceBalanceRequest request) {
         log.debug("Getting custom allowances (reactive) for wallet {} spender {} on chain {} for {} tokens", 
                 request.getWalletAddress(), request.getSpender(), request.getChainId(), request.getTokens().size());
         CustomTokensBalanceRequest tokenRequest = CustomTokensBalanceRequest.builder()
@@ -296,7 +297,7 @@ public class BalanceServiceImpl implements BalanceService {
     }
 
     @Override
-    public Map<String, Map<String, String>> getBalancesByMultipleWallets(MultiWalletBalanceRequest request) throws OneInchException {
+    public Map<String, Map<String, BigInteger>> getBalancesByMultipleWallets(MultiWalletBalanceRequest request) throws OneInchException {
         try {
             log.debug("Getting balances for {} wallets and {} tokens on chain {}", 
                     request.getWallets().size(), request.getTokens().size(), request.getChainId());
@@ -314,7 +315,7 @@ public class BalanceServiceImpl implements BalanceService {
     }
 
     @Override
-    public CompletableFuture<Map<String, Map<String, String>>> getBalancesByMultipleWalletsAsync(MultiWalletBalanceRequest request) {
+    public CompletableFuture<Map<String, Map<String, BigInteger>>> getBalancesByMultipleWalletsAsync(MultiWalletBalanceRequest request) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return getBalancesByMultipleWallets(request);
@@ -325,7 +326,7 @@ public class BalanceServiceImpl implements BalanceService {
     }
 
     @Override
-    public Single<Map<String, Map<String, String>>> getBalancesByMultipleWalletsRx(MultiWalletBalanceRequest request) {
+    public Single<Map<String, Map<String, BigInteger>>> getBalancesByMultipleWalletsRx(MultiWalletBalanceRequest request) {
         log.debug("Getting balances (reactive) for {} wallets and {} tokens on chain {}", 
                 request.getWallets().size(), request.getTokens().size(), request.getChainId());
         CustomTokensAndWalletsBalanceRequest requestBody = CustomTokensAndWalletsBalanceRequest.builder()

@@ -1137,6 +1137,8 @@ The Balance API provides token balance and allowance checking capabilities acros
 
 #### Basic Wallet Balance Checking
 ```java
+import java.math.BigInteger;
+
 try (OneInchClient client = OneInchClient.builder().build()) {
     
     // Get all token balances for a wallet
@@ -1145,11 +1147,11 @@ try (OneInchClient client = OneInchClient.builder().build()) {
             .walletAddress("0x111111111117dc0aa78b770fa6a738034120c302")
             .build();
     
-    Map<String, String> balances = client.balance().getBalances(request);
+    Map<String, BigInteger> balances = client.balance().getBalances(request);
     
     log.info("Found {} token balances", balances.size());
     balances.entrySet().stream()
-            .filter(entry -> !entry.getValue().equals("0"))
+            .filter(entry -> !entry.getValue().equals(BigInteger.ZERO))
             .limit(5)
             .forEach(entry -> log.info("  Token {}: {} wei", entry.getKey(), entry.getValue()));
 }
@@ -1167,7 +1169,7 @@ CustomBalanceRequest request = CustomBalanceRequest.builder()
         ))
         .build();
 
-Map<String, String> customBalances = client.balance().getCustomBalances(request);
+Map<String, BigInteger> customBalances = client.balance().getCustomBalances(request);
 
 customBalances.forEach((token, balance) -> 
     log.info("Token {}: {} wei", token, balance));
@@ -1182,11 +1184,11 @@ AllowanceBalanceRequest request = AllowanceBalanceRequest.builder()
         .walletAddress("0x111111111117dc0aa78b770fa6a738034120c302")
         .build();
 
-Map<String, String> allowances = client.balance().getAllowances(request);
+Map<String, BigInteger> allowances = client.balance().getAllowances(request);
 
 log.info("Token allowances for 1inch router:");
 allowances.entrySet().stream()
-        .filter(entry -> !entry.getValue().equals("0"))
+        .filter(entry -> !entry.getValue().equals(BigInteger.ZERO))
         .forEach(entry -> log.info("  Token {}: {} wei allowance", entry.getKey(), entry.getValue()));
 ```
 
@@ -1225,7 +1227,7 @@ MultiWalletBalanceRequest request = MultiWalletBalanceRequest.builder()
         ))
         .build();
 
-Map<String, Map<String, String>> multiWalletBalances = client.balance().getBalancesByMultipleWallets(request);
+Map<String, Map<String, BigInteger>> multiWalletBalances = client.balance().getBalancesByMultipleWallets(request);
 
 multiWalletBalances.forEach((wallet, tokenBalances) -> {
     log.info("Wallet: {}", wallet);
