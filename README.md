@@ -17,6 +17,7 @@ A comprehensive Java SDK for the 1inch DEX Aggregation Protocol, providing easy 
 - ✅ Token Details API with pricing and chart data
 - ✅ Orderbook API for limit order management
 - ✅ History API for transaction history tracking
+- ✅ Portfolio API for DeFi position tracking and analytics
 - ✅ Type-safe models with Jackson and BigInteger precision
 - ✅ Extensive unit test coverage
 
@@ -230,6 +231,18 @@ All Orderbook operations require a specific chainId:
 History operations can work across chains with optional chainId filtering:
 - ✅ `getHistoryEvents(address, chainId?, ...)` - Get transaction history for an address with optional chain filtering
 
+### Portfolio API (`client.portfolio()`) - **Multi-Chain**
+Portfolio operations provide comprehensive DeFi position tracking and analytics:
+- ✅ `getServiceStatus()` - Check Portfolio API service availability
+- ✅ `getSupportedChains()` - Get list of supported blockchain networks
+- ✅ `getSupportedProtocols()` - Get list of supported DeFi protocols
+- ✅ `checkAddresses(addresses)` - Validate wallet addresses for portfolio tracking
+- ✅ `getCurrentValue(request)` - Get current portfolio value breakdown by address, category, and chain
+- ✅ `getProtocolsSnapshot(request)` - Get detailed protocol positions and underlying tokens
+- ✅ `getTokensSnapshot(request)` - Get token positions across all DeFi protocols
+- ✅ `getProtocolsMetrics(request)` - Get profit/loss, ROI, and APR metrics for protocol positions
+- ✅ `getTokensMetrics(request)` - Get profit/loss, ROI, and APR metrics for token positions
+
 ## Configuration
 
 ### Authentication
@@ -284,6 +297,7 @@ The SDK includes complete example classes demonstrating all APIs:
 - **`OrderbookExample.java`** - Limit orders, events, and trading pairs
 - **`HistoryExample.java`** - Transaction history tracking and analysis
 - **`HistoryConsoleExample.java`** - Command-line tool for displaying transaction history
+- **`PortfolioExample.java`** - DeFi portfolio tracking, position analysis, and P&L metrics
 
 #### Running Examples
 
@@ -314,6 +328,9 @@ mvn exec:java -pl oneinch-sdk-examples -Dexec.mainClass="io.oneinch.sdk.examples
 
 # Run the History Console example (requires address argument)
 mvn exec:java -pl oneinch-sdk-examples -Dexec.mainClass="io.oneinch.sdk.examples.HistoryConsoleExample" -Dexec.args="0x111111111117dc0aa78b770fa6a738034120c302"
+
+# Run the Portfolio example
+mvn exec:java -pl oneinch-sdk-examples -Dexec.mainClass="io.oneinch.sdk.examples.PortfolioExample"
 ```
 
 ### Reactive Swap Flow
@@ -910,6 +927,192 @@ client.history().getHistoryEventsRx(request)
             reliableTransfers.size()),
         error -> log.error("Reactive failed", error)
     );
+```
+
+### Portfolio API Examples
+
+The Portfolio API v5 provides comprehensive DeFi position tracking and analytics across multiple chains and protocols.
+
+#### Service Information
+```java
+try (OneInchClient client = OneInchClient.builder().build()) {
+    
+    // Check service status
+    ApiStatusResponse status = client.portfolio().getServiceStatus();
+    log.info("Portfolio API available: {}", status.getIsAvailable());
+    
+    // Get supported chains
+    List<SupportedChainResponse> chains = client.portfolio().getSupportedChains();
+    log.info("Supported chains: {}", chains.size());
+    chains.stream()
+        .limit(3)
+        .forEach(chain -> log.info("  Chain: {} ({})", 
+            chain.getChainName(), chain.getChainId()));
+    
+    // Get supported protocols
+    List<SupportedProtocolGroupResponse> protocols = client.portfolio().getSupportedProtocols();
+    log.info("Supported protocols: {}", protocols.size());
+    protocols.stream()
+        .limit(3)
+        .forEach(protocol -> log.info("  Protocol: {} on chain {}", 
+            protocol.getProtocolGroupName(), protocol.getChainId()));
+}
+```
+
+#### Current Portfolio Value
+```java
+// Get portfolio value breakdown
+PortfolioV5OverviewRequest request = PortfolioV5OverviewRequest.builder()
+        .addresses(Arrays.asList("0x111111111117dc0aa78b770fa6a738034120c302"))
+        .chainId(1) // Ethereum
+        .build();
+
+CurrentValueResponse currentValue = client.portfolio().getCurrentValue(request);
+
+log.info("Total portfolio value: ${}", currentValue.getTotal());
+
+// Value by address
+currentValue.getByAddress().forEach(addr -> 
+    log.info("  Address {}: ${}", addr.getAddress(), addr.getValueUsd()));
+
+// Value by category (DeFi protocols, tokens, etc.)
+currentValue.getByCategory().forEach(cat -> 
+    log.info("  Category {}: ${}", cat.getCategoryName(), cat.getValueUsd()));
+
+// Value by blockchain
+currentValue.getByChain().forEach(chain -> 
+    log.info("  Chain {}: ${}", chain.getChainName(), chain.getValueUsd()));
+```
+
+#### Protocol Positions Snapshot
+```java
+// Get detailed protocol positions
+PortfolioV5SnapshotRequest snapshotRequest = PortfolioV5SnapshotRequest.builder()
+        .addresses(Arrays.asList("0x111111111117dc0aa78b770fa6a738034120c302"))
+        .chainId(1) // Ethereum
+        .build();
+
+List<AdapterResult> protocolsSnapshot = client.portfolio().getProtocolsSnapshot(snapshotRequest);
+
+log.info("Found {} protocol positions", protocolsSnapshot.size());
+
+protocolsSnapshot.stream()
+    .limit(3)
+    .forEach(position -> {
+        log.info("  Protocol: {} - Value: ${}", 
+            position.getProtocolGroupName(), position.getValueUsd());
+        log.info("    Contract: {} ({})", 
+            position.getContractName(), position.getContractAddress());
+        log.info("    Underlying tokens: {}", position.getUnderlyingTokens().size());
+        log.info("    Reward tokens: {}", position.getRewardTokens().size());
+    });
+```
+
+#### Token Positions Analysis
+```java
+// Get token positions across all protocols
+List<AdapterResult> tokensSnapshot = client.portfolio().getTokensSnapshot(snapshotRequest);
+
+log.info("Found {} token positions", tokensSnapshot.size());
+
+tokensSnapshot.stream()
+    .limit(5)
+    .forEach(token -> {
+        log.info("  Token: {} ({}) - Value: ${}", 
+            token.getContractName(), token.getContractSymbol(), token.getValueUsd());
+        log.info("    Address: {}", token.getContractAddress());
+        log.info("    Locked: {}", token.getLocked());
+    });
+```
+
+#### P&L and ROI Metrics
+```java
+// Get profit/loss and ROI metrics for protocols
+PortfolioV5MetricsRequest metricsRequest = PortfolioV5MetricsRequest.builder()
+        .addresses(Arrays.asList("0x111111111117dc0aa78b770fa6a738034120c302"))
+        .chainId(1) // Ethereum
+        .build();
+
+List<HistoryMetrics> protocolsMetrics = client.portfolio().getProtocolsMetrics(metricsRequest);
+
+log.info("Found {} protocol metrics", protocolsMetrics.size());
+
+protocolsMetrics.stream()
+    .limit(3)
+    .forEach(metric -> {
+        log.info("  Position: {}", metric.getIndex());
+        log.info("    Profit (USD): {}", metric.getProfitAbsUsd());
+        log.info("    ROI: {}%", metric.getRoi() != null ? 
+            String.format("%.2f", metric.getRoi() * 100) : "N/A");
+        log.info("    Weighted APR: {}%", metric.getWeightedApr() != null ? 
+            String.format("%.2f", metric.getWeightedApr() * 100) : "N/A");
+        log.info("    Holding time: {} days", metric.getHoldingTimeDays());
+        log.info("    Rewards (USD): {}", metric.getRewardsUsd());
+    });
+```
+
+#### Reactive Portfolio Operations
+```java
+// Reactive portfolio analysis chain
+PortfolioV5OverviewRequest request = PortfolioV5OverviewRequest.builder()
+        .addresses(Arrays.asList("0x111111111117dc0aa78b770fa6a738034120c302"))
+        .chainId(1)
+        .build();
+
+client.portfolio().getCurrentValueRx(request)
+    .flatMap(currentValue -> {
+        log.info("Total value: ${}", currentValue.getTotal());
+        
+        // Chain to get protocol details
+        PortfolioV5SnapshotRequest snapshotRequest = PortfolioV5SnapshotRequest.builder()
+            .addresses(request.getAddresses())
+            .chainId(request.getChainId())
+            .build();
+        
+        return client.portfolio().getProtocolsSnapshotRx(snapshotRequest);
+    })
+    .flatMap(protocols -> {
+        log.info("Protocol positions: {}", protocols.size());
+        
+        // Chain to get metrics
+        PortfolioV5MetricsRequest metricsRequest = PortfolioV5MetricsRequest.builder()
+            .addresses(request.getAddresses())
+            .chainId(request.getChainId())
+            .build();
+        
+        return client.portfolio().getProtocolsMetricsRx(metricsRequest);
+    })
+    .subscribe(
+        metrics -> {
+            log.info("Portfolio analysis complete!");
+            log.info("Found {} protocol metrics", metrics.size());
+            
+            // Calculate total profit
+            BigDecimal totalProfit = metrics.stream()
+                .filter(m -> m.getProfitAbsUsd() != null)
+                .map(HistoryMetrics::getProfitAbsUsd)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            log.info("Total profit: ${}", totalProfit);
+        },
+        error -> log.error("Portfolio analysis failed", error)
+    );
+```
+
+#### Address Validation
+```java
+// Validate addresses before portfolio operations
+AddressValidationRequest validationRequest = AddressValidationRequest.builder()
+        .addresses(Arrays.asList(
+            "0x111111111117dc0aa78b770fa6a738034120c302",
+            "0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8"
+        ))
+        .build();
+
+AddressValidationResponse validation = client.portfolio().checkAddresses(validationRequest);
+
+validation.getResult().forEach((address, isValid) -> 
+    log.info("Address {} is {}", address, isValid ? "valid" : "invalid"));
 ```
 
 ## Error Handling

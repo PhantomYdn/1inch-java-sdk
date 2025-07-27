@@ -8,7 +8,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "\n        ETHEREUM = 1,\n        POLYGON = 137,\n        ARBITRUM = 42161,\n        AVALANCHE = 43114,\n        GNOSIS = 100,\n        OPTIMISM = 10,\n        KLAYTN = 8217,\n        BASE = 8453",
+            "description": "\n        ETHEREUM = 1,\n        POLYGON = 137,\n        ARBITRUM = 42161,\n        AVALANCHE = 43114,\n        GNOSIS = 100,\n        OPTIMISM = 10,\n            BASE = 8453",
             "content": { "application/json": { "schema": { "type": "number" }, "example": [1, 100, 137] } }
           }
         },
@@ -25,8 +25,8 @@
             "name": "chainIds",
             "required": true,
             "in": "query",
-            "description": "list of supported chains        `ETHEREUM = 1,        POLYGON = 137,        ARBITRUM = 42161,        AVALANCHE = 43114,        GNOSIS = 100,        KLAYTN = 8217,        OPTIMISM = 10,        BASE = 8453`",
-            "schema": { "type": "array", "items": { "type": "number", "enum": [1, 137, 8453, 42161, 8217, 43114, 10] } }
+            "description": "list of supported chains        `ETHEREUM = 1,        POLYGON = 137,        ARBITRUM = 42161,        AVALANCHE = 43114,        GNOSIS = 100,       OPTIMISM = 10,        BASE = 8453`",
+            "schema": { "type": "array", "items": { "type": "number", "enum": [1, 137, 8453, 42161, 43114, 10] } }
           },
           {
             "name": "address",
@@ -84,7 +84,7 @@
             "required": true,
             "in": "query",
             "description": "network chain",
-            "schema": { "enum": [1, 137, 8453, 42161, 8217, 43114, 10], "type": "number" }
+            "schema": { "enum": [1, 137, 8453, 42161, 43114, 10], "type": "number" }
           },
           {
             "name": "contract",

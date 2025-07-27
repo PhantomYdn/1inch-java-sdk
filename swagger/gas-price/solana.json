@@ -1,0 +1,84 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v1.6/501": {
+      "get": {
+        "description": "Get Gas Price info from network",
+        "operationId": "ApiController-v1_6-75741725-f583-444e-91d2-a01cf154957e",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "GasPrice",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SolanaGasPriceResponse" } } }
+          }
+        },
+        "summary": "Gas Price from network",
+        "tags": ["Gas Price"]
+      }
+    },
+    "/v1.6/501/accounts": {
+      "post": {
+        "description": "Get Gas Price info from network for solana accounts",
+        "operationId": "ApiController-getGasPriceForAccounts-6e8fd900-ab09-4458-9b16-0e50348a8be1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/GetGasPriceForAccountsRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "GasPrice",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SolanaGasPriceResponse" } } }
+          }
+        },
+        "summary": "Gas Price from network for solana accounts",
+        "tags": ["Gas Price"]
+      }
+    }
+  },
+  "info": {
+    "title": "1inch Gas Price API",
+    "description": "<h2>Solana Network</h2> Using 1inch Gas Price API, you can get optimize gas price from network.\n",
+    "version": "1.4",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "LegacyGasPriceResponse": {
+        "type": "object",
+        "properties": {
+          "standard": { "type": "string" },
+          "fast": { "type": "string" },
+          "instant": { "type": "string" }
+        },
+        "required": ["standard", "fast", "instant"]
+      },
+      "SolanaGasPriceResponse": {
+        "type": "object",
+        "properties": {
+          "baseFee": { "type": "string" },
+          "lowPriority": { "type": "string" },
+          "highPriority": { "type": "string" },
+          "instantPriority": { "type": "string" }
+        },
+        "required": ["baseFee", "lowPriority", "highPriority", "instantPriority"]
+      },
+      "GetGasPriceForAccountsRequest": {
+        "type": "object",
+        "properties": {
+          "accounts": {
+            "description": "List of account addresses",
+            "example": ["HyZ2nPL19eGRN8fGYbG5sMaWQMJpoQCGgvqr2znYKyPm"],
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": ["accounts"]
+      }
+    }
+  }
+}

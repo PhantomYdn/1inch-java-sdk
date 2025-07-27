@@ -1,6 +1,5 @@
 package io.oneinch.sdk.service;
 
-import io.oneinch.sdk.client.OneInchErrorHandler;
 import io.oneinch.sdk.client.PortfolioApiClient;
 import io.oneinch.sdk.exception.OneInchException;
 import io.oneinch.sdk.model.*;
@@ -11,7 +10,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Implementation of Portfolio API service
+ * Implementation of Portfolio API v5 service
  */
 @Slf4j
 public class PortfolioServiceImpl implements PortfolioService {
@@ -22,304 +21,60 @@ public class PortfolioServiceImpl implements PortfolioService {
         this.portfolioApiClient = portfolioApiClient;
     }
 
-    // ==================== GENERAL OVERVIEW ====================
+    // ==================== GENERAL ENDPOINTS ====================
 
     @Override
-    public Object getGeneralCurrentValue(PortfolioOverviewRequest request) throws OneInchException {
-        log.info("Getting general current value for {} addresses", request.getAddresses().size());
+    public ApiStatusResponse getServiceStatus() throws OneInchException {
+        log.info("Getting Portfolio service status");
         try {
-            return getGeneralCurrentValueRx(request).blockingGet();
+            return getServiceStatusRx().blockingGet();
         } catch (Exception e) {
-            throw new OneInchException("General current value request failed", e);
+            throw new OneInchException("Service status request failed", e);
         }
     }
 
     @Override
-    public CompletableFuture<Object> getGeneralCurrentValueAsync(PortfolioOverviewRequest request) {
-        log.info("Getting general current value (async) for {} addresses", request.getAddresses().size());
-        return getGeneralCurrentValueRx(request).toCompletionStage().toCompletableFuture();
+    public CompletableFuture<ApiStatusResponse> getServiceStatusAsync() {
+        log.info("Getting Portfolio service status (async)");
+        return getServiceStatusRx().toCompletionStage().toCompletableFuture();
     }
 
     @Override
-    public Single<Object> getGeneralCurrentValueRx(PortfolioOverviewRequest request) {
-        log.info("Getting general current value (reactive) for {} addresses", request.getAddresses().size());
-        return portfolioApiClient.getGeneralCurrentValue(
+    public Single<ApiStatusResponse> getServiceStatusRx() {
+        log.info("Getting Portfolio service status (reactive)");
+        return portfolioApiClient.getServiceStatus()
+                .map(ResponseEnvelope::getResult)
+                .doOnError(throwable -> log.error("Service status request failed", throwable));
+    }
+
+    @Override
+    public Object checkAddresses(PortfolioV5OverviewRequest request) throws OneInchException {
+        log.info("Checking addresses compliance for {} addresses", request.getAddresses().size());
+        try {
+            return checkAddressesRx(request).blockingGet();
+        } catch (Exception e) {
+            throw new OneInchException("Address check request failed", e);
+        }
+    }
+
+    @Override
+    public CompletableFuture<Object> checkAddressesAsync(PortfolioV5OverviewRequest request) {
+        log.info("Checking addresses compliance (async) for {} addresses", request.getAddresses().size());
+        return checkAddressesRx(request).toCompletionStage().toCompletableFuture();
+    }
+
+    @Override
+    public Single<Object> checkAddressesRx(PortfolioV5OverviewRequest request) {
+        log.info("Checking addresses compliance (reactive) for {} addresses", request.getAddresses().size());
+        return portfolioApiClient.checkAddresses(
                         request.getAddresses(),
                         request.getChainId(),
                         request.getUseCache())
-                .doOnError(throwable -> log.error("General current value request failed", throwable))
-                .onErrorResumeNext(throwable -> Single.error(OneInchErrorHandler.handleError(throwable)));
+                .doOnError(throwable -> log.error("Address check request failed", throwable));
     }
 
     @Override
-    public Object getGeneralProfitAndLoss(PortfolioOverviewRequest request) throws OneInchException {
-        log.info("Getting general profit and loss for {} addresses with timerange: {}", 
-                request.getAddresses().size(), request.getTimerange());
-        try {
-            return getGeneralProfitAndLossRx(request).blockingGet();
-        } catch (Exception e) {
-            throw new OneInchException("General profit and loss request failed", e);
-        }
-    }
-
-    @Override
-    public CompletableFuture<Object> getGeneralProfitAndLossAsync(PortfolioOverviewRequest request) {
-        log.info("Getting general profit and loss (async) for {} addresses with timerange: {}", 
-                request.getAddresses().size(), request.getTimerange());
-        return getGeneralProfitAndLossRx(request).toCompletionStage().toCompletableFuture();
-    }
-
-    @Override
-    public Single<Object> getGeneralProfitAndLossRx(PortfolioOverviewRequest request) {
-        log.info("Getting general profit and loss (reactive) for {} addresses with timerange: {}", 
-                request.getAddresses().size(), request.getTimerange());
-        return portfolioApiClient.getGeneralProfitAndLoss(
-                        request.getAddresses(),
-                        request.getChainId(),
-                        request.getTimerange(),
-                        request.getUseCache())
-                .doOnError(throwable -> log.error("General profit and loss request failed", throwable))
-                .onErrorResumeNext(throwable -> Single.error(OneInchErrorHandler.handleError(throwable)));
-    }
-
-    @Override
-    public PortfolioValueChartResponse getGeneralValueChart(PortfolioValueChartRequest request) throws OneInchException {
-        log.info("Getting general value chart for {} addresses with timerange: {}", 
-                request.getAddresses().size(), request.getTimerange());
-        try {
-            return getGeneralValueChartRx(request).blockingGet();
-        } catch (Exception e) {
-            throw new OneInchException("General value chart request failed", e);
-        }
-    }
-
-    @Override
-    public CompletableFuture<PortfolioValueChartResponse> getGeneralValueChartAsync(PortfolioValueChartRequest request) {
-        log.info("Getting general value chart (async) for {} addresses with timerange: {}", 
-                request.getAddresses().size(), request.getTimerange());
-        return getGeneralValueChartRx(request).toCompletionStage().toCompletableFuture();
-    }
-
-    @Override
-    public Single<PortfolioValueChartResponse> getGeneralValueChartRx(PortfolioValueChartRequest request) {
-        log.info("Getting general value chart (reactive) for {} addresses with timerange: {}", 
-                request.getAddresses().size(), request.getTimerange());
-        return portfolioApiClient.getGeneralValueChart(
-                        request.getAddresses(),
-                        request.getChainId(),
-                        request.getTimerange(),
-                        request.getUseCache())
-                .doOnError(throwable -> log.error("General value chart request failed", throwable))
-                .onErrorResumeNext(throwable -> Single.error(OneInchErrorHandler.handleError(throwable)));
-    }
-
-    // ==================== PROTOCOLS OVERVIEW ====================
-
-    @Override
-    public Object getProtocolsCurrentValue(PortfolioOverviewRequest request) throws OneInchException {
-        log.info("Getting protocols current value for {} addresses", request.getAddresses().size());
-        try {
-            return getProtocolsCurrentValueRx(request).blockingGet();
-        } catch (Exception e) {
-            throw new OneInchException("Protocols current value request failed", e);
-        }
-    }
-
-    @Override
-    public CompletableFuture<Object> getProtocolsCurrentValueAsync(PortfolioOverviewRequest request) {
-        log.info("Getting protocols current value (async) for {} addresses", request.getAddresses().size());
-        return getProtocolsCurrentValueRx(request).toCompletionStage().toCompletableFuture();
-    }
-
-    @Override
-    public Single<Object> getProtocolsCurrentValueRx(PortfolioOverviewRequest request) {
-        log.info("Getting protocols current value (reactive) for {} addresses", request.getAddresses().size());
-        return portfolioApiClient.getProtocolsCurrentValue(
-                        request.getAddresses(),
-                        request.getChainId(),
-                        request.getUseCache())
-                .doOnError(throwable -> log.error("Protocols current value request failed", throwable))
-                .onErrorResumeNext(throwable -> Single.error(OneInchErrorHandler.handleError(throwable)));
-    }
-
-    @Override
-    public Object getProtocolsProfitAndLoss(PortfolioOverviewRequest request) throws OneInchException {
-        log.info("Getting protocols profit and loss for {} addresses with timerange: {}", 
-                request.getAddresses().size(), request.getTimerange());
-        try {
-            return getProtocolsProfitAndLossRx(request).blockingGet();
-        } catch (Exception e) {
-            throw new OneInchException("Protocols profit and loss request failed", e);
-        }
-    }
-
-    @Override
-    public CompletableFuture<Object> getProtocolsProfitAndLossAsync(PortfolioOverviewRequest request) {
-        log.info("Getting protocols profit and loss (async) for {} addresses with timerange: {}", 
-                request.getAddresses().size(), request.getTimerange());
-        return getProtocolsProfitAndLossRx(request).toCompletionStage().toCompletableFuture();
-    }
-
-    @Override
-    public Single<Object> getProtocolsProfitAndLossRx(PortfolioOverviewRequest request) {
-        log.info("Getting protocols profit and loss (reactive) for {} addresses with timerange: {}", 
-                request.getAddresses().size(), request.getTimerange());
-        return portfolioApiClient.getProtocolsProfitAndLoss(
-                        request.getAddresses(),
-                        request.getChainId(),
-                        request.getTimerange(),
-                        request.getUseCache())
-                .doOnError(throwable -> log.error("Protocols profit and loss request failed", throwable))
-                .onErrorResumeNext(throwable -> Single.error(OneInchErrorHandler.handleError(throwable)));
-    }
-
-    @Override
-    public PortfolioProtocolsResponse getProtocolsDetails(PortfolioDetailsRequest request) throws OneInchException {
-        log.info("Getting protocols details for {} addresses", request.getAddresses().size());
-        try {
-            return getProtocolsDetailsRx(request).blockingGet();
-        } catch (Exception e) {
-            throw new OneInchException("Protocols details request failed", e);
-        }
-    }
-
-    @Override
-    public CompletableFuture<PortfolioProtocolsResponse> getProtocolsDetailsAsync(PortfolioDetailsRequest request) {
-        log.info("Getting protocols details (async) for {} addresses", request.getAddresses().size());
-        return getProtocolsDetailsRx(request).toCompletionStage().toCompletableFuture();
-    }
-
-    @Override
-    public Single<PortfolioProtocolsResponse> getProtocolsDetailsRx(PortfolioDetailsRequest request) {
-        log.info("Getting protocols details (reactive) for {} addresses", request.getAddresses().size());
-        return portfolioApiClient.getProtocolsDetails(
-                        request.getAddresses(),
-                        request.getChainId(),
-                        request.getClosed(),
-                        request.getClosedThreshold(),
-                        request.getUseCache())
-                .doOnError(throwable -> log.error("Protocols details request failed", throwable))
-                .onErrorResumeNext(throwable -> Single.error(OneInchErrorHandler.handleError(throwable)));
-    }
-
-    // ==================== ERC20 TOKENS OVERVIEW ====================
-
-    @Override
-    public Object getTokensCurrentValue(PortfolioOverviewRequest request) throws OneInchException {
-        log.info("Getting tokens current value for {} addresses", request.getAddresses().size());
-        try {
-            return getTokensCurrentValueRx(request).blockingGet();
-        } catch (Exception e) {
-            throw new OneInchException("Tokens current value request failed", e);
-        }
-    }
-
-    @Override
-    public CompletableFuture<Object> getTokensCurrentValueAsync(PortfolioOverviewRequest request) {
-        log.info("Getting tokens current value (async) for {} addresses", request.getAddresses().size());
-        return getTokensCurrentValueRx(request).toCompletionStage().toCompletableFuture();
-    }
-
-    @Override
-    public Single<Object> getTokensCurrentValueRx(PortfolioOverviewRequest request) {
-        log.info("Getting tokens current value (reactive) for {} addresses", request.getAddresses().size());
-        return portfolioApiClient.getTokensCurrentValue(
-                        request.getAddresses(),
-                        request.getChainId(),
-                        request.getUseCache())
-                .doOnError(throwable -> log.error("Tokens current value request failed", throwable))
-                .onErrorResumeNext(throwable -> Single.error(OneInchErrorHandler.handleError(throwable)));
-    }
-
-    @Override
-    public Object getTokensProfitAndLoss(PortfolioOverviewRequest request) throws OneInchException {
-        log.info("Getting tokens profit and loss for {} addresses with timerange: {}", 
-                request.getAddresses().size(), request.getTimerange());
-        try {
-            return getTokensProfitAndLossRx(request).blockingGet();
-        } catch (Exception e) {
-            throw new OneInchException("Tokens profit and loss request failed", e);
-        }
-    }
-
-    @Override
-    public CompletableFuture<Object> getTokensProfitAndLossAsync(PortfolioOverviewRequest request) {
-        log.info("Getting tokens profit and loss (async) for {} addresses with timerange: {}", 
-                request.getAddresses().size(), request.getTimerange());
-        return getTokensProfitAndLossRx(request).toCompletionStage().toCompletableFuture();
-    }
-
-    @Override
-    public Single<Object> getTokensProfitAndLossRx(PortfolioOverviewRequest request) {
-        log.info("Getting tokens profit and loss (reactive) for {} addresses with timerange: {}", 
-                request.getAddresses().size(), request.getTimerange());
-        return portfolioApiClient.getTokensProfitAndLoss(
-                        request.getAddresses(),
-                        request.getChainId(),
-                        request.getTimerange(),
-                        request.getUseCache())
-                .doOnError(throwable -> log.error("Tokens profit and loss request failed", throwable))
-                .onErrorResumeNext(throwable -> Single.error(OneInchErrorHandler.handleError(throwable)));
-    }
-
-    @Override
-    public PortfolioTokensResponse getTokensDetails(PortfolioDetailsRequest request) throws OneInchException {
-        log.info("Getting tokens details for {} addresses", request.getAddresses().size());
-        try {
-            return getTokensDetailsRx(request).blockingGet();
-        } catch (Exception e) {
-            throw new OneInchException("Tokens details request failed", e);
-        }
-    }
-
-    @Override
-    public CompletableFuture<PortfolioTokensResponse> getTokensDetailsAsync(PortfolioDetailsRequest request) {
-        log.info("Getting tokens details (async) for {} addresses", request.getAddresses().size());
-        return getTokensDetailsRx(request).toCompletionStage().toCompletableFuture();
-    }
-
-    @Override
-    public Single<PortfolioTokensResponse> getTokensDetailsRx(PortfolioDetailsRequest request) {
-        log.info("Getting tokens details (reactive) for {} addresses", request.getAddresses().size());
-        return portfolioApiClient.getTokensDetails(
-                        request.getAddresses(),
-                        request.getChainId(),
-                        request.getTimerange(),
-                        request.getClosed(),
-                        request.getClosedThreshold(),
-                        request.getUseCache())
-                .doOnError(throwable -> log.error("Tokens details request failed", throwable))
-                .onErrorResumeNext(throwable -> Single.error(OneInchErrorHandler.handleError(throwable)));
-    }
-
-    // ==================== GENERAL INFORMATION ====================
-
-    @Override
-    public Object getServiceAvailability() throws OneInchException {
-        log.info("Checking Portfolio service availability");
-        try {
-            return getServiceAvailabilityRx().blockingGet();
-        } catch (Exception e) {
-            throw new OneInchException("Service availability check failed", e);
-        }
-    }
-
-    @Override
-    public CompletableFuture<Object> getServiceAvailabilityAsync() {
-        log.info("Checking Portfolio service availability (async)");
-        return getServiceAvailabilityRx().toCompletionStage().toCompletableFuture();
-    }
-
-    @Override
-    public Single<Object> getServiceAvailabilityRx() {
-        log.info("Checking Portfolio service availability (reactive)");
-        return portfolioApiClient.getServiceAvailability()
-                .doOnError(throwable -> log.error("Service availability check failed", throwable))
-                .onErrorResumeNext(throwable -> Single.error(OneInchErrorHandler.handleError(throwable)));
-    }
-
-    @Override
-    public List<Object> getSupportedChains() throws OneInchException {
+    public List<SupportedChainResponse> getSupportedChains() throws OneInchException {
         log.info("Getting supported chains");
         try {
             return getSupportedChainsRx().blockingGet();
@@ -329,21 +84,20 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public CompletableFuture<List<Object>> getSupportedChainsAsync() {
+    public CompletableFuture<List<SupportedChainResponse>> getSupportedChainsAsync() {
         log.info("Getting supported chains (async)");
         return getSupportedChainsRx().toCompletionStage().toCompletableFuture();
     }
 
     @Override
-    public Single<List<Object>> getSupportedChainsRx() {
+    public Single<List<SupportedChainResponse>> getSupportedChainsRx() {
         log.info("Getting supported chains (reactive)");
         return portfolioApiClient.getSupportedChains()
-                .doOnError(throwable -> log.error("Get supported chains request failed", throwable))
-                .onErrorResumeNext(throwable -> Single.error(OneInchErrorHandler.handleError(throwable)));
+                .doOnError(throwable -> log.error("Get supported chains request failed", throwable));
     }
 
     @Override
-    public List<Object> getSupportedProtocols() throws OneInchException {
+    public List<SupportedProtocolGroupResponse> getSupportedProtocols() throws OneInchException {
         log.info("Getting supported protocols");
         try {
             return getSupportedProtocolsRx().blockingGet();
@@ -353,16 +107,221 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public CompletableFuture<List<Object>> getSupportedProtocolsAsync() {
+    public CompletableFuture<List<SupportedProtocolGroupResponse>> getSupportedProtocolsAsync() {
         log.info("Getting supported protocols (async)");
         return getSupportedProtocolsRx().toCompletionStage().toCompletableFuture();
     }
 
     @Override
-    public Single<List<Object>> getSupportedProtocolsRx() {
+    public Single<List<SupportedProtocolGroupResponse>> getSupportedProtocolsRx() {
         log.info("Getting supported protocols (reactive)");
         return portfolioApiClient.getSupportedProtocols()
-                .doOnError(throwable -> log.error("Get supported protocols request failed", throwable))
-                .onErrorResumeNext(throwable -> Single.error(OneInchErrorHandler.handleError(throwable)));
+                .map(ResponseEnvelope::getResult)
+                .doOnError(throwable -> log.error("Get supported protocols request failed", throwable));
+    }
+
+    @Override
+    public CurrentValueResponse getCurrentValue(PortfolioV5OverviewRequest request) throws OneInchException {
+        log.info("Getting current value for {} addresses", request.getAddresses().size());
+        try {
+            return getCurrentValueRx(request).blockingGet();
+        } catch (Exception e) {
+            throw new OneInchException("Current value request failed", e);
+        }
+    }
+
+    @Override
+    public CompletableFuture<CurrentValueResponse> getCurrentValueAsync(PortfolioV5OverviewRequest request) {
+        log.info("Getting current value (async) for {} addresses", request.getAddresses().size());
+        return getCurrentValueRx(request).toCompletionStage().toCompletableFuture();
+    }
+
+    @Override
+    public Single<CurrentValueResponse> getCurrentValueRx(PortfolioV5OverviewRequest request) {
+        log.info("Getting current value (reactive) for {} addresses", request.getAddresses().size());
+        return portfolioApiClient.getCurrentValue(
+                        request.getAddresses(),
+                        request.getChainId(),
+                        request.getUseCache())
+                .map(ResponseEnvelope::getResult)
+                .doOnError(throwable -> log.error("Current value request failed", throwable));
+    }
+
+    @Override
+    public Object getValueChart(PortfolioV5ChartRequest request) throws OneInchException {
+        log.info("Getting value chart for {} addresses with timerange: {}", 
+                request.getAddresses().size(), request.getTimerange());
+        try {
+            return getValueChartRx(request).blockingGet();
+        } catch (Exception e) {
+            throw new OneInchException("Value chart request failed", e);
+        }
+    }
+
+    @Override
+    public CompletableFuture<Object> getValueChartAsync(PortfolioV5ChartRequest request) {
+        log.info("Getting value chart (async) for {} addresses with timerange: {}", 
+                request.getAddresses().size(), request.getTimerange());
+        return getValueChartRx(request).toCompletionStage().toCompletableFuture();
+    }
+
+    @Override
+    public Single<Object> getValueChartRx(PortfolioV5ChartRequest request) {
+        log.info("Getting value chart (reactive) for {} addresses with timerange: {}", 
+                request.getAddresses().size(), request.getTimerange());
+        return portfolioApiClient.getValueChart(
+                        request.getAddresses(),
+                        request.getChainId(),
+                        request.getTimerange(),
+                        request.getUseCache())
+                .doOnError(throwable -> log.error("Value chart request failed", throwable));
+    }
+
+    @Override
+    public Object getReport(PortfolioV5ChartRequest request) throws OneInchException {
+        log.info("Getting report for {} addresses with timerange: {}", 
+                request.getAddresses().size(), request.getTimerange());
+        try {
+            return getReportRx(request).blockingGet();
+        } catch (Exception e) {
+            throw new OneInchException("Report request failed", e);
+        }
+    }
+
+    @Override
+    public CompletableFuture<Object> getReportAsync(PortfolioV5ChartRequest request) {
+        log.info("Getting report (async) for {} addresses with timerange: {}", 
+                request.getAddresses().size(), request.getTimerange());
+        return getReportRx(request).toCompletionStage().toCompletableFuture();
+    }
+
+    @Override
+    public Single<Object> getReportRx(PortfolioV5ChartRequest request) {
+        log.info("Getting report (reactive) for {} addresses with timerange: {}", 
+                request.getAddresses().size(), request.getTimerange());
+        return portfolioApiClient.getReport(
+                        request.getAddresses(),
+                        request.getChainId(),
+                        request.getTimerange(),
+                        true, // closed positions
+                        1.0) // closed threshold
+                .doOnError(throwable -> log.error("Report request failed", throwable));
+    }
+
+    // ==================== PROTOCOLS ENDPOINTS ====================
+
+    @Override
+    public List<AdapterResult> getProtocolsSnapshot(PortfolioV5SnapshotRequest request) throws OneInchException {
+        log.info("Getting protocols snapshot for {} addresses", request.getAddresses().size());
+        try {
+            return getProtocolsSnapshotRx(request).blockingGet();
+        } catch (Exception e) {
+            throw new OneInchException("Protocols snapshot request failed", e);
+        }
+    }
+
+    @Override
+    public CompletableFuture<List<AdapterResult>> getProtocolsSnapshotAsync(PortfolioV5SnapshotRequest request) {
+        log.info("Getting protocols snapshot (async) for {} addresses", request.getAddresses().size());
+        return getProtocolsSnapshotRx(request).toCompletionStage().toCompletableFuture();
+    }
+
+    @Override
+    public Single<List<AdapterResult>> getProtocolsSnapshotRx(PortfolioV5SnapshotRequest request) {
+        log.info("Getting protocols snapshot (reactive) for {} addresses", request.getAddresses().size());
+        return portfolioApiClient.getProtocolsSnapshot(
+                        request.getAddresses(),
+                        request.getChainId(),
+                        request.getTimestamp(),
+                        request.getUseCache())
+                .map(ResponseEnvelope::getResult)
+                .doOnError(throwable -> log.error("Protocols snapshot request failed", throwable));
+    }
+
+    @Override
+    public List<HistoryMetrics> getProtocolsMetrics(PortfolioV5MetricsRequest request) throws OneInchException {
+        log.info("Getting protocols metrics for {} addresses", request.getAddresses().size());
+        try {
+            return getProtocolsMetricsRx(request).blockingGet();
+        } catch (Exception e) {
+            throw new OneInchException("Protocols metrics request failed", e);
+        }
+    }
+
+    @Override
+    public CompletableFuture<List<HistoryMetrics>> getProtocolsMetricsAsync(PortfolioV5MetricsRequest request) {
+        log.info("Getting protocols metrics (async) for {} addresses", request.getAddresses().size());
+        return getProtocolsMetricsRx(request).toCompletionStage().toCompletableFuture();
+    }
+
+    @Override
+    public Single<List<HistoryMetrics>> getProtocolsMetricsRx(PortfolioV5MetricsRequest request) {
+        log.info("Getting protocols metrics (reactive) for {} addresses", request.getAddresses().size());
+        return portfolioApiClient.getProtocolsMetrics(
+                        request.getAddresses(),
+                        request.getChainId(),
+                        request.getProtocolGroupId(),
+                        request.getContractAddress(),
+                        request.getTokenId(),
+                        request.getUseCache())
+                .map(ResponseEnvelope::getResult)
+                .doOnError(throwable -> log.error("Protocols metrics request failed", throwable));
+    }
+
+    // ==================== TOKENS ENDPOINTS ====================
+
+    @Override
+    public List<AdapterResult> getTokensSnapshot(PortfolioV5SnapshotRequest request) throws OneInchException {
+        log.info("Getting tokens snapshot for {} addresses", request.getAddresses().size());
+        try {
+            return getTokensSnapshotRx(request).blockingGet();
+        } catch (Exception e) {
+            throw new OneInchException("Tokens snapshot request failed", e);
+        }
+    }
+
+    @Override
+    public CompletableFuture<List<AdapterResult>> getTokensSnapshotAsync(PortfolioV5SnapshotRequest request) {
+        log.info("Getting tokens snapshot (async) for {} addresses", request.getAddresses().size());
+        return getTokensSnapshotRx(request).toCompletionStage().toCompletableFuture();
+    }
+
+    @Override
+    public Single<List<AdapterResult>> getTokensSnapshotRx(PortfolioV5SnapshotRequest request) {
+        log.info("Getting tokens snapshot (reactive) for {} addresses", request.getAddresses().size());
+        return portfolioApiClient.getTokensSnapshot(
+                        request.getAddresses(),
+                        request.getChainId(),
+                        request.getTimestamp(),
+                        request.getUseCache())
+                .doOnError(throwable -> log.error("Tokens snapshot request failed", throwable));
+    }
+
+    @Override
+    public List<HistoryMetrics> getTokensMetrics(PortfolioV5MetricsRequest request) throws OneInchException {
+        log.info("Getting tokens metrics for {} addresses", request.getAddresses().size());
+        try {
+            return getTokensMetricsRx(request).blockingGet();
+        } catch (Exception e) {
+            throw new OneInchException("Tokens metrics request failed", e);
+        }
+    }
+
+    @Override
+    public CompletableFuture<List<HistoryMetrics>> getTokensMetricsAsync(PortfolioV5MetricsRequest request) {
+        log.info("Getting tokens metrics (async) for {} addresses", request.getAddresses().size());
+        return getTokensMetricsRx(request).toCompletionStage().toCompletableFuture();
+    }
+
+    @Override
+    public Single<List<HistoryMetrics>> getTokensMetricsRx(PortfolioV5MetricsRequest request) {
+        log.info("Getting tokens metrics (reactive) for {} addresses", request.getAddresses().size());
+        return portfolioApiClient.getTokensMetrics(
+                        request.getAddresses(),
+                        request.getChainId(),
+                        request.getTimerange(),
+                        request.getUseCache())
+                .map(ResponseEnvelope::getResult)
+                .doOnError(throwable -> log.error("Tokens metrics request failed", throwable));
     }
 }

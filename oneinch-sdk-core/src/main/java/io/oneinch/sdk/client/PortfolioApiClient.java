@@ -8,96 +8,87 @@ import retrofit2.http.Query;
 import java.util.List;
 
 /**
- * Retrofit interface for Portfolio API endpoints
+ * Retrofit interface for Portfolio API v5 endpoints
  */
 public interface PortfolioApiClient {
 
-    // ==================== GENERAL OVERVIEW ====================
+    // ==================== GENERAL ENDPOINTS ====================
 
-    @GET("portfolio/v4/general/current_value")
-    Single<Object> getGeneralCurrentValue(
+    @GET("portfolio/v5.0/general/status")
+    Single<ResponseEnvelope<ApiStatusResponse>> getServiceStatus();
+
+    @GET("portfolio/v5.0/general/address_check")
+    Single<Object> checkAddresses(
             @Query("addresses") List<String> addresses,
             @Query("chain_id") Integer chainId,
             @Query("use_cache") Boolean useCache
     );
 
-    @GET("portfolio/v4/general/profit_and_loss")
-    Single<Object> getGeneralProfitAndLoss(
-            @Query("addresses") List<String> addresses,
-            @Query("chain_id") Integer chainId,
-            @Query("timerange") String timerange,
-            @Query("use_cache") Boolean useCache
-    );
+    @GET("portfolio/v5.0/general/supported_chains")
+    Single<List<SupportedChainResponse>> getSupportedChains();
 
-    @GET("portfolio/v4/general/value_chart")
-    Single<PortfolioValueChartResponse> getGeneralValueChart(
-            @Query("addresses") List<String> addresses,
-            @Query("chain_id") Integer chainId,
-            @Query("timerange") String timerange,
-            @Query("use_cache") Boolean useCache
-    );
+    @GET("portfolio/v5.0/general/supported_protocols")
+    Single<ResponseEnvelope<List<SupportedProtocolGroupResponse>>> getSupportedProtocols();
 
-    // ==================== PROTOCOLS OVERVIEW ====================
-
-    @GET("portfolio/v4/overview/protocols/current_value")
-    Single<Object> getProtocolsCurrentValue(
+    @GET("portfolio/v5.0/general/current_value")
+    Single<ResponseEnvelope<CurrentValueResponse>> getCurrentValue(
             @Query("addresses") List<String> addresses,
             @Query("chain_id") Integer chainId,
             @Query("use_cache") Boolean useCache
     );
 
-    @GET("portfolio/v4/overview/protocols/profit_and_loss")
-    Single<Object> getProtocolsProfitAndLoss(
+    @GET("portfolio/v5.0/general/chart")
+    Single<Object> getValueChart(
             @Query("addresses") List<String> addresses,
             @Query("chain_id") Integer chainId,
             @Query("timerange") String timerange,
             @Query("use_cache") Boolean useCache
     );
 
-    @GET("portfolio/v4/overview/protocols/details")
-    Single<PortfolioProtocolsResponse> getProtocolsDetails(
-            @Query("addresses") List<String> addresses,
-            @Query("chain_id") Integer chainId,
-            @Query("closed") Boolean closed,
-            @Query("closed_threshold") Double closedThreshold,
-            @Query("use_cache") Boolean useCache
-    );
-
-    // ==================== ERC20 TOKENS OVERVIEW ====================
-
-    @GET("portfolio/v4/overview/erc20/current_value")
-    Single<Object> getTokensCurrentValue(
-            @Query("addresses") List<String> addresses,
-            @Query("chain_id") Integer chainId,
-            @Query("use_cache") Boolean useCache
-    );
-
-    @GET("portfolio/v4/overview/erc20/profit_and_loss")
-    Single<Object> getTokensProfitAndLoss(
-            @Query("addresses") List<String> addresses,
-            @Query("chain_id") Integer chainId,
-            @Query("timerange") String timerange,
-            @Query("use_cache") Boolean useCache
-    );
-
-    @GET("portfolio/v4/overview/erc20/details")
-    Single<PortfolioTokensResponse> getTokensDetails(
+    @GET("portfolio/v5.0/general/report")
+    Single<Object> getReport(
             @Query("addresses") List<String> addresses,
             @Query("chain_id") Integer chainId,
             @Query("timerange") String timerange,
             @Query("closed") Boolean closed,
-            @Query("closed_threshold") Double closedThreshold,
+            @Query("closed_threshold") Double closedThreshold
+    );
+
+    // ==================== PROTOCOLS ENDPOINTS ====================
+
+    @GET("portfolio/v5.0/protocols/snapshot")
+    Single<ResponseEnvelope<List<AdapterResult>>> getProtocolsSnapshot(
+            @Query("addresses") List<String> addresses,
+            @Query("chain_id") Integer chainId,
+            @Query("timestamp") Long timestamp,
             @Query("use_cache") Boolean useCache
     );
 
-    // ==================== GENERAL INFORMATION ====================
+    @GET("portfolio/v5.0/protocols/metrics")
+    Single<ResponseEnvelope<List<HistoryMetrics>>> getProtocolsMetrics(
+            @Query("addresses") List<String> addresses,
+            @Query("chain_id") Integer chainId,
+            @Query("protocol_group_id") String protocolGroupId,
+            @Query("contract_address") String contractAddress,
+            @Query("token_id") Integer tokenId,
+            @Query("use_cache") Boolean useCache
+    );
 
-    @GET("portfolio/v4/general/is_available")
-    Single<Object> getServiceAvailability();
+    // ==================== TOKENS ENDPOINTS ====================
 
-    @GET("portfolio/v4/general/supported_chains")
-    Single<List<Object>> getSupportedChains();
+    @GET("portfolio/v5.0/tokens/snapshot")
+    Single<List<AdapterResult>> getTokensSnapshot(
+            @Query("addresses") List<String> addresses,
+            @Query("chain_id") Integer chainId,
+            @Query("timestamp") Long timestamp,
+            @Query("use_cache") Boolean useCache
+    );
 
-    @GET("portfolio/v4/general/supported_protocols")
-    Single<List<Object>> getSupportedProtocols();
+    @GET("portfolio/v5.0/tokens/metrics")
+    Single<ResponseEnvelope<List<HistoryMetrics>>> getTokensMetrics(
+            @Query("addresses") List<String> addresses,
+            @Query("chain_id") Integer chainId,
+            @Query("timerange") String timerange,
+            @Query("use_cache") Boolean useCache
+    );
 }

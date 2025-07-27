@@ -10,7 +10,7 @@ import java.math.BigInteger;
 
 public interface OneInchSwapApiService {
     
-    @GET("swap/v6.0/{chain}/quote")
+    @GET("swap/v6.1/{chain}/quote")
     Single<QuoteResponse> getQuote(
             @Path("chain") Integer chainId,
             @Query("src") String src,
@@ -30,7 +30,7 @@ public interface OneInchSwapApiService {
             @Query("excludedProtocols") String excludedProtocols
     );
 
-    @GET("swap/v6.0/{chain}/swap")
+    @GET("swap/v6.1/{chain}/swap")
     Single<SwapResponse> getSwap(
             @Path("chain") Integer chainId,
             @Query("src") String src,
@@ -59,19 +59,19 @@ public interface OneInchSwapApiService {
             @Query("usePermit2") Boolean usePermit2
     );
     
-    @GET("swap/v6.0/{chain}/approve/spender")
+    @GET("swap/v6.1/{chain}/approve/spender")
     Single<SpenderResponse> getSpender(
         @Path("chain") Integer chainId
     );
     
-    @GET("swap/v6.0/{chain}/approve/transaction")
+    @GET("swap/v6.1/{chain}/approve/transaction")
     Single<ApproveCallDataResponse> getApproveTransaction(
             @Path("chain") Integer chainId,
             @Query("tokenAddress") String tokenAddress,
             @Query("amount") BigInteger amount
     );
 
-    @GET("swap/v6.0/{chain}/approve/allowance")
+    @GET("swap/v6.1/{chain}/approve/allowance")
     Single<AllowanceResponse> getAllowance(
             @Path("chain") Integer chainId,
             @Query("tokenAddress") String tokenAddress,

@@ -1,0 +1,171 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v1.2/501/balances/{account}": {
+      "get": {
+        "operationId": "ChainController_getBalances_v1.2",
+        "parameters": [
+          {
+            "name": "account",
+            "required": true,
+            "in": "path",
+            "description": "Solana account address",
+            "schema": { "example": "HyZ2nPL19eGRN8fGYbG5sMaWQMJpoQCGgvqr2znYKyPm", "type": "string" }
+          },
+          { "name": "onlyWhitelisted", "required": true, "in": "query", "schema": { "type": "boolean" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get account balances",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": { "type": "string", "description": "Token balance in string format" },
+                  "description": "Token account map for a specific mint address",
+                  "example": {
+                    "Ay5ah7TEEKRer3mZK2bmMCJZoU1aBNwLoHXsm1AqT3Qq": "896601",
+                    "3wqohYJrFBFtkMShJe1kGT9XJ4FNj67RCwfmgCzi6qA3": "0",
+                    "SoNative11111111111111111111111111111111111": "1.004682937"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "The provided input data is invalid" }
+        },
+        "summary": "Get balances of tokens for account",
+        "tags": ["Chain"]
+      },
+      "post": {
+        "description": "Takes account address and provided tokens and provides balance of each token",
+        "operationId": "ChainController_getCustomBalances_v1.2",
+        "parameters": [
+          {
+            "name": "account",
+            "required": true,
+            "in": "path",
+            "description": "Solana account address",
+            "schema": { "example": "HyZ2nPL19eGRN8fGYbG5sMaWQMJpoQCGgvqr2znYKyPm", "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CustomTokensRequest" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "Get account balances by provided tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": { "type": "string", "description": "Token balance in string format" },
+                  "description": "Token account map for a specific mint address",
+                  "example": {
+                    "Ay5ah7TEEKRer3mZK2bmMCJZoU1aBNwLoHXsm1AqT3Qq": "896601",
+                    "3wqohYJrFBFtkMShJe1kGT9XJ4FNj67RCwfmgCzi6qA3": "0",
+                    "SoNative11111111111111111111111111111111111": "1.004682937"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "The provided input data is invalid" }
+        },
+        "summary": "Get balances of custom tokens for account",
+        "tags": ["Chain"]
+      }
+    },
+    "/v1.2/501/balances/multiple/accountsAndTokens": {
+      "post": {
+        "operationId": "ChainController_getBalancesByMultipleWallets_v1.2",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CustomTokensAndAccountsRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Get account address balances by provided tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "additionalProperties": { "type": "string" },
+                    "example": {
+                      "HyZ2nPL19eVRN8fGYbG4sMaWQMJpoRCGgvqr2znYKyPm": {
+                        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": "1707410",
+                        "SoNative11111111111111111111111111111111111": "981833657"
+                      }
+                    }
+                  },
+                  "example": {
+                    "HyZ2nPL19eVRN8fGYbG4sMaWQMJpoRCGgvqr2znYKyPm": {
+                      "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": "1707410",
+                      "SoNative11111111111111111111111111111111111": "981833657"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "The provided input data is invalid" }
+        },
+        "summary": "Get balances of custom tokens for list of accounts",
+        "tags": ["Chain"]
+      }
+    }
+  },
+  "info": { "title": "1inch Solana Balances API", "description": "Solana Network", "version": "1.0", "contact": {} },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "CustomTokensRequest": {
+        "type": "object",
+        "properties": {
+          "customTokens": {
+            "description": "List of custom token accounts",
+            "example": ["EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"],
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "includeWhitelisted": {
+            "type": "boolean",
+            "description": "include whitelisted token balances or no",
+            "example": false
+          }
+        },
+        "required": ["customTokens"]
+      },
+      "CustomTokensAndAccountsRequest": {
+        "type": "object",
+        "properties": {
+          "customTokens": {
+            "description": "List of custom token accounts",
+            "example": ["EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"],
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "accounts": {
+            "description": "List of account addresses",
+            "example": ["HyZ2nPL19eGRN8fGYbG5sMaWQMJpoQCGgvqr2znYKyPm"],
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "includeWhitelisted": {
+            "type": "boolean",
+            "description": "include whitelisted token balances or no",
+            "example": false
+          }
+        },
+        "required": ["customTokens", "accounts"]
+      }
+    }
+  }
+}

@@ -1,26 +1,30 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/v1.0/10/order/active": {
+    "/v2.0/10/order/active": {
       "get": {
-        "operationId": "OrderApiController_getActiveOrders",
-        "summary": "Get gasless swap active orders",
+        "operationId": "OrderApiController_getActiveOrders_v2.0",
         "parameters": [
           {
             "name": "page",
             "required": false,
             "in": "query",
             "description": "Pagination step, default: 1 (page = offset / limit)",
-            "example": 1,
-            "schema": { "type": "number" }
+            "schema": { "example": 1, "type": "number" }
           },
           {
             "name": "limit",
             "required": false,
             "in": "query",
             "description": "Number of active orders to receive (default: 100, max: 500)",
-            "example": 100,
-            "schema": { "type": "number" }
+            "schema": { "example": 100, "type": "number" }
+          },
+          {
+            "name": "version",
+            "required": false,
+            "in": "query",
+            "description": "Settlement extension version: 2.0 or 2.1. By default: all",
+            "schema": { "example": "2.0", "type": "number" }
           }
         ],
         "responses": {
@@ -31,18 +35,124 @@
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GetActiveOrdersOutput" } } }
           }
         },
+        "summary": "Get gasless swap active orders",
         "tags": ["Orders"]
       }
     },
-    "/v1.0/10/order/settlement": {
+    "/v2.0/10/order/settlement": {
       "get": {
-        "operationId": "OrderApiController_getSettlementContract",
-        "summary": "Get actual settlement contract address",
+        "operationId": "OrderApiController_getSettlementContract_v2.0",
         "parameters": [],
         "responses": {
           "default": {
             "description": "",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SettlementAddressOutput" } } }
+          }
+        },
+        "summary": "Get actual settlement contract address",
+        "tags": ["Orders"]
+      }
+    },
+    "/v2.0/10/order/status/{orderHash}": {
+      "get": {
+        "operationId": "OrderApiController_getOrderByOrderHash_v2.0",
+        "parameters": [{ "name": "orderHash", "required": true, "in": "path", "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "" } },
+        "tags": ["Orders"]
+      }
+    },
+    "/v2.0/10/order/status": {
+      "post": {
+        "operationId": "OrderApiController_getOrdersByOrderHashes_v2.0",
+        "parameters": [],
+        "requestBody": {
+          "required": false,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrdersByHashesInput" } } }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/GetOrderFillsByHashOutput" } }
+            }
+          }
+        },
+        "summary": "Get orders by hashes",
+        "tags": ["Orders"]
+      }
+    },
+    "/v2.0/10/order/maker/{address}": {
+      "get": {
+        "operationId": "OrderApiController_getOrdersByMaker_v2.0",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "Maker's address",
+            "schema": { "example": "0x1000000000000000000000000000000000000001", "type": "string" }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Pagination step, default: 1 (page = offset / limit)",
+            "schema": { "example": 1, "type": "number" }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of active orders to receive (default: 100, max: 500)",
+            "schema": { "example": 100, "type": "number" }
+          },
+          {
+            "name": "timestampFrom",
+            "required": false,
+            "in": "query",
+            "description": "timestampFrom in milliseconds for interval [timestampFrom, timestampTo)",
+            "schema": { "example": 1750779231123, "type": "number" }
+          },
+          {
+            "name": "timestampTo",
+            "required": false,
+            "in": "query",
+            "description": "timestampTo in milliseconds for interval [timestampFrom, timestampTo)",
+            "schema": { "example": 1750779231123, "type": "number" }
+          },
+          {
+            "name": "makerToken",
+            "required": false,
+            "in": "query",
+            "description": "Find history by the given maker token",
+            "schema": { "example": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", "type": "string" }
+          },
+          {
+            "name": "takerToken",
+            "required": false,
+            "in": "query",
+            "description": "Find history by the given taker token",
+            "schema": { "example": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f", "type": "string" }
+          },
+          {
+            "name": "withToken",
+            "required": false,
+            "in": "query",
+            "description": "Find history items by source or destination token",
+            "schema": { "example": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f", "type": "string" }
+          },
+          {
+            "name": "version",
+            "required": false,
+            "in": "query",
+            "description": "Settlement extension version: 2.0 or 2.1. By default: all",
+            "schema": { "example": "2.0", "type": "number" }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrderFillsByMakerOutput" } } }
           }
         },
         "tags": ["Orders"]
@@ -52,7 +162,7 @@
   "info": {
     "title": "1inch Fusion API",
     "description": "<h2>Optimism Network</h2>1inch Fusion Open API",
-    "version": "1.0",
+    "version": "2.0",
     "contact": {}
   },
   "tags": [],
@@ -69,6 +179,41 @@
         },
         "required": ["totalItems", "itemsPerPage", "totalPages", "currentPage"]
       },
+      "FusionOrderV4": {
+        "type": "object",
+        "properties": {
+          "salt": {
+            "type": "string",
+            "description": "Some unique value. It is necessary to be able to create limit orders with the same parameters (so that they have a different hash), Lowest 160 bits of the order salt must be equal to the lowest 160 bits of the extension hash"
+          },
+          "maker": { "type": "string", "description": "Address of the account creating the order (maker)." },
+          "receiver": {
+            "type": "string",
+            "description": "Address of the account receiving the assets (receiver), if different from maker."
+          },
+          "makerAsset": { "type": "string", "description": "Identifier of the asset being offered by the maker." },
+          "takerAsset": {
+            "type": "string",
+            "description": "Identifier of the asset being requested by the maker in exchange."
+          },
+          "makingAmount": { "type": "string", "description": "Amount of the makerAsset being offered by the maker." },
+          "takingAmount": { "type": "string", "description": "Amount of the takerAsset being requested by the maker." },
+          "makerTraits": {
+            "type": "string",
+            "description": "Includes some flags like, allow multiple fills, is partial fill allowed or not, price improvement, nonce, deadline etc."
+          }
+        },
+        "required": [
+          "salt",
+          "maker",
+          "receiver",
+          "makerAsset",
+          "takerAsset",
+          "makingAmount",
+          "takingAmount",
+          "makerTraits"
+        ]
+      },
       "ActiveOrdersOutput": {
         "type": "object",
         "properties": {
@@ -80,12 +225,53 @@
             "type": "string",
             "description": "i.e 0x38de7c8c406c8668eec947d59679028c068735e56c8a41bcc5b3dc2d2229dec258424e0f06b189d2b87f9f3d9cdd9edcb7b3be4108bd8605d052c20c84e65ad61c"
           },
-          "deadline": { "format": "date-time", "type": "string" },
-          "auctionStartDate": { "format": "date-time", "type": "string" },
-          "auctionEndDate": { "format": "date-time", "type": "string" },
-          "quoteId": { "type": "string" }
+          "deadline": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Deadline by which the order must be filled."
+          },
+          "auctionStartDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Start date of the auction for this order."
+          },
+          "auctionEndDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "End date of the auction for this order."
+          },
+          "quoteId": { "type": "string", "description": "Identifier of the quote associated with this order." },
+          "remainingMakerAmount": {
+            "type": "string",
+            "description": "Remaining amount of the maker asset that can still be filled."
+          },
+          "extension": {
+            "type": "string",
+            "description": "An interaction call data. ABI encoded set of makerAssetSuffix, takerAssetSuffix, makingAmountGetter, takingAmountGetter, predicate, permit, preInteraction, postInteraction.If extension exists then lowest 160 bits of the order salt must be equal to the lowest 160 bits of the extension hash"
+          },
+          "order": {
+            "description": "Detailed structure of the limit order according to the FusionOrderV4 specification.",
+            "allOf": [{ "$ref": "#/components/schemas/FusionOrderV4" }]
+          },
+          "version": {
+            "type": "string",
+            "description": "Version of settlement contract. Supported: 2.0 and 2.1",
+            "example": "2.0",
+            "enum": ["2.0", "2.1", "2.2"]
+          }
         },
-        "required": ["orderHash", "signature", "deadline", "auctionStartDate", "auctionEndDate", "quoteId"]
+        "required": [
+          "orderHash",
+          "signature",
+          "deadline",
+          "auctionStartDate",
+          "auctionEndDate",
+          "quoteId",
+          "remainingMakerAmount",
+          "extension",
+          "order",
+          "version"
+        ]
       },
       "GetActiveOrdersOutput": {
         "type": "object",
@@ -99,6 +285,322 @@
         "type": "object",
         "properties": { "address": { "type": "string", "description": "actual settlement contract address" } },
         "required": ["address"]
+      },
+      "OrdersByHashesInput": {
+        "type": "object",
+        "properties": {
+          "orderHashes": {
+            "example": [
+              "0x10ea5bd12b2d04566e175de24c2df41a058bf16df4af3eb2fb9bff38a9da98e9",
+              "0x20ea5bd12b2d04566e175de24c2df41a058bf16df4af3eb2fb9bff38a9da98e8",
+              "0x30ea5bd12b2d04566e175de24c2df41a058bf16df4af3eb2fb9bff38a9da98e7",
+              "0x40ea5bd12b2d04566e175de24c2df41a058bf16df4af3eb2fb9bff38a9da98e6"
+            ],
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": ["orderHashes"]
+      },
+      "LimitOrderV4StructOutput": {
+        "type": "object",
+        "properties": {
+          "salt": { "type": "string" },
+          "maker": {
+            "type": "string",
+            "description": "Maker address",
+            "example": "0x995BE1CA945174D5bA75410C1E658a41eB13a2FA"
+          },
+          "receiver": {
+            "type": "string",
+            "description": "Receiver address",
+            "example": "0x995BE1CA945174D5bA75410C1E658a41eB13a2FA"
+          },
+          "makerAsset": {
+            "type": "string",
+            "description": "Maker asset address",
+            "example": "0x995BE1CA945174D5bA75410C1E658a41eB13a2FA"
+          },
+          "takerAsset": {
+            "type": "string",
+            "description": "Taker asset address",
+            "example": "0x995BE1CA945174D5bA75410C1E658a41eB13a2FA"
+          },
+          "makingAmount": {
+            "type": "string",
+            "description": "Amount of the maker asset",
+            "example": "100000000000000000"
+          },
+          "takingAmount": {
+            "type": "string",
+            "description": "Amount of the taker asset",
+            "example": "100000000000000000"
+          },
+          "makerTraits": { "type": "string" }
+        },
+        "required": [
+          "salt",
+          "maker",
+          "receiver",
+          "makerAsset",
+          "takerAsset",
+          "makingAmount",
+          "takingAmount",
+          "makerTraits"
+        ]
+      },
+      "AuctionPointOutput": {
+        "type": "object",
+        "properties": {
+          "delay": {
+            "type": "number",
+            "description": "The delay in seconds from the previous point or auction start time",
+            "example": 234
+          },
+          "coefficient": {
+            "type": "number",
+            "description": "The rate bump from the order min taker amount",
+            "example": 200
+          }
+        },
+        "required": ["delay", "coefficient"]
+      },
+      "FillsOutput": {
+        "type": "object",
+        "properties": {
+          "txHash": {
+            "type": "object",
+            "description": "Transaction hash",
+            "example": "0x806039f5149065924ad52de616b50abff488c986716d052e9c160887bc09e559"
+          },
+          "filledMakerAmount": {
+            "type": "object",
+            "description": "Amount of the makerAsset filled in src chain.",
+            "example": "100000000000000000"
+          },
+          "filledAuctionTakerAmount": {
+            "type": "object",
+            "description": "Amount of the takerAsset filled in dst chain.",
+            "example": "100000000000000000"
+          },
+          "takerFeeAmount": {
+            "type": "object",
+            "description": "Total taker fee, including resolver and integrator",
+            "example": "123123"
+          }
+        },
+        "required": ["txHash", "filledMakerAmount", "filledAuctionTakerAmount", "takerFeeAmount"]
+      },
+      "GetOrderFillsByHashOutput": {
+        "type": "object",
+        "properties": {
+          "orderHash": {
+            "type": "string",
+            "description": "Order hash",
+            "example": "0x496755a88564d8ded6759dff0252d3e6c3ef1fe42b4fa1bbc3f03bd2674f1078"
+          },
+          "status": {
+            "type": "string",
+            "description": "Order status",
+            "example": "pending",
+            "enum": [
+              "pending",
+              "filled",
+              "false-predicate",
+              "not-enough-balance-or-allowance",
+              "expired",
+              "partially-filled",
+              "wrong-permit",
+              "cancelled",
+              "invalid-signature",
+              "invalid-maker-traits",
+              "awaiting-signatures"
+            ]
+          },
+          "order": {
+            "description": "Order data",
+            "allOf": [{ "$ref": "#/components/schemas/LimitOrderV4StructOutput" }]
+          },
+          "extension": {
+            "type": "string",
+            "description": "An interaction call data. ABI encoded set of makerAssetSuffix, takerAssetSuffix, makingAmountGetter, takingAmountGetter, predicate, permit, preInteraction, postInteraction.If extension exists then lowest 160 bits of the order salt must be equal to the lowest 160 bits of the extension hash"
+          },
+          "points": { "nullable": true, "allOf": [{ "$ref": "#/components/schemas/AuctionPointOutput" }] },
+          "approximateTakingAmount": {
+            "type": "string",
+            "description": "Approximate amount of the takerAsset being requested by the maker in dst chain.",
+            "example": "100000000000000000"
+          },
+          "fills": { "description": "Fills", "type": "array", "items": { "$ref": "#/components/schemas/FillsOutput" } },
+          "auctionStartDate": {
+            "type": "number",
+            "description": "Unix timestamp in milliseconds",
+            "example": 123123123123
+          },
+          "auctionDuration": {
+            "type": "number",
+            "description": "Unix timestamp in milliseconds",
+            "example": 123123123123
+          },
+          "initialRateBump": { "type": "number", "description": "Initial rate bump", "example": 1000 },
+          "positiveSurplus": {
+            "type": "string",
+            "description": "shows if user received more than expected",
+            "example": "1000"
+          },
+          "isNativeCurrency": { "type": "boolean", "description": "is native currency or no", "example": "true" },
+          "version": {
+            "type": "string",
+            "description": "Version of settlement contract. Supported: 2.0 and 2.1",
+            "example": "2.0",
+            "enum": ["2.0", "2.1", "2.2"]
+          }
+        },
+        "required": [
+          "orderHash",
+          "status",
+          "order",
+          "extension",
+          "points",
+          "approximateTakingAmount",
+          "fills",
+          "auctionStartDate",
+          "auctionDuration",
+          "initialRateBump",
+          "positiveSurplus",
+          "isNativeCurrency",
+          "version"
+        ]
+      },
+      "FillOutputDto": {
+        "type": "object",
+        "properties": {
+          "txHash": {
+            "type": "object",
+            "description": "Transaction hash",
+            "example": "0x806039f5149065924ad52de616b50abff488c986716d052e9c160887bc09e559"
+          },
+          "filledMakerAmount": {
+            "type": "object",
+            "description": "Amount of the makerAsset filled.",
+            "example": "100000000000000000"
+          },
+          "filledAuctionTakerAmount": {
+            "type": "object",
+            "description": "Amount of the takerAsset filled.",
+            "example": "100000000000000000"
+          },
+          "takerFeeAmount": {
+            "type": "object",
+            "description": "Total taker fee, including resolver and integrator",
+            "example": "123123"
+          }
+        },
+        "required": ["txHash", "filledMakerAmount", "filledAuctionTakerAmount", "takerFeeAmount"]
+      },
+      "OrderFillsByMakerOutput": {
+        "type": "object",
+        "properties": {
+          "receiver": { "type": "string", "description": "Receiver address, it can be zero address or maker address." },
+          "orderHash": {
+            "type": "string",
+            "description": "Order hash",
+            "example": "0x806039f5149065924ad52de616b50abff488c986716d052e9c160887bc09e559"
+          },
+          "status": {
+            "type": "string",
+            "description": "Order status",
+            "example": "pending",
+            "enum": [
+              "pending",
+              "filled",
+              "false-predicate",
+              "not-enough-balance-or-allowance",
+              "expired",
+              "partially-filled",
+              "wrong-permit",
+              "cancelled",
+              "invalid-signature",
+              "invalid-maker-traits",
+              "awaiting-signatures"
+            ]
+          },
+          "makerAsset": {
+            "type": "string",
+            "description": "Identifier of the asset being offered by the maker.",
+            "example": "0x1234567890abcdef1234567890abcdef12345678"
+          },
+          "makerAmount": {
+            "type": "string",
+            "description": "Amount of the makerAsset being offered by the maker.",
+            "example": "1000000000000000000"
+          },
+          "minTakerAmount": {
+            "type": "string",
+            "description": "Amount of the takerAsset being requested by the maker.",
+            "example": "100000000000000000"
+          },
+          "approximateTakingAmount": {
+            "type": "string",
+            "description": "Approximate amount of the takerAsset being requested by the maker.",
+            "example": "100000000000000000"
+          },
+          "positiveSurplus": {
+            "type": "string",
+            "description": "shows if user received more than expected",
+            "example": "1000"
+          },
+          "takerAsset": {
+            "type": "string",
+            "description": "Identifier of the asset being requested by the maker in exchange.",
+            "example": "0x1234567890abcdef1234567890abcdef12345678"
+          },
+          "cancelTx": {
+            "type": "object",
+            "example": "0xa2768a9826b2c45a6937010ce21a91b1da9f8c7aa5194f68aa99306b22518b41"
+          },
+          "fills": { "type": "array", "items": { "$ref": "#/components/schemas/FillOutputDto" } },
+          "points": { "type": "array", "items": { "$ref": "#/components/schemas/AuctionPointOutput" } },
+          "auctionStartDate": {
+            "type": "number",
+            "description": "Unix timestamp in milliseconds",
+            "example": 123123123123
+          },
+          "auctionDuration": {
+            "type": "number",
+            "description": "Unix timestamp in milliseconds",
+            "example": 123123123123
+          },
+          "initialRateBump": { "type": "number", "description": "Initial rate bump", "example": 1000 },
+          "isNativeCurrency": { "type": "boolean", "description": "Is native currency or no", "example": true },
+          "version": {
+            "type": "string",
+            "description": "Version of settlement contract. Supported: 2.0 and 2.1",
+            "example": "2.0",
+            "enum": ["2.0", "2.1", "2.2"]
+          },
+          "makerTraits": { "type": "string" }
+        },
+        "required": [
+          "receiver",
+          "orderHash",
+          "status",
+          "makerAsset",
+          "makerAmount",
+          "minTakerAmount",
+          "approximateTakingAmount",
+          "positiveSurplus",
+          "takerAsset",
+          "cancelTx",
+          "fills",
+          "points",
+          "auctionStartDate",
+          "auctionDuration",
+          "initialRateBump",
+          "isNativeCurrency",
+          "version",
+          "makerTraits"
+        ]
       }
     }
   }

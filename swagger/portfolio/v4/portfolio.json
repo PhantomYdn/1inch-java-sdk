@@ -1,10 +1,10 @@
 {
   "openapi": "3.1.0",
-  "info": { "title": "FastAPI", "version": "0.1.0" },
+  "info": { "title": "V4 API Docs", "version": "v4" },
   "paths": {
     "/portfolio/v4/overview/protocols/current_value": {
       "get": {
-        "tags": ["portfolio"],
+        "tags": ["portfolio-v4"],
         "summary": "Protocols current value",
         "description": "Returns the current value for all supported protocols. Data is grouped by chains and addresses.",
         "operationId": "wrapper_portfolio_v4_overview_protocols_current_value_get",
@@ -56,7 +56,7 @@
     },
     "/portfolio/v4/overview/protocols/profit_and_loss": {
       "get": {
-        "tags": ["portfolio"],
+        "tags": ["portfolio-v4"],
         "summary": "Protocols profit and loss",
         "description": "Returns the PnL (Profit and Loss) and ROI (Return on Investment), aggregated across all supported protocols. Data is organized by chains.",
         "operationId": "wrapper_portfolio_v4_overview_protocols_profit_and_loss_get",
@@ -115,7 +115,7 @@
     },
     "/portfolio/v4/overview/protocols/details": {
       "get": {
-        "tags": ["portfolio"],
+        "tags": ["portfolio-v4"],
         "summary": "Protocols details",
         "description": "Provides general information for each protocol's statistics (underlying tokens, current_value, etc.) and protocol-specific metrics (ROI, APR, unclaimed_fees, claimed_fees, etc.). It may include closed positions.",
         "operationId": "wrapper_portfolio_v4_overview_protocols_details_get",
@@ -198,7 +198,7 @@
     },
     "/portfolio/v4/overview/erc20/current_value": {
       "get": {
-        "tags": ["portfolio"],
+        "tags": ["portfolio-v4"],
         "summary": "Tokens current value",
         "description": "Returns the current value for supported tokens. Data is grouped by chains and addresses.",
         "operationId": "wrapper_portfolio_v4_overview_erc20_current_value_get",
@@ -250,7 +250,7 @@
     },
     "/portfolio/v4/overview/erc20/profit_and_loss": {
       "get": {
-        "tags": ["portfolio"],
+        "tags": ["portfolio-v4"],
         "summary": "Tokens profit and loss",
         "description": "Returns the PnL (Profit and Loss) and ROI (Return on Investment), aggregated across all supported tokens. Data is organized by chains.",
         "operationId": "wrapper_portfolio_v4_overview_erc20_profit_and_loss_get",
@@ -309,7 +309,7 @@
     },
     "/portfolio/v4/overview/erc20/details": {
       "get": {
-        "tags": ["portfolio"],
+        "tags": ["portfolio-v4"],
         "summary": "Tokens details",
         "description": "Provides general information for each token's statistics, including ROI (Return on Investment) and PnL (Profit and Loss). It may include closed positions.",
         "operationId": "wrapper_portfolio_v4_overview_erc20_details_get",
@@ -399,7 +399,7 @@
     },
     "/portfolio/v4/general/is_available": {
       "get": {
-        "tags": ["portfolio"],
+        "tags": ["portfolio-v4"],
         "summary": "Is available",
         "description": "Check if the service is available.",
         "operationId": "get_is_available_portfolio_v4_general_is_available_get",
@@ -410,7 +410,7 @@
     },
     "/portfolio/v4/general/supported_chains": {
       "get": {
-        "tags": ["portfolio"],
+        "tags": ["portfolio-v4"],
         "summary": "Supported chains",
         "description": "Returns list of supported chains.",
         "operationId": "get_supported_chains_portfolio_v4_general_supported_chains_get",
@@ -421,7 +421,7 @@
     },
     "/portfolio/v4/general/supported_protocols": {
       "get": {
-        "tags": ["portfolio"],
+        "tags": ["portfolio-v4"],
         "summary": "Supported protocols",
         "description": "Returns list of supported protocols.",
         "operationId": "get_supported_protocols_portfolio_v4_general_supported_protocols_get",
@@ -432,7 +432,7 @@
     },
     "/portfolio/v4/general/current_value": {
       "get": {
-        "tags": ["portfolio"],
+        "tags": ["portfolio-v4"],
         "summary": "General current value",
         "description": "Returns the current value for all supported protocols and tokens. Data is grouped by chains and addresses.",
         "operationId": "wrapper_portfolio_v4_general_current_value_get",
@@ -484,7 +484,7 @@
     },
     "/portfolio/v4/general/profit_and_loss": {
       "get": {
-        "tags": ["portfolio"],
+        "tags": ["portfolio-v4"],
         "summary": "General profit and loss",
         "description": "Returns the PnL (Profit and Loss) and ROI (Return on Investment), aggregated across all supported protocols and tokens. Data is organized by chains.",
         "operationId": "wrapper_portfolio_v4_general_profit_and_loss_get",
@@ -543,7 +543,7 @@
     },
     "/portfolio/v4/general/value_chart": {
       "get": {
-        "tags": ["portfolio"],
+        "tags": ["portfolio-v4"],
         "summary": "General value chart",
         "description": "Returns value chart for all supported protocols and tokens.",
         "operationId": "wrapper_portfolio_v4_general_value_chart_get",
@@ -614,72 +614,6 @@
           }
         }
       }
-    },
-    "/integrations/prices/v1/time_range/cross_prices": {
-      "get": {
-        "summary": "Get OHLC price history for token pair",
-        "description": "Retrieve time series of OHLC (Open, High, Low, Close) prices for a token0 and token1 pair on specified blockchain. Supports multiple time granularities such as month, week, day, hour4, hour, min15, min5.",
-        "operationId": "get_time_range_cross_prices_integrations_prices_v1_time_range_cross_prices_get",
-        "parameters": [
-          {
-            "name": "token0_address",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 42,
-              "maxLength": 42,
-              "description": "Token0 address",
-              "title": "Token0 Address"
-            },
-            "description": "Token0 address"
-          },
-          {
-            "name": "token1_address",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 42,
-              "maxLength": 42,
-              "description": "Token1 address",
-              "title": "Token1 Address"
-            },
-            "description": "Token1 address"
-          },
-          {
-            "name": "chain_id",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "integer", "description": "Chain id", "default": 1, "title": "Chain Id" },
-            "description": "Chain id"
-          },
-          {
-            "name": "granularity",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "$ref": "#/components/schemas/Granularity",
-              "description": "Granularity of time series",
-              "default": "day"
-            },
-            "description": "Granularity of time series"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "integer", "maximum": 1000, "minimum": 1, "default": 100, "title": "Limit" }
-          }
-        ],
-        "responses": {
-          "200": { "description": "Successful Response", "content": { "application/json": { "schema": {} } } },
-          "422": {
-            "description": "Validation Error",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
-          }
-        }
-      }
     }
   },
   "components": {
@@ -687,7 +621,7 @@
       "AssetStatus": { "type": "integer", "enum": [1, 0, -1], "title": "AssetStatus" },
       "AssetValueChartItem": {
         "properties": {
-          "timestamp": { "type": "integer", "title": "Timestamp", "ge": 0, "lt": 4294967296 },
+          "timestamp": { "type": "integer", "exclusiveMaximum": 4294967296, "minimum": 0, "title": "Timestamp" },
           "value_usd": { "type": "number", "title": "Value Usd" }
         },
         "type": "object",
@@ -707,10 +641,104 @@
         "required": ["result"],
         "title": "BaseResponseEnvelope[list[AssetValueChartItem], ValueChartResponseMeta]"
       },
-      "Chain": { "type": "integer", "enum": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "title": "Chain" },
+      "Chain": {
+        "enum": [
+          {
+            "icon_url": "https://app.1inch.io/assets/images/network-logos/ethereum.svg",
+            "id_num": 1,
+            "name": "eth",
+            "name_readable": "Ethereum"
+          },
+          {
+            "icon_url": "https://app.1inch.io/assets/images/network-logos/polygon_1.svg",
+            "id_num": 137,
+            "name": "polygon",
+            "name_readable": "Polygon"
+          },
+          {
+            "icon_url": "https://app.1inch.io/assets/images/network-logos/bsc_2.svg",
+            "id_num": 56,
+            "name": "bsc",
+            "name_readable": "BNB Chain"
+          },
+          {
+            "icon_url": "https://app.1inch.io/assets/images/network-logos/arbitrum_2.svg",
+            "id_num": 42161,
+            "name": "arbitrum",
+            "name_readable": "Arbitrum"
+          },
+          {
+            "icon_url": "https://app.1inch.io/assets/images/network-logos/fantom.svg",
+            "id_num": 250,
+            "name": "fantom",
+            "name_readable": "Fantom"
+          },
+          {
+            "icon_url": "https://app.1inch.io/assets/images/network-logos/gnosis.svg",
+            "id_num": 100,
+            "name": "gnosis",
+            "name_readable": "Gnosis"
+          },
+          {
+            "icon_url": "https://app.1inch.io/assets/images/network-logos/aurora.svg",
+            "id_num": 1313161554,
+            "name": "aurora",
+            "name_readable": "Aurora"
+          },
+          {
+            "icon_url": "https://app.1inch.io/assets/images/network-logos/avalanche.svg",
+            "id_num": 43114,
+            "name": "avax",
+            "name_readable": "Avalanche"
+          },
+          {
+            "icon_url": "https://app.1inch.io/assets/images/network-logos/optimism.svg",
+            "id_num": 10,
+            "name": "optimism",
+            "name_readable": "Optimism"
+          },
+          {
+            "icon_url": "https://app.1inch.io/assets/images/network-logos/klaytn.svg",
+            "id_num": 8217,
+            "name": "klaytn",
+            "name_readable": "Klaytn"
+          },
+          {
+            "icon_url": "https://app.1inch.io/assets/images/network-logos/zksync-era.svg",
+            "id_num": 324,
+            "name": "zksyncera",
+            "name_readable": "zkSync Era"
+          },
+          {
+            "icon_url": "https://app.1inch.io/assets/images/network-logos/base.svg",
+            "id_num": 8453,
+            "name": "base",
+            "name_readable": "Base"
+          },
+          {
+            "icon_url": "https://app.1inch.io/assets/images/network-logos/linea.svg",
+            "id_num": 59144,
+            "name": "linea",
+            "name_readable": "Linea"
+          },
+          {
+            "icon_url": "https://app.1inch.io/assets/images/network-logos/unichain.svg",
+            "id_num": 130,
+            "name": "unichain",
+            "name_readable": "Unichain"
+          },
+          {
+            "icon_url": "https://app.1inch.io/assets/images/network-logos/sonic.svg",
+            "id_num": 146,
+            "name": "sonic",
+            "name_readable": "Sonic"
+          }
+        ],
+        "title": "Chain"
+      },
       "ChainId": {
         "type": "integer",
-        "enum": [1, 137, 56, 42161, 43114, 10, 100, 1313161554, 250, 8217, 324, 8453],
+        "enum": [1, 137, 56, 42161, 43114, 10, 100, 1313161554, 250, 8217, 324, 8453, 59144, 146, 130],
         "title": "ChainId"
       },
       "Erc20OverviewResponseItem": {
@@ -741,11 +769,6 @@
         ],
         "title": "Erc20OverviewResponseItem"
       },
-      "Granularity": {
-        "type": "string",
-        "enum": ["month", "week", "day", "4hour", "hour", "15min", "5min"],
-        "title": "Granularity"
-      },
       "HTTPValidationError": {
         "properties": {
           "detail": { "items": { "$ref": "#/components/schemas/ValidationError" }, "type": "array", "title": "Detail" }
@@ -772,6 +795,7 @@
           "erc20",
           "curve",
           "uniswapv2",
+          "cian",
           "sushiswapv2",
           "pancakeswapv2",
           "camelotv2",
@@ -782,10 +806,19 @@
           "sushiswapv3",
           "camelotv3",
           "pancakeswapv3",
+          "uniswapv4",
           "chai",
           "sdai",
           "aavev2",
           "aavev3",
+          "avalon",
+          "seamless",
+          "kinza",
+          "realtrmm",
+          "sturdy",
+          "radiantv1",
+          "radiantv2",
+          "valas",
           "lido",
           "staking1inchv2",
           "spark",
@@ -808,8 +841,26 @@
           "morphoblue",
           "renzo",
           "susds",
+          "zircuitrestaking",
           "meth",
-          "symbiotic"
+          "symbiotic",
+          "pufeth",
+          "kelpdao",
+          "lseth",
+          "zerolend",
+          "eth2",
+          "royco",
+          "stader",
+          "fraxether",
+          "benqi",
+          "listadao",
+          "originprotocol",
+          "stakestone",
+          "stakewise",
+          "ethereal",
+          "enzyme",
+          "graph",
+          "hegicstake"
         ],
         "title": "ProtocolName"
       },
@@ -851,7 +902,7 @@
           "roi": { "anyOf": [{ "type": "number" }, { "type": "null" }], "title": "Roi" },
           "weighted_apr": { "anyOf": [{ "type": "number" }, { "type": "null" }], "title": "Weighted Apr" },
           "holding_time_days": { "anyOf": [{ "type": "integer" }, { "type": "null" }], "title": "Holding Time Days" },
-          "info": { "type": "object", "title": "Info" }
+          "info": { "additionalProperties": true, "type": "object", "title": "Info" }
         },
         "type": "object",
         "required": [
@@ -934,10 +985,17 @@
         "enum": [
           "unknown",
           "staking",
+          "tokenstaking",
+          "liquidstaking",
           "restaking",
+          "gauge",
+          "deposit",
           "supply",
           "debt",
+          "lendingvault",
           "yield",
+          "yieldvault",
+          "smartlending",
           "native",
           "erc20",
           "stable",
@@ -970,6 +1028,7 @@
             "items": {
               "additionalProperties": {
                 "anyOf": [
+                  { "type": "integer" },
                   { "$ref": "#/components/schemas/ChainId" },
                   { "type": "string", "maxLength": 42, "minLength": 42 }
                 ]

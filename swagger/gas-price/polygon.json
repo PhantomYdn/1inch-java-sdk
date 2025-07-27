@@ -1,0 +1,85 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v1.5/137": {
+      "get": {
+        "description": "Get Gas Price info from network",
+        "operationId": "ApiController-v1_5-50d21fea-d3a2-462e-8179-a620245baa7c",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "GasPrice",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Eip1559GasPriceDto" } } }
+          }
+        },
+        "summary": "Gas Price from network",
+        "tags": ["Gas Price"]
+      }
+    },
+    "/v1.6/137": {
+      "get": {
+        "description": "Get Gas Price info from network",
+        "operationId": "ApiController-v1_6-cad56f29-76d1-44e7-9df4-6fc733365cf7",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "GasPrice",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SolanaGasPriceResponse" } } }
+          }
+        },
+        "summary": "Gas Price from network",
+        "tags": ["Gas Price"]
+      }
+    }
+  },
+  "info": {
+    "title": "1inch Gas Price API",
+    "description": "<h2>Polygon Network</h2> Using 1inch Gas Price API, you can get optimize gas price from network.\n",
+    "version": "1.4",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "Eip1559GasValueDto": {
+        "type": "object",
+        "properties": { "maxPriorityFeePerGas": { "type": "string" }, "maxFeePerGas": { "type": "string" } },
+        "required": ["maxPriorityFeePerGas", "maxFeePerGas"]
+      },
+      "Eip1559GasPriceDto": {
+        "type": "object",
+        "properties": {
+          "baseFee": { "type": "string" },
+          "low": { "$ref": "#/components/schemas/Eip1559GasValueDto" },
+          "medium": { "$ref": "#/components/schemas/Eip1559GasValueDto" },
+          "high": { "$ref": "#/components/schemas/Eip1559GasValueDto" },
+          "instant": { "$ref": "#/components/schemas/Eip1559GasValueDto" }
+        },
+        "required": ["baseFee", "low", "medium", "high", "instant"]
+      },
+      "SolanaGasPriceResponse": {
+        "type": "object",
+        "properties": {
+          "baseFee": { "type": "string" },
+          "lowPriority": { "type": "string" },
+          "highPriority": { "type": "string" },
+          "instantPriority": { "type": "string" }
+        },
+        "required": ["baseFee", "lowPriority", "highPriority", "instantPriority"]
+      },
+      "GetGasPriceForAccountsRequest": {
+        "type": "object",
+        "properties": {
+          "accounts": {
+            "description": "List of account addresses",
+            "example": ["HyZ2nPL19eGRN8fGYbG5sMaWQMJpoQCGgvqr2znYKyPm"],
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": ["accounts"]
+      }
+    }
+  }
+}

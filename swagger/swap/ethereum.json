@@ -1,31 +1,27 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/v6.0/1/quote": {
+    "/v6.1/1/quote": {
       "get": {
-        "operationId": "AggregationController_getQuote",
-        "summary": "Find the best quote to swap with 1inch Router",
+        "operationId": "AggregationController_getQuote_v6.1",
         "parameters": [
           {
             "name": "src",
             "required": true,
             "in": "query",
-            "example": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-            "schema": { "type": "string" }
+            "schema": { "example": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "type": "string" }
           },
           {
             "name": "dst",
             "required": true,
             "in": "query",
-            "example": "0x111111111117dc0aa78b770fa6a738034120c302",
-            "schema": { "type": "string" }
+            "schema": { "example": "0x111111111117dc0aa78b770fa6a738034120c302", "type": "string" }
           },
           {
             "name": "amount",
             "required": true,
             "in": "query",
-            "example": "10000000000000000",
-            "schema": { "type": "string" }
+            "schema": { "example": "10000000000000000", "type": "string" }
           },
           {
             "name": "protocols",
@@ -117,34 +113,31 @@
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/QuoteRequestError" } } }
           }
         },
+        "summary": "Find the best quote to swap with 1inch Router",
         "tags": ["Swap"]
       }
     },
-    "/v6.0/1/swap": {
+    "/v6.1/1/swap": {
       "get": {
-        "operationId": "AggregationController_getSwap",
-        "summary": "Generate calldata to swap on 1inch Router",
+        "operationId": "AggregationController_getSwap_v6.1",
         "parameters": [
           {
             "name": "src",
             "required": true,
             "in": "query",
-            "example": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-            "schema": { "type": "string" }
+            "schema": { "example": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "type": "string" }
           },
           {
             "name": "dst",
             "required": true,
             "in": "query",
-            "example": "0x111111111117dc0aa78b770fa6a738034120c302",
-            "schema": { "type": "string" }
+            "schema": { "example": "0x111111111117dc0aa78b770fa6a738034120c302", "type": "string" }
           },
           {
             "name": "amount",
             "required": true,
             "in": "query",
-            "example": "10000000000000000",
-            "schema": { "type": "string" }
+            "schema": { "example": "10000000000000000", "type": "string" }
           },
           {
             "name": "from",
@@ -164,9 +157,8 @@
             "name": "slippage",
             "required": true,
             "in": "query",
-            "example": 1,
             "description": "min: 0; max: 50",
-            "schema": { "minimum": 0, "maximum": 50, "type": "number" }
+            "schema": { "minimum": 0, "maximum": 50, "example": 1, "type": "number" }
           },
           {
             "name": "protocols",
@@ -270,10 +262,24 @@
             "schema": { "type": "boolean" }
           },
           {
+            "name": "compatibility",
+            "required": false,
+            "in": "query",
+            "description": "Allows to swap tokens with internal transfer fee",
+            "schema": { "type": "boolean" }
+          },
+          {
             "name": "disableEstimate",
             "required": false,
             "in": "query",
             "description": "Enable this flag to disable onchain simulation",
+            "schema": { "type": "boolean" }
+          },
+          {
+            "name": "usePatching",
+            "required": false,
+            "in": "query",
+            "description": "Enable this flag if you patch input amount on your smart contract",
             "schema": { "type": "boolean" }
           },
           {
@@ -294,13 +300,13 @@
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SwapRequestError" } } }
           }
         },
+        "summary": "Generate calldata to swap on 1inch Router",
         "tags": ["Swap"]
       }
     },
-    "/v6.0/1/approve/spender": {
+    "/v6.1/1/approve/spender": {
       "get": {
-        "operationId": "ApproveController_getSpender",
-        "summary": "Address of the 1inch Router that is trusted to spend funds for the swap",
+        "operationId": "ApproveController_getSpender_v6.1",
         "parameters": [],
         "responses": {
           "200": {
@@ -308,29 +314,27 @@
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SpenderResponse" } } }
           }
         },
+        "summary": "Address of the 1inch Router that is trusted to spend funds for the swap",
         "tags": ["Approve"]
       }
     },
-    "/v6.0/1/approve/transaction": {
+    "/v6.1/1/approve/transaction": {
       "get": {
-        "operationId": "ApproveController_getCallData",
-        "summary": "Generate approve calldata to allow 1inch Router to perform a swap",
+        "operationId": "ApproveController_getCallData_v6.1",
         "parameters": [
           {
             "name": "tokenAddress",
             "required": true,
             "in": "query",
-            "example": "0x111111111117dc0aa78b770fa6a738034120c302",
             "description": "Token address you want to swap",
-            "schema": { "type": "string" }
+            "schema": { "example": "0x111111111117dc0aa78b770fa6a738034120c302", "type": "string" }
           },
           {
             "name": "amount",
             "required": false,
             "in": "query",
-            "example": "100000000000",
             "description": "The number of tokens that the 1inch Router is allowed to swap.If not specified, it will be allowed to spend an infinite amount of tokens.",
-            "schema": { "type": "string" }
+            "schema": { "example": "100000000000", "type": "string" }
           }
         ],
         "responses": {
@@ -339,21 +343,20 @@
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApproveCallDataResponse" } } }
           }
         },
+        "summary": "Generate approve calldata to allow 1inch Router to perform a swap",
         "tags": ["Approve"]
       }
     },
-    "/v6.0/1/approve/allowance": {
+    "/v6.1/1/approve/allowance": {
       "get": {
-        "operationId": "ApproveController_getAllowance",
-        "summary": "Get the number of tokens that the 1inch Router is allowed to swap",
+        "operationId": "ApproveController_getAllowance_v6.1",
         "parameters": [
           {
             "name": "tokenAddress",
             "required": true,
             "in": "query",
-            "example": "0x111111111117dc0aa78b770fa6a738034120c302",
             "description": "Token address you want to swap",
-            "schema": { "type": "string" }
+            "schema": { "example": "0x111111111117dc0aa78b770fa6a738034120c302", "type": "string" }
           },
           {
             "name": "walletAddress",
@@ -369,13 +372,13 @@
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AllowanceResponse" } } }
           }
         },
+        "summary": "Get the number of tokens that the 1inch Router is allowed to swap",
         "tags": ["Approve"]
       }
     },
-    "/v6.0/1/liquidity-sources": {
+    "/v6.1/1/liquidity-sources": {
       "get": {
-        "operationId": "ProtocolsController_getProtocolsImages",
-        "summary": "List of liquidity sources that are available for routing in the 1inch Aggregation Protocol",
+        "operationId": "ProtocolsController_getProtocolsImages_v6.1",
         "parameters": [],
         "responses": {
           "200": {
@@ -383,13 +386,13 @@
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ProtocolsResponse" } } }
           }
         },
+        "summary": "List of liquidity sources that are available for routing in the 1inch Aggregation Protocol",
         "tags": ["Info"]
       }
     },
-    "/v6.0/1/tokens": {
+    "/v6.1/1/tokens": {
       "get": {
-        "operationId": "TokensController_getTokens",
-        "summary": "List of tokens that are available for swap in the 1inch Aggregation protocol",
+        "operationId": "TokensController_getTokens_v6.1",
         "parameters": [],
         "responses": {
           "200": {
@@ -411,6 +414,7 @@
             }
           }
         },
+        "summary": "List of tokens that are available for swap in the 1inch Aggregation protocol",
         "tags": ["Info"]
       }
     }
@@ -418,7 +422,7 @@
   "info": {
     "title": "1inch Swap API",
     "description": "\n<h2>Ethereum Network</h2>\nUsing 1inch Swap API, you can find the best route to exchange assets and make the exchange.\n<br><br>\nStep by step:\n1. Lookup addresses of tokens you want to swap, for example ‘0xxx’ , ‘0xxxx’ for DAI -> 1INCH\n2. Check for allowance of 1inch router contract to spend source asset (/approve/allowance)\n3. If necessary, give approval for 1inch router to spend source token (/approve/transaction)\n4. Monitor the best exchange route using (/quote)\n5. When you ready use to perform swap (/swap)",
-    "version": "6.0",
+    "version": "6.1",
     "contact": {}
   },
   "tags": [],
@@ -459,10 +463,7 @@
           "protocols": {
             "type": "array",
             "description": "Selected protocols in a path",
-            "items": {
-              "type": "array",
-              "items": { "type": "array", "items": { "$ref": "#/components/schemas/SelectedProtocol" } }
-            }
+            "items": { "$ref": "#/components/schemas/TokenSwaps" }
           },
           "gas": { "type": "number", "description": "Estimated gas", "example": 100000 }
         },
@@ -523,10 +524,7 @@
           "protocols": {
             "type": "array",
             "description": "Selected protocols in a path",
-            "items": {
-              "type": "array",
-              "items": { "type": "array", "items": { "$ref": "#/components/schemas/SelectedProtocol" } }
-            }
+            "items": { "$ref": "#/components/schemas/TokenSwaps" }
           },
           "tx": { "description": "Transaction object", "allOf": [{ "$ref": "#/components/schemas/TransactionData" }] }
         },
@@ -633,6 +631,57 @@
           }
         },
         "required": ["name", "part", "fromTokenAddress", "toTokenAddress"]
+      },
+      "TokenSwaps": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Source token address for the hops",
+            "example": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          },
+          "hops": {
+            "type": "array",
+            "description": "Swap hops from source token",
+            "items": { "$ref": "#/components/schemas/TokenHop" }
+          }
+        },
+        "required": ["token", "hops"]
+      },
+      "TokenHop": {
+        "type": "object",
+        "properties": {
+          "part": {
+            "type": "number",
+            "description": "The distribution percent from source token coming to destination token on this hop",
+            "example": 100
+          },
+          "dst": {
+            "type": "string",
+            "description": "Destination token address",
+            "example": "0x111111111117dc0aa78b770fa6a738034120c302"
+          },
+          "fromTokenId": { "type": "number", "description": "Source token index in the path", "example": 0 },
+          "toTokenId": { "type": "number", "description": "Destination token index in the path", "example": 1 },
+          "protocols": {
+            "type": "array",
+            "description": "The token split among different liquidity sources",
+            "items": { "$ref": "#/components/schemas/SelectedLiquiditySource" }
+          }
+        },
+        "required": ["part", "dst", "fromTokenId", "toTokenId", "protocols"]
+      },
+      "SelectedLiquiditySource": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "description": "The liquidity source id", "example": "UNISWAP_V3" },
+          "part": {
+            "type": "number",
+            "description": "The distribution percent from total amount coming to specified destination token",
+            "example": 100
+          }
+        },
+        "required": ["name", "part"]
       }
     }
   }

@@ -1,10 +1,9 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/v1.0/1/order/submit": {
+    "/v2.0/42161/order/submit": {
       "post": {
-        "operationId": "RelayerController_submit",
-        "summary": "Submit a limit order that resolvers will be able to fill",
+        "operationId": "RelayerController_submit_v2.0",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -12,15 +11,29 @@
         },
         "responses": {
           "201": { "description": "The gasless order has been successfully saved" },
-          "400": { "description": "Input data is invalid" }
+          "400": {
+            "description": "Input data is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer", "enum": [400] },
+                    "message": { "type": "string", "example": "0xbad_address" },
+                    "error": { "type": "string", "enum": ["Bad Request"] }
+                  }
+                }
+              }
+            }
+          }
         },
+        "summary": "Submit a limit order that resolvers will be able to fill",
         "tags": ["Relayer"]
       }
     },
-    "/v1.0/1/order/submit/many": {
+    "/v2.0/42161/order/submit/many": {
       "post": {
-        "operationId": "RelayerController_submitMany",
-        "summary": "Submit a list of limit orders which resolvers will be able to fill",
+        "operationId": "RelayerController_submitMany_v2.0",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -32,16 +45,31 @@
         },
         "responses": {
           "201": { "description": "The gasless orders has been successfully saved" },
-          "400": { "description": "Input data is invalid" }
+          "400": {
+            "description": "Input data is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer", "enum": [400] },
+                    "message": { "type": "string", "example": "0xbad_address" },
+                    "error": { "type": "string", "enum": ["Bad Request"] }
+                  }
+                }
+              }
+            }
+          }
         },
+        "summary": "Submit a list of limit orders which resolvers will be able to fill",
         "tags": ["Relayer"]
       }
     }
   },
   "info": {
     "title": "1inch Fusion API",
-    "description": "<h2>Ethereum Network</h2>1inch Fusion Open API",
-    "version": "1.0",
+    "description": "<h2>Arbitrum Network</h2>1inch Fusion Open API",
+    "version": "2.0",
     "contact": {}
   },
   "tags": [],
@@ -51,10 +79,7 @@
       "OrderInput": {
         "type": "object",
         "properties": {
-          "salt": {
-            "type": "string",
-            "description": "Contains of auction start time, auction duration, initial rate bump, fee and some unique value"
-          },
+          "salt": { "type": "string" },
           "makerAsset": { "type": "string", "description": "Address of the maker asset" },
           "takerAsset": { "type": "string", "description": "Address of the taker asset" },
           "maker": { "type": "string", "description": "An address of the maker (wallet or contract address)" },
@@ -63,17 +88,11 @@
             "description": "An address of the wallet or contract who will receive filled amount ",
             "default": "0x0000000000000000000000000000000000000000"
           },
-          "allowedSender": { "type": "string", "description": "An address of the settlement contract" },
           "makingAmount": { "type": "string", "description": "Order maker's token amount" },
           "takingAmount": { "type": "string", "description": "Order taker's token amount" },
-          "offsets": {
+          "makerTraits": {
             "type": "string",
-            "description": "Merged offsets of each field in interactions",
-            "default": "0x"
-          },
-          "interactions": {
-            "type": "string",
-            "description": "An interaction call data. ABI encoded set of makerAssetData, takerAssetData, getMakingAmount, getTakingAmount, predicate, permit, preInteraction, postInteraction",
+            "description": "Includes some flags like, allow multiple fills, is partial fill allowed or not, price improvement, nonce, deadline etc",
             "default": "0"
           }
         },
@@ -86,6 +105,11 @@
           "signature": {
             "type": "string",
             "description": "Signature of the gasless order typed data (using signTypedData_v4)"
+          },
+          "extension": {
+            "type": "string",
+            "description": "An interaction call data. ABI encoded set of makerAssetSuffix, takerAssetSuffix, makingAmountGetter, takingAmountGetter, predicate, permit, preInteraction, postInteraction.Lowest 160 bits of the order salt must be equal to the lowest 160 bits of the extension hash",
+            "default": "0x"
           },
           "quoteId": { "type": "string", "description": "Quote id of the quote with presets" }
         },

@@ -35,8 +35,8 @@
             "required": true,
             "in": "path",
             "example": 1,
-            "description": "Supported chain: 1/56/137/42161/43114/100/10/8453/324",
-            "schema": { "type": "number", "enum": [1, 56, 137, 42161, 43114, 100, 10, 8453, 324] }
+            "description": "Supported chain: 1/56/137/42161/43114/100/10/8453/324/59144/146/130",
+            "schema": { "type": "number", "enum": [1, 56, 137, 42161, 43114, 100, 10, 8453, 324, 59144, 146, 130] }
           }
         ],
         "responses": {
@@ -82,8 +82,8 @@
             "required": true,
             "in": "path",
             "example": 1,
-            "description": "Supported chain: 1/56/137/42161/43114/100/10/8453/324",
-            "schema": { "type": "number", "enum": [1, 56, 137, 42161, 43114, 100, 10, 8453, 324] }
+            "description": "Supported chain: 1/56/137/42161/43114/100/10/8453/324/59144/146/130",
+            "schema": { "type": "number", "enum": [1, 56, 137, 42161, 43114, 100, 10, 8453, 324, 59144, 146, 130] }
           }
         ],
         "responses": {

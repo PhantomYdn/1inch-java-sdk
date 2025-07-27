@@ -1,0 +1,128 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v1.0/501/quote": {
+      "get": {
+        "operationId": "QuoterController_getQuote",
+        "summary": "Get quote details based on input data",
+        "parameters": [
+          {
+            "name": "srcToken",
+            "required": true,
+            "in": "query",
+            "description": "Address of \"SOURCE\" token",
+            "example": "SoNative11111111111111111111111111111111111",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "dstToken",
+            "required": true,
+            "in": "query",
+            "description": "Address of \"DESTINATION\" token",
+            "example": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "amount",
+            "required": true,
+            "in": "query",
+            "description": "Amount to take from \"SOURCE\" token to get \"DESTINATION\" token",
+            "example": "1000000000",
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "wallet",
+            "required": true,
+            "in": "query",
+            "description": "An address of the account who will create Fusion order",
+            "example": "GZctHpWXmsZC1YHACTGGcHhYxjdRqQvTpYkb9LMvxDib",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "enableEstimate",
+            "required": true,
+            "in": "query",
+            "description": "if enabled then get compute units estimation and generates quoteId, by default is false",
+            "example": "false",
+            "schema": { "type": "boolean" }
+          },
+          {
+            "name": "slippage",
+            "required": false,
+            "in": "query",
+            "description": "Max price drop from market return amount. In percents",
+            "example": "0.1",
+            "schema": { "type": "number" }
+          }
+        ],
+        "responses": { "200": { "description": "Returns quote" }, "400": { "description": "Input data is invalid" } }
+      }
+    },
+    "/v1.0/501/build": {
+      "post": {
+        "operationId": "QuoterController_build",
+        "summary": "Build create order unsigned transaction",
+        "parameters": [
+          {
+            "name": "quoteId",
+            "required": true,
+            "in": "query",
+            "description": "Id of the quote received from /quote",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "serialize",
+            "required": false,
+            "in": "query",
+            "description": "When enabled -> receive ready to sign transaction, otherwise receive instructions and accounts",
+            "schema": { "type": "boolean" }
+          },
+          {
+            "name": "versionedTransaction",
+            "required": false,
+            "in": "query",
+            "description": "When enabled and serialize==true -> receive serialized VersionedTransaction instead of Message0",
+            "schema": { "type": "boolean" }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/BuildOrderInput" },
+              "examples": { "empty": { "value": {} } }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Returns serialized transaction or instructions and accounts" },
+          "400": { "description": "Input data is invalid" }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "1inch Fusion Quoter API",
+    "description": "Quoter API provides the access to Fusion price curves",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [{ "url": "/quoter" }],
+  "components": {
+    "schemas": {
+      "BuildOrderInput": {
+        "type": "object",
+        "properties": {
+          "receiver": { "type": "string", "description": "Custom receiver account public key" },
+          "preset": {
+            "type": "string",
+            "enum": ["fast", "slow", "medium"],
+            "description": "Preset for order price curve. By default: recommended preset from a quote"
+          },
+          "priorityFee": { "type": "string", "description": "Priority price per compute unit in microlamports" }
+        }
+      }
+    }
+  }
+}

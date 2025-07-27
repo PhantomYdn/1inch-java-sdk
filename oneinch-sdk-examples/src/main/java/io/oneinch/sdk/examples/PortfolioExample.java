@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Example demonstrating Portfolio API usage
+ * Example demonstrating Portfolio API v5 usage
  */
 @Slf4j
 public class PortfolioExample {
@@ -21,97 +21,15 @@ public class PortfolioExample {
         PortfolioExample example = new PortfolioExample();
         
         try {
-            log.info("=== Running Portfolio API Examples ===");
-            example.runGeneralOverviewExample();
-            example.runProtocolsDetailsExample();
-            example.runTokensDetailsExample();
+            log.info("=== Running Portfolio API v5 Examples ===");
             example.runServiceInfoExample();
+            example.runCurrentValueExample();
+            example.runProtocolsSnapshotExample();
+            example.runTokensSnapshotExample();
+            example.runReactivePortfolioExample();
             
         } catch (Exception e) {
             log.error("Portfolio example failed", e);
-        }
-    }
-
-    /**
-     * Demonstrates general portfolio overview
-     */
-    public void runGeneralOverviewExample() throws Exception {
-        try (OneInchClient client = OneInchClient.builder()
-                .apiKey(API_KEY)
-                .build()) {
-            
-            log.info("=== General Portfolio Overview Example ===");
-            
-            // Get general current value
-            PortfolioOverviewRequest request = PortfolioOverviewRequest.builder()
-                    .addresses(Arrays.asList(SAMPLE_ADDRESS))
-                    .chainId(1) // Ethereum
-                    .build();
-            
-            Object currentValue = client.portfolio().getGeneralCurrentValue(request);
-            log.info("General current value: {}", currentValue);
-            
-            // Get general P&L
-            Object profitAndLoss = client.portfolio().getGeneralProfitAndLoss(request);
-            log.info("General profit and loss: {}", profitAndLoss);
-        }
-    }
-
-    /**
-     * Demonstrates protocols details
-     */
-    public void runProtocolsDetailsExample() throws Exception {
-        try (OneInchClient client = OneInchClient.builder()
-                .apiKey(API_KEY)
-                .build()) {
-            
-            log.info("=== Protocols Details Example ===");
-            
-            PortfolioDetailsRequest request = PortfolioDetailsRequest.builder()
-                    .addresses(Arrays.asList(SAMPLE_ADDRESS))
-                    .chainId(1) // Ethereum
-                    .timerange("1month")
-                    .closed(true)
-                    .build();
-            
-            PortfolioProtocolsResponse protocolsDetails = client.portfolio().getProtocolsDetails(request);
-            
-            log.info("Protocols details:");
-            log.info("  Found {} protocols", protocolsDetails.getResult().size());
-            
-            protocolsDetails.getResult().stream()
-                    .limit(3)
-                    .forEach(protocol -> log.info("  Protocol: {} - Value: ${}", 
-                            protocol.getProtocolName(), protocol.getValueUsd()));
-        }
-    }
-
-    /**
-     * Demonstrates tokens details
-     */
-    public void runTokensDetailsExample() throws Exception {
-        try (OneInchClient client = OneInchClient.builder()
-                .apiKey(API_KEY)
-                .build()) {
-            
-            log.info("=== Tokens Details Example ===");
-            
-            PortfolioDetailsRequest request = PortfolioDetailsRequest.builder()
-                    .addresses(Arrays.asList(SAMPLE_ADDRESS))
-                    .chainId(1) // Ethereum
-                    .timerange("1month")
-                    .build();
-            
-            PortfolioTokensResponse tokensDetails = client.portfolio().getTokensDetails(request);
-            
-            log.info("Tokens details:");
-            log.info("  Found {} tokens", tokensDetails.getResult().size());
-            
-            tokensDetails.getResult().stream()
-                    .limit(5)
-                    .forEach(token -> log.info("  Token: {} ({}) - Value: ${}, ROI: {}%", 
-                            token.getName(), token.getSymbol(), token.getValueUsd(), 
-                            token.getRoi() != null ? String.format("%.2f", token.getRoi() * 100) : "N/A"));
         }
     }
 
@@ -125,17 +43,120 @@ public class PortfolioExample {
             
             log.info("=== Service Information Example ===");
             
-            // Check service availability
-            Object availability = client.portfolio().getServiceAvailability();
-            log.info("Service availability: {}", availability);
+            // Check service status
+            ApiStatusResponse status = client.portfolio().getServiceStatus();
+            log.info("Service available: {}", status.getIsAvailable());
             
             // Get supported chains
-            List<Object> supportedChains = client.portfolio().getSupportedChains();
+            List<SupportedChainResponse> supportedChains = client.portfolio().getSupportedChains();
             log.info("Supported chains: {}", supportedChains.size());
+            supportedChains.stream()
+                    .limit(3)
+                    .forEach(chain -> log.info("  Chain: {} ({})", 
+                            chain.getChainName(), chain.getChainId()));
             
             // Get supported protocols
-            List<Object> supportedProtocols = client.portfolio().getSupportedProtocols();
+            List<SupportedProtocolGroupResponse> supportedProtocols = client.portfolio().getSupportedProtocols();
             log.info("Supported protocols: {}", supportedProtocols.size());
+            supportedProtocols.stream()
+                    .limit(3)
+                    .forEach(protocol -> log.info("  Protocol: {} on chain {}", 
+                            protocol.getProtocolGroupName(), protocol.getChainId()));
+        }
+    }
+
+    /**
+     * Demonstrates current value breakdown
+     */
+    public void runCurrentValueExample() throws Exception {
+        try (OneInchClient client = OneInchClient.builder()
+                .apiKey(API_KEY)
+                .build()) {
+            
+            log.info("=== Current Value Example ===");
+            
+            PortfolioV5OverviewRequest request = PortfolioV5OverviewRequest.builder()
+                    .addresses(Arrays.asList(SAMPLE_ADDRESS))
+                    .chainId(1) // Ethereum
+                    .build();
+            
+            CurrentValueResponse currentValue = client.portfolio().getCurrentValue(request);
+            
+            log.info("Total portfolio value: ${}", currentValue.getTotal());
+            
+            log.info("Value by address:");
+            currentValue.getByAddress().forEach(addr -> 
+                    log.info("  {}: ${}", addr.getAddress(), addr.getValueUsd()));
+            
+            log.info("Value by category:");
+            currentValue.getByCategory().forEach(cat -> 
+                    log.info("  {}: ${}", cat.getCategoryName(), cat.getValueUsd()));
+            
+            log.info("Value by chain:");
+            currentValue.getByChain().forEach(chain -> 
+                    log.info("  {}: ${}", chain.getChainName(), chain.getValueUsd()));
+        }
+    }
+
+    /**
+     * Demonstrates protocols snapshot
+     */
+    public void runProtocolsSnapshotExample() throws Exception {
+        try (OneInchClient client = OneInchClient.builder()
+                .apiKey(API_KEY)
+                .build()) {
+            
+            log.info("=== Protocols Snapshot Example ===");
+            
+            PortfolioV5SnapshotRequest request = PortfolioV5SnapshotRequest.builder()
+                    .addresses(Arrays.asList(SAMPLE_ADDRESS))
+                    .chainId(1) // Ethereum
+                    .build();
+            
+            List<AdapterResult> protocolsSnapshot = client.portfolio().getProtocolsSnapshot(request);
+            
+            log.info("Found {} protocol positions", protocolsSnapshot.size());
+            
+            protocolsSnapshot.stream()
+                    .limit(3)
+                    .forEach(position -> {
+                        log.info("  Protocol: {} - Value: ${}", 
+                                position.getProtocolGroupName(), position.getValueUsd());
+                        log.info("    Contract: {} ({})", 
+                                position.getContractName(), position.getContractAddress());
+                        log.info("    Underlying tokens: {}", position.getUnderlyingTokens().size());
+                        log.info("    Reward tokens: {}", position.getRewardTokens().size());
+                    });
+        }
+    }
+
+    /**
+     * Demonstrates tokens snapshot
+     */
+    public void runTokensSnapshotExample() throws Exception {
+        try (OneInchClient client = OneInchClient.builder()
+                .apiKey(API_KEY)
+                .build()) {
+            
+            log.info("=== Tokens Snapshot Example ===");
+            
+            PortfolioV5SnapshotRequest request = PortfolioV5SnapshotRequest.builder()
+                    .addresses(Arrays.asList(SAMPLE_ADDRESS))
+                    .chainId(1) // Ethereum
+                    .build();
+            
+            List<AdapterResult> tokensSnapshot = client.portfolio().getTokensSnapshot(request);
+            
+            log.info("Found {} token positions", tokensSnapshot.size());
+            
+            tokensSnapshot.stream()
+                    .limit(5)
+                    .forEach(token -> {
+                        log.info("  Token: {} ({}) - Value: ${}", 
+                                token.getContractName(), token.getContractSymbol(), token.getValueUsd());
+                        log.info("    Address: {}", token.getContractAddress());
+                        log.info("    Locked: {}", token.getLocked());
+                    });
         }
     }
 
@@ -149,14 +170,15 @@ public class PortfolioExample {
             
             log.info("=== Reactive Portfolio Example ===");
             
-            PortfolioOverviewRequest request = PortfolioOverviewRequest.builder()
+            PortfolioV5OverviewRequest request = PortfolioV5OverviewRequest.builder()
                     .addresses(Arrays.asList(SAMPLE_ADDRESS))
                     .chainId(1)
                     .build();
 
             // Reactive current value
-            client.portfolio().getGeneralCurrentValueRx(request)
-                    .doOnSuccess(result -> log.info("Reactive current value: {}", result))
+            client.portfolio().getCurrentValueRx(request)
+                    .doOnSuccess(result -> log.info("Reactive current value total: ${}", result.getTotal()))
+                    .doOnSuccess(result -> log.info("Reactive address count: {}", result.getByAddress().size()))
                     .doOnError(error -> log.error("Reactive current value failed", error))
                     .subscribe();
             
@@ -169,6 +191,40 @@ public class PortfolioExample {
             
         } catch (Exception e) {
             log.error("Reactive portfolio example failed", e);
+        }
+    }
+
+    /**
+     * Demonstrates protocols metrics (P&L, ROI, APR)
+     */
+    public void runProtocolsMetricsExample() throws Exception {
+        try (OneInchClient client = OneInchClient.builder()
+                .apiKey(API_KEY)
+                .build()) {
+            
+            log.info("=== Protocols Metrics Example ===");
+            
+            PortfolioV5MetricsRequest request = PortfolioV5MetricsRequest.builder()
+                    .addresses(Arrays.asList(SAMPLE_ADDRESS))
+                    .chainId(1) // Ethereum
+                    .build();
+            
+            List<HistoryMetrics> protocolsMetrics = client.portfolio().getProtocolsMetrics(request);
+            
+            log.info("Found {} protocol metrics", protocolsMetrics.size());
+            
+            protocolsMetrics.stream()
+                    .limit(3)
+                    .forEach(metric -> {
+                        log.info("  Position: {}", metric.getIndex());
+                        log.info("    Profit (USD): {}", metric.getProfitAbsUsd());
+                        log.info("    ROI: {}%", metric.getRoi() != null ? 
+                                String.format("%.2f", metric.getRoi() * 100) : "N/A");
+                        log.info("    Weighted APR: {}%", metric.getWeightedApr() != null ? 
+                                String.format("%.2f", metric.getWeightedApr() * 100) : "N/A");
+                        log.info("    Holding time: {} days", metric.getHoldingTimeDays());
+                        log.info("    Rewards (USD): {}", metric.getRewardsUsd());
+                    });
         }
     }
 }

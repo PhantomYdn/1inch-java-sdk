@@ -1,0 +1,76 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v1.1/100/broadcast": {
+      "post": {
+        "description": "Takes the raw transaction data as input and returns the transaction hash in case of Evm Chains and transaction signature in case of Solana",
+        "operationId": "TxProcessorApiController_broadcastTransaction_v1.1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BroadcastRequest" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "The transaction was successfully broadcasted",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BroadcastResponse" } } }
+          },
+          "400": { "description": "The provided input data is invalid" }
+        },
+        "summary": "Broadcast public transaction",
+        "tags": ["Transactions"]
+      }
+    },
+    "/v1.1/100/flashbots": {
+      "post": {
+        "description": "Takes the raw transaction data as input and broadcasts it privately, only available for Ethereum network",
+        "operationId": "TxProcessorApiController_broadcastFlashbotsTransaction_v1.1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "The raw transaction data",
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BroadcastRequest" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "The transaction was successfully broadcasted",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BroadcastResponse" } } }
+          },
+          "400": { "description": "The provided input data is invalid" }
+        },
+        "summary": "Broadcast private transaction",
+        "tags": ["Transactions"]
+      }
+    }
+  },
+  "info": {
+    "title": "1inch Transaction Gateway API",
+    "description": "<h2>Gnosis Chain Network</h2>1inch Transaction Gateway Open API",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "BroadcastRequest": {
+        "type": "object",
+        "properties": {
+          "rawTransaction": { "type": "string", "description": "The raw transaction data", "example": "0x123..." }
+        },
+        "required": ["rawTransaction"]
+      },
+      "BroadcastResponse": {
+        "type": "object",
+        "properties": {
+          "transactionHash": {
+            "type": "string",
+            "description": "The transaction hash in case of Evm chains, in case of Solana Transaction signature",
+            "example": "0x123..."
+          }
+        },
+        "required": ["transactionHash"]
+      }
+    }
+  }
+}

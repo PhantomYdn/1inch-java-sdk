@@ -1,0 +1,568 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v1.0/501/order/active": {
+      "get": {
+        "operationId": "OrderApiController_getActiveOrders",
+        "summary": "Get fusion swap active orders",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Pagination step, default: 1 (page = offset / limit)",
+            "example": 1,
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of active orders to receive (default: 100, max: 500)",
+            "example": 100,
+            "schema": { "type": "number" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Array of queried active orders" },
+          "400": { "description": "Input data is invalid" },
+          "default": {
+            "description": "",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GetActiveOrdersOutput" } } }
+          }
+        },
+        "tags": ["Orders"]
+      }
+    },
+    "/v1.0/501/order/cancelable-by-resolvers": {
+      "get": {
+        "operationId": "OrderApiController_getCancelableOrdersByResolvers",
+        "summary": "Get fusion swap cancelable orders",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Pagination step, default: 1 (page = offset / limit)",
+            "example": 1,
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of expired cancelable orders to receive (default: 100, max: 500)",
+            "example": 100,
+            "schema": { "type": "number" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Array of queried expired orders which can be canceled by resolvers" },
+          "400": { "description": "Input data is invalid" },
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/GetCancelableOrdersOutput" } }
+            }
+          }
+        },
+        "tags": ["Orders"]
+      }
+    },
+    "/v1.0/501/order/maker/{address}": {
+      "get": {
+        "operationId": "OrderApiController_getOrdersByMaker",
+        "summary": "Get orders by maker address",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "Maker's address",
+            "example": "6uJb1VeHBzupesBi6xM9Sh98JhhfmM1nvMTYHL8Pd26b",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Pagination step, default: 1 (page = offset / limit)",
+            "example": 1,
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of active orders to receive (default: 100, max: 500)",
+            "example": 100,
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "timestampFrom",
+            "required": false,
+            "in": "query",
+            "description": "timestampFrom in milliseconds for interval [timestampFrom, timestampTo)",
+            "example": 1750772508589,
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "timestampTo",
+            "required": false,
+            "in": "query",
+            "description": "timestampTo in milliseconds for interval [timestampFrom, timestampTo)",
+            "example": 1750772508589,
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "srcMint",
+            "required": false,
+            "in": "query",
+            "description": "Find history by the given source token mint",
+            "example": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "dstMint",
+            "required": false,
+            "in": "query",
+            "description": "Find history by the given destination token mint",
+            "example": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "withMint",
+            "required": false,
+            "in": "query",
+            "description": "Find history items by source or destination token mint",
+            "example": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/GetOrderFillsByMakerOutput" } }
+            }
+          }
+        },
+        "tags": ["Orders"]
+      }
+    },
+    "/v1.0/501/order/status/{orderHash}": {
+      "get": {
+        "operationId": "OrderApiController_getOrderByOrderHash",
+        "summary": "Get order by hash",
+        "parameters": [
+          {
+            "name": "orderHash",
+            "required": true,
+            "in": "path",
+            "example": "b0a56b04134ece58cbc436749f519f7efe4d0d9121637c7bc799ec1b87af4ac7",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrderFillsByHashOutput" } } }
+          }
+        },
+        "tags": ["Orders"]
+      }
+    },
+    "/v1.0/501/order/status": {
+      "post": {
+        "operationId": "OrderApiController_getOrdersByOrderHashes",
+        "summary": "Get orders by hashes",
+        "parameters": [],
+        "requestBody": {
+          "required": false,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrdersByHashesInput" } } }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/OrderFillsByHashOutput" } }
+              }
+            }
+          }
+        },
+        "tags": ["Orders"]
+      }
+    }
+  },
+  "info": {
+    "title": "1inch Fusion Orders API",
+    "description": "Orders API provides access to active and historical orders",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [{ "url": "/orders" }],
+  "components": {
+    "schemas": {
+      "Meta": {
+        "type": "object",
+        "properties": {
+          "totalItems": { "type": "number" },
+          "itemsPerPage": { "type": "number" },
+          "totalPages": { "type": "number" },
+          "currentPage": { "type": "number" }
+        },
+        "required": ["totalItems", "itemsPerPage", "totalPages", "currentPage"]
+      },
+      "FeeDto": {
+        "type": "object",
+        "properties": {
+          "protocolFee": {
+            "type": "number",
+            "example": 5,
+            "description": "Fee portion from amount scaled by 1e5. E.g. 1000 -> 1%"
+          },
+          "integratorFee": {
+            "type": "number",
+            "example": 3,
+            "description": "Fee portion from amount scaled by 1e5. E.g. 1000 -> 1%"
+          },
+          "surplusPercentage": { "type": "number", "example": 2, "description": "Surplus percentage" },
+          "protocolDstAta": { "type": "string", "description": "Destination ATA for protocol fee" },
+          "integratorDstAta": { "type": "string", "description": "Destination ATA for integrator fee" },
+          "maxCancellationPremium": { "type": "string" }
+        },
+        "required": [
+          "protocolFee",
+          "integratorFee",
+          "surplusPercentage",
+          "protocolDstAta",
+          "integratorDstAta",
+          "maxCancellationPremium"
+        ]
+      },
+      "PointsAndDelta": {
+        "type": "object",
+        "properties": {
+          "rateBump": { "type": "number", "example": 1, "description": "Rate bump percentage, 10_000_000 means 100%" },
+          "timeDelta": { "type": "number", "example": 30, "description": "Time delta in seconds" }
+        },
+        "required": ["rateBump", "timeDelta"]
+      },
+      "DutchAuctionDataDto": {
+        "type": "object",
+        "properties": {
+          "startTime": {
+            "type": "number",
+            "example": 1715000000,
+            "description": "Auction start time in Unix timestamp in seconds"
+          },
+          "duration": { "type": "number", "example": 300, "description": "Auction duration in seconds" },
+          "initialRateBump": { "type": "number", "example": 1, "description": "Initial rate bump percentage" },
+          "pointsAndTimeDeltas": {
+            "description": "Auction rate adjustments over time",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PointsAndDelta" }
+          }
+        },
+        "required": ["startTime", "duration", "initialRateBump", "pointsAndTimeDeltas"]
+      },
+      "FusionOrderDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "number", "description": "Unique id of the order.", "example": 1 },
+          "srcAmount": {
+            "type": "string",
+            "description": "Amount of the makerAsset being offered by the maker.",
+            "example": "100000000000000000"
+          },
+          "minDstAmount": {
+            "type": "string",
+            "description": "Min amount of the dstMint being received.",
+            "example": "100000000000000000"
+          },
+          "estimatedDstAmount": {
+            "type": "string",
+            "description": "Market amount of the dstMint being offered by the maker.",
+            "example": "100000000000000000"
+          },
+          "expirationTime": {
+            "type": "number",
+            "description": "expiration time by which the order must be filled in seconds.",
+            "example": 1634025600000
+          },
+          "receiver": {
+            "type": "string",
+            "description": "Address of the account receiving the assets (receiver), if different from maker.",
+            "example": "6uJb1VeHBzupesBi6xM9Sh98JhhfmM1nvMTYHL8Pd26b"
+          },
+          "srcAssetIsNative": {
+            "type": "boolean",
+            "description": "if native address is used as source asset",
+            "example": "true"
+          },
+          "dstAssetIsNative": {
+            "type": "boolean",
+            "description": "if native address is used as destination asset",
+            "example": "false"
+          },
+          "fee": { "description": "Structure of Fee data.", "allOf": [{ "$ref": "#/components/schemas/FeeDto" }] },
+          "dutchAuctionData": {
+            "description": "Structure of dutch auctioln data.",
+            "allOf": [{ "$ref": "#/components/schemas/DutchAuctionDataDto" }]
+          },
+          "srcMint": {
+            "type": "string",
+            "example": "So11111111111111111111111111111111111111112",
+            "description": "Source token mint address"
+          },
+          "dstMint": {
+            "type": "string",
+            "example": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+            "description": "Destination token mint address"
+          },
+          "cancellationAuctionDuration": {
+            "type": "number",
+            "example": 1,
+            "description": "Cancellation auction duration in seconds."
+          }
+        },
+        "required": [
+          "id",
+          "srcAmount",
+          "minDstAmount",
+          "estimatedDstAmount",
+          "expirationTime",
+          "receiver",
+          "srcAssetIsNative",
+          "dstAssetIsNative",
+          "fee",
+          "dutchAuctionData",
+          "srcMint",
+          "dstMint",
+          "cancellationAuctionDuration"
+        ]
+      },
+      "ActiveOrderOutput": {
+        "type": "object",
+        "properties": {
+          "orderHash": {
+            "type": "string",
+            "description": "Unique identifier of the order.",
+            "example": "GxXW4Bhtn1xuFRgzAUNyMnYyBJgzvBALNPontUdmpENm"
+          },
+          "txSignature": {
+            "type": "string",
+            "description": "Tx signature of the order.",
+            "example": "41EYz9L7196ZYPY9V61u33Dhp6dpg7nY1pVexbxBs36xCQLo1fnxvFMBBpjXnkg3ETrz1jnjLPWYvzpu8xDkP39K"
+          },
+          "maker": {
+            "type": "string",
+            "description": "Address of the account creating the order (maker).",
+            "example": "6uJb1VeHBzupesBi6xM9Sh98JhhfmM1nvMTYHL8Pd26b"
+          },
+          "order": {
+            "description": "Detailed structure of the order.",
+            "allOf": [{ "$ref": "#/components/schemas/FusionOrderDto" }]
+          },
+          "remainingMakerAmount": { "type": "string", "description": "Remaining maker amount", "example": "100000" }
+        },
+        "required": ["orderHash", "txSignature", "maker", "order", "remainingMakerAmount"]
+      },
+      "GetActiveOrdersOutput": {
+        "type": "object",
+        "properties": {
+          "meta": { "$ref": "#/components/schemas/Meta" },
+          "items": { "type": "array", "items": { "$ref": "#/components/schemas/ActiveOrderOutput" } }
+        },
+        "required": ["meta", "items"]
+      },
+      "CancelableOrderOutput": {
+        "type": "object",
+        "properties": {
+          "orderHash": {
+            "type": "string",
+            "description": "Unique identifier of the order.",
+            "example": "GxXW4Bhtn1xuFRgzAUNyMnYyBJgzvBALNPontUdmpENm"
+          },
+          "txSignature": {
+            "type": "string",
+            "description": "Tx signature of the order.",
+            "example": "41EYz9L7196ZYPY9V61u33Dhp6dpg7nY1pVexbxBs36xCQLo1fnxvFMBBpjXnkg3ETrz1jnjLPWYvzpu8xDkP39K"
+          },
+          "maker": {
+            "type": "string",
+            "description": "Address of the account creating the order (maker).",
+            "example": "6uJb1VeHBzupesBi6xM9Sh98JhhfmM1nvMTYHL8Pd26b"
+          },
+          "order": {
+            "description": "Detailed structure of the order.",
+            "allOf": [{ "$ref": "#/components/schemas/FusionOrderDto" }]
+          }
+        },
+        "required": ["orderHash", "txSignature", "maker", "order"]
+      },
+      "GetCancelableOrdersOutput": {
+        "type": "object",
+        "properties": {
+          "meta": { "$ref": "#/components/schemas/Meta" },
+          "items": { "type": "array", "items": { "$ref": "#/components/schemas/CancelableOrderOutput" } }
+        },
+        "required": ["meta", "items"]
+      },
+      "FillOutput": {
+        "type": "object",
+        "properties": {
+          "txSignature": {
+            "type": "string",
+            "description": "Transaction hash",
+            "example": "41EYz9L7196ZYPY9V61u33Dhp6dpg7nY1pVexbxBs36xCQLo1fnxvFMBBpjXnkg3ETrz1jnjLPWYvzpu8xDkP39K"
+          },
+          "filledMakerAmount": {
+            "type": "string",
+            "description": "Amount of the makerAsset filled.",
+            "example": "100000000000000000"
+          },
+          "filledAuctionTakerAmount": {
+            "type": "string",
+            "description": "Amount of the takerAsset filled.",
+            "example": "100000000000000000"
+          }
+        },
+        "required": ["txSignature", "filledMakerAmount", "filledAuctionTakerAmount"]
+      },
+      "OrderFillsByMakerOutput": {
+        "type": "object",
+        "properties": {
+          "orderHash": {
+            "type": "string",
+            "description": "Order hash.",
+            "example": "GxXW4Bhtn1xuFRgzAUNyMnYyBJgzvBALNPontUdmpENm"
+          },
+          "maker": {
+            "type": "string",
+            "description": "Address of the account creating the order (maker).",
+            "example": "6uJb1VeHBzupesBi6xM9Sh98JhhfmM1nvMTYHL8Pd26b"
+          },
+          "status": { "type": "number", "description": "Order status.", "example": 0, "enum": [0, 200, 301] },
+          "order": {
+            "description": "Detailed structure of the Solana Fusion Order.",
+            "allOf": [{ "$ref": "#/components/schemas/FusionOrderDto" }]
+          },
+          "approximateTakingAmount": {
+            "type": "string",
+            "description": "Approximate amount of the taker asset being requested.",
+            "example": "970000000"
+          },
+          "cancelTx": {
+            "type": "object",
+            "description": "Cancel transaction signature (null if not canceled).",
+            "example": "5zXYv1KwMkGgyZ8hA5QYpMjPsnvPiK7PXivJLBX9vhvB"
+          },
+          "fills": { "type": "array", "items": { "$ref": "#/components/schemas/FillOutput" } },
+          "createdAt": {
+            "type": "number",
+            "description": "Creation timestamp of the order (Unix timestamp).",
+            "example": 1715000000
+          },
+          "expirationTime": {
+            "type": "number",
+            "description": "When order will be expired (Unix timestamp).",
+            "example": 1715000000
+          },
+          "cancelable": { "type": "boolean", "description": "Can be canceled", "example": false }
+        },
+        "required": [
+          "orderHash",
+          "maker",
+          "status",
+          "order",
+          "approximateTakingAmount",
+          "cancelTx",
+          "fills",
+          "createdAt",
+          "expirationTime",
+          "cancelable"
+        ]
+      },
+      "GetOrderFillsByMakerOutput": {
+        "type": "object",
+        "properties": {
+          "meta": { "$ref": "#/components/schemas/Meta" },
+          "items": { "type": "array", "items": { "$ref": "#/components/schemas/OrderFillsByMakerOutput" } }
+        },
+        "required": ["meta", "items"]
+      },
+      "OrderFillsByHashOutput": {
+        "type": "object",
+        "properties": {
+          "maker": {
+            "type": "string",
+            "description": "Address of the account creating the order (maker).",
+            "example": "6uJb1VeHBzupesBi6xM9Sh98JhhfmM1nvMTYHL8Pd26b"
+          },
+          "orderHash": {
+            "type": "string",
+            "description": "Order hash.",
+            "example": "GxXW4Bhtn1xuFRgzAUNyMnYyBJgzvBALNPontUdmpENm"
+          },
+          "status": { "type": "number", "description": "Order status.", "example": 0, "enum": [0, 200, 301] },
+          "order": {
+            "description": "Detailed structure of the Solana Fusion Order.",
+            "allOf": [{ "$ref": "#/components/schemas/FusionOrderDto" }]
+          },
+          "approximateTakingAmount": {
+            "type": "string",
+            "description": "Approximate amount of the taker asset being requested.",
+            "example": "970000000"
+          },
+          "cancelTx": {
+            "type": "object",
+            "description": "Cancel transaction signature (null if not canceled).",
+            "example": "5zXYv1KwMkGgyZ8hA5QYpMjPsnvPiK7PXivJLBX9vhvB"
+          },
+          "expirationTime": {
+            "type": "number",
+            "description": "When order will be expired (Unix timestamp).",
+            "example": 1715000000
+          },
+          "fills": { "type": "array", "items": { "$ref": "#/components/schemas/FillOutput" } },
+          "createdAt": {
+            "type": "number",
+            "description": "Creation timestamp of the order (Unix timestamp in seconds).",
+            "example": 1715000000
+          },
+          "srcTokenPriceUsd": { "type": "object", "example": 100 },
+          "dstTokenPriceUsd": { "type": "object", "example": 200 },
+          "cancelable": { "type": "boolean", "description": "Can be canceled", "example": false }
+        },
+        "required": [
+          "maker",
+          "orderHash",
+          "status",
+          "order",
+          "approximateTakingAmount",
+          "cancelTx",
+          "expirationTime",
+          "fills",
+          "createdAt",
+          "srcTokenPriceUsd",
+          "dstTokenPriceUsd",
+          "cancelable"
+        ]
+      },
+      "OrdersByHashesInput": {
+        "type": "object",
+        "properties": {
+          "orderHashes": {
+            "example": ["GxXW4Bhtn1xuFRgzAUNyMnYyBJgzvBALNPontUdmpENm"],
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": ["orderHashes"]
+      }
+    }
+  }
+}

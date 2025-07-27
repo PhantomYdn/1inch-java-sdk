@@ -12,27 +12,27 @@ import java.util.Map;
 public interface OneInchTokenApiService {
     
     // Multi-chain token operations
-    @GET("token/v1.2/multi-chain")
+    @GET("token/v1.3/multi-chain")
     Single<List<ProviderTokenDto>> getMultiChainTokens(
             @Query("provider") String provider,
             @Query("country") String country
     );
     
-    @GET("token/v1.2/multi-chain/token-list")
+    @GET("token/v1.3/multi-chain/token-list")
     Single<TokenListResponse> getMultiChainTokenList(
             @Query("provider") String provider,
             @Query("country") String country
     );
     
     // Chain-specific token operations
-    @GET("token/v1.2/{chainId}")
+    @GET("token/v1.3/{chainId}")
     Single<Map<String, ProviderTokenDto>> getTokens(
             @Path("chainId") Integer chainId,
             @Query("provider") String provider,
             @Query("country") String country
     );
     
-    @GET("token/v1.2/{chainId}/token-list")
+    @GET("token/v1.3/{chainId}/token-list")
     Single<TokenListResponse> getTokenList(
             @Path("chainId") Integer chainId,
             @Query("provider") String provider,
@@ -40,7 +40,7 @@ public interface OneInchTokenApiService {
     );
     
     // Token search operations
-    @GET("token/v1.2/search")
+    @GET("token/v1.3/search")
     Single<List<Token>> searchMultiChainTokens(
             @Query("query") String query,
             @Query("ignore_listed") Boolean ignoreListed,
@@ -48,7 +48,7 @@ public interface OneInchTokenApiService {
             @Query("limit") Integer limit
     );
     
-    @GET("token/v1.2/{chainId}/search")
+    @GET("token/v1.3/{chainId}/search")
     Single<List<Token>> searchTokens(
             @Path("chainId") Integer chainId,
             @Query("query") String query,
@@ -58,13 +58,13 @@ public interface OneInchTokenApiService {
     );
     
     // Custom token operations
-    @GET("token/v1.2/{chainId}/custom")
+    @GET("token/v1.3/{chainId}/custom")
     Single<Map<String, Token>> getCustomTokens(
             @Path("chainId") Integer chainId,
             @Query("addresses") List<String> addresses
     );
     
-    @GET("token/v1.2/{chainId}/custom/{address}")
+    @GET("token/v1.3/{chainId}/custom/{address}")
     Single<Token> getCustomToken(
             @Path("chainId") Integer chainId,
             @Path("address") String address

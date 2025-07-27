@@ -1,0 +1,768 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v4.0/1": {
+      "post": {
+        "operationId": "LimitOrderV4SubscribedApiController_createLimitOrder",
+        "summary": "Include a limit order to the 1inch limit orders database",
+        "description": "You can send your limit orders to the 1inch database and then your order will participate in the 1inch aggregation protocol.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LimitOrderV4Request" } } }
+        },
+        "responses": {
+          "201": {
+            "description": "The limit order has been successfully saved",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LimitOrderV4Response" } } }
+          },
+          "400": {
+            "description": "Input data is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer", "enum": [400] },
+                    "message": { "type": "string", "example": "0xbad_address" },
+                    "error": { "type": "string", "enum": ["Bad Request"] }
+                  }
+                }
+              }
+            }
+          },
+          "403": { "description": "Max valid orders per user: 100. Cancel previous orders to create new ones" }
+        },
+        "tags": ["Limit Order V4"]
+      }
+    },
+    "/v4.0/1/address/{address}": {
+      "get": {
+        "operationId": "LimitOrderV4SubscribedApiController_getLimitOrder",
+        "summary": "Get limit orders belonging to the specified address",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "address in hexadecimal format",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{40}$",
+              "example": "0x1234567890ABCDEF1234567890ABCDEF12345678"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Pagination step, default: 1 (page = offset / limit)",
+            "example": 1,
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of limit orders to receive (default: 100, max: 500)",
+            "example": 100,
+            "schema": { "type": "integer", "default": 100, "minimum": 1, "maximum": 500 }
+          },
+          {
+            "name": "statuses",
+            "required": false,
+            "in": "query",
+            "description": "A comma-separated list of statuses by which limit orders will be filtered. Valid statuses include: 1 - Valid orders, 2 - Temporarily invalid orders, 3 - Invalid orders.",
+            "example": "1,2,3",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": ["createDateTime", "takerRate", "makerRate", "makerAmount", "takerAmount"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "takerAsset",
+            "required": false,
+            "in": "query",
+            "description": "Address of the taker asset",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{40}$",
+              "example": "0x1234567890ABCDEF1234567890ABCDEF12345678"
+            }
+          },
+          {
+            "name": "makerAsset",
+            "required": false,
+            "in": "query",
+            "description": "Address of the maker asset",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{40}$",
+              "example": "0x1234567890ABCDEF1234567890ABCDEF12345678"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of queried limit orders",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GetLimitOrdersV4Response" } } }
+          },
+          "400": {
+            "description": "Input data is invalid or address is not provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer", "enum": [400] },
+                    "message": { "type": "string", "example": "0xbad_address" },
+                    "error": { "type": "string", "enum": ["Bad Request"] }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Limit Order V4"]
+      }
+    },
+    "/v4.0/1/order/{orderHash}": {
+      "get": {
+        "operationId": "LimitOrderV4SubscribedApiController_getOrderByOrderHash",
+        "summary": "Get order by the specified order hash",
+        "parameters": [
+          {
+            "name": "orderHash",
+            "required": true,
+            "in": "path",
+            "description": "OrderHash of the order",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Input data is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer", "enum": [400] },
+                    "message": { "type": "string", "example": "0xbad_address" },
+                    "error": { "type": "string", "enum": ["Bad Request"] }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Get order by order hash",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GetLimitOrdersV4Response" } } }
+          }
+        },
+        "tags": ["Limit Order V4"]
+      }
+    },
+    "/v4.0/1/all": {
+      "get": {
+        "operationId": "LimitOrderV4SubscribedApiController_getAllLimitOrders",
+        "summary": "Get all limit orders",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Pagination step, default: 1 (page = offset / limit)",
+            "example": 1,
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of limit orders to receive (default: 100, max: 500)",
+            "example": 100,
+            "schema": { "type": "integer", "default": 100, "minimum": 1, "maximum": 500 }
+          },
+          {
+            "name": "statuses",
+            "required": false,
+            "in": "query",
+            "description": "A comma-separated list of statuses by which limit orders will be filtered. Valid statuses include: 1 - Valid orders, 2 - Temporarily invalid orders, 3 - Invalid orders.",
+            "example": "1,2,3",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": ["createDateTime", "takerRate", "makerRate", "makerAmount", "takerAmount"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "takerAsset",
+            "required": false,
+            "in": "query",
+            "description": "Address of the taker asset",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{40}$",
+              "example": "0x1234567890ABCDEF1234567890ABCDEF12345678"
+            }
+          },
+          {
+            "name": "makerAsset",
+            "required": false,
+            "in": "query",
+            "description": "Address of the maker asset",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{40}$",
+              "example": "0x1234567890ABCDEF1234567890ABCDEF12345678"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of queried limit orders",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/GetLimitOrdersV4Response" } }
+              }
+            }
+          },
+          "400": {
+            "description": "Input data is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer", "enum": [400] },
+                    "message": { "type": "string", "example": "0xbad_address" },
+                    "error": { "type": "string", "enum": ["Bad Request"] }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Limit Order V4"]
+      }
+    },
+    "/v4.0/1/count": {
+      "get": {
+        "operationId": "LimitOrderV4SubscribedApiController_getAllOrdersCount",
+        "summary": "Get orders count by specified filters",
+        "parameters": [
+          {
+            "name": "statuses",
+            "required": false,
+            "in": "query",
+            "description": "A comma-separated list of statuses by which limit orders will be filtered. Valid statuses include: 1 - Valid orders, 2 - Temporarily invalid orders, 3 - Invalid orders.",
+            "example": "1,2,3",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "takerAsset",
+            "required": false,
+            "in": "query",
+            "description": "Address of the taker asset",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{40}$",
+              "example": "0x1234567890ABCDEF1234567890ABCDEF12345678"
+            }
+          },
+          {
+            "name": "makerAsset",
+            "required": false,
+            "in": "query",
+            "description": "Address of the maker asset",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{40}$",
+              "example": "0x1234567890ABCDEF1234567890ABCDEF12345678"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Input data is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer", "enum": [400] },
+                    "message": { "type": "string", "example": "0xbad_address" },
+                    "error": { "type": "string", "enum": ["Bad Request"] }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/GetLimitOrdersCountV4Response" } }
+            }
+          }
+        },
+        "tags": ["Limit Order V4"]
+      }
+    },
+    "/v4.0/1/events/{orderHash}": {
+      "get": {
+        "operationId": "LimitOrderV4SubscribedApiController_getEventsOrderHash",
+        "summary": "Get fill/cancel events related to the specified order",
+        "parameters": [
+          {
+            "name": "orderHash",
+            "required": true,
+            "in": "path",
+            "description": "OrderHash of the order",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Input data is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer", "enum": [400] },
+                    "message": { "type": "string", "example": "0xbad_address" },
+                    "error": { "type": "string", "enum": ["Bad Request"] }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Get events by order hash",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer", "example": 73989 },
+                        "network": { "type": "integer", "example": 1 },
+                        "logId": { "type": "string", "example": "log_e879a909" },
+                        "version": { "type": "integer", "example": 3 },
+                        "action": { "type": "string", "example": "fill" },
+                        "orderHash": {
+                          "type": "string",
+                          "example": "0x186f896d3a59c13088517a8d9ffab566dd4354d90669ec683ef9307c2174f9b4"
+                        },
+                        "taker": { "type": "string", "example": "0x027d24217f18822e6ce11821524c212f507d0787" },
+                        "remainingMakerAmount": { "type": "string", "example": "0" },
+                        "transactionHash": {
+                          "type": "string",
+                          "example": "0x014f972b2a8121b09507e7f60613d77f7e4bc1a4cb942ff9fae6f946cd8f4078"
+                        },
+                        "blockNumber": { "type": "integer", "example": 16083198 },
+                        "createDateTime": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2023-07-09T10:45:39.332Z"
+                        }
+                      }
+                    }
+                  },
+                  "example": {
+                    "0x186f896d3a59c13088517a8d9ffab566dd4354d90669ec683ef9307c2174f9b4": [
+                      {
+                        "id": 73989,
+                        "network": 1,
+                        "logId": "log_e879a909",
+                        "version": 3,
+                        "action": "fill",
+                        "orderHash": "0x186f896d3a59c13088517a8d9ffab566dd4354d90669ec683ef9307c2174f9b4",
+                        "taker": "0x027d24217f18822e6ce11821524c212f507d0787",
+                        "remainingMakerAmount": "0",
+                        "transactionHash": "0x014f972b2a8121b09507e7f60613d77f7e4bc1a4cb942ff9fae6f946cd8f4078",
+                        "blockNumber": 16083198,
+                        "createDateTime": "2023-07-09T10:45:39.332Z"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Limit Order V4"]
+      }
+    },
+    "/v4.0/1/events": {
+      "get": {
+        "operationId": "LimitOrderV4SubscribedApiController_getEvents",
+        "summary": "Get all orders fill/cancel events",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "limit to get events, max 1000",
+            "example": 100,
+            "schema": { "type": "integer", "default": 100, "minimum": 1, "maximum": 500 }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Get events by order hash",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/GetEventsV4Response" } }
+              }
+            }
+          }
+        },
+        "tags": ["Limit Order V4"]
+      }
+    },
+    "/v4.0/1/has-active-orders-with-permit/{walletAddress}/{token}": {
+      "get": {
+        "operationId": "LimitOrderV4SubscribedApiController_hasActiveOrders",
+        "summary": "Get all active orders which have permit for the specified wallet address and token",
+        "parameters": [
+          { "name": "walletAddress", "required": true, "in": "path", "schema": { "type": "string" } },
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "description": "address in hexadecimal format",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{40}$",
+              "example": "0x1234567890ABCDEF1234567890ABCDEF12345678"
+            }
+          },
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "address in hexadecimal format",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{40}$",
+              "example": "0x1234567890ABCDEF1234567890ABCDEF12345678"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Input data is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer", "enum": [400] },
+                    "message": { "type": "string", "example": "0xbad_address" },
+                    "error": { "type": "string", "enum": ["Bad Request"] }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/GetHasActiveOrdersWithPermitV4Response" }
+              }
+            }
+          }
+        },
+        "tags": ["Limit Order V4"]
+      }
+    },
+    "/v4.0/1/unique-active-pairs": {
+      "get": {
+        "operationId": "LimitOrderV4SubscribedApiController_getUniqueActiveTokenPairs",
+        "summary": "Get unique active token pairs",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Pagination step, default: 1 (page = offset / limit)",
+            "example": 1,
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of limit orders to receive (default: 100, max: 500)",
+            "example": 100,
+            "schema": { "type": "integer", "default": 100, "minimum": 1, "maximum": 500 }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Input data is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer", "enum": [400] },
+                    "message": { "type": "string", "example": "0xbad_address" },
+                    "error": { "type": "string", "enum": ["Bad Request"] }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/GetActiveUniquePairsResponse" } }
+            }
+          }
+        },
+        "tags": ["Limit Order V4"]
+      }
+    }
+  },
+  "info": {
+    "title": "1inch Orderbook API",
+    "description": "<h2>Ethereum Network</h2><br>API for post and select limit orders to the <b>1inch limit orders database.</b><br>The database acts as a source of liquidity for the <a href=\"https://1inch.io/aggregation-protocol/\" target=\"_blank\">1inch Aggregation Protocol</a>.<br><br>Read more in the offical documentation <a href=\"https://docs.1inch.io/limit-order-protocol-utils/\" target=\"_blank\">https://docs.1inch.io/limit-order-protocol-utils</a>",
+    "version": "v4.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "LimitOrderV4Data": {
+        "type": "object",
+        "properties": {
+          "makerAsset": { "type": "string", "description": "Address of the maker asset" },
+          "takerAsset": { "type": "string", "description": "Address of the taker asset" },
+          "maker": { "type": "string", "description": "An address of the maker (wallet or contract address)" },
+          "receiver": {
+            "type": "string",
+            "description": "An address of the wallet or contract who will receive filled amount (equals to Zero address for receiver == makerAddress)",
+            "default": "0x0000000000000000000000000000000000000000"
+          },
+          "makingAmount": { "type": "string", "description": "Order maker's token amount" },
+          "takingAmount": { "type": "string", "description": "Order taker's token amount" },
+          "salt": {
+            "type": "string",
+            "description": "Some unique value. It is necessary to be able to create limit orders with the same parameters (so that they have a different hash), Lowest 160 bits of the order salt must be equal to the lowest 160 bits of the extension hash"
+          },
+          "extension": {
+            "type": "string",
+            "description": "An interaction call data. ABI encoded set of makerAssetSuffix, takerAssetSuffix, makingAmountGetter, takingAmountGetter, predicate, permit, preInteraction, postInteraction.If extension exists then lowest 160 bits of the order salt must be equal to the lowest 160 bits of the extension hash",
+            "default": "0x"
+          },
+          "makerTraits": {
+            "type": "string",
+            "description": "Includes some flags like, allow multiple fills, is partial fill allowed or not, price improvement, nonce, deadline etc",
+            "default": "0"
+          }
+        },
+        "required": ["makerAsset", "takerAsset", "maker", "makingAmount", "takingAmount", "salt"]
+      },
+      "LimitOrderV4Request": {
+        "type": "object",
+        "properties": {
+          "orderHash": { "type": "string", "description": "Hash of the limit order typed data" },
+          "signature": {
+            "type": "string",
+            "description": "Signature of the limit order typed data (using signTypedData_v4)"
+          },
+          "data": { "description": "Limit order data", "allOf": [{ "$ref": "#/components/schemas/LimitOrderV4Data" }] }
+        },
+        "required": ["orderHash", "signature", "data"]
+      },
+      "LimitOrderV4Response": {
+        "type": "object",
+        "properties": { "success": { "type": "boolean" } },
+        "required": ["success"]
+      },
+      "GetLimitOrdersV4Response": {
+        "type": "object",
+        "properties": {
+          "signature": {
+            "type": "string",
+            "description": "The cryptographic signature of the order",
+            "example": "0x1b1807385e0d9a4d622d0745a825c79bee3a1517b0fc8be9d6ffc5a382f453a25de75a6a4bd5bf586c8a58a6f7c0cd7fad1f9ecc4bfe26ecee9f20405ae7126d1b"
+          },
+          "orderHash": {
+            "type": "string",
+            "description": "A unique identifier for the order",
+            "example": "0x0d92079e3828f1dd6e481269e0d912e60d04a58a03a2c1f0529ed120ce6ba0bc"
+          },
+          "createDateTime": {
+            "type": "string",
+            "description": "The date and time of order creation",
+            "example": "2023-10-19T14:03:27.500Z"
+          },
+          "remainingMakerAmount": {
+            "type": "string",
+            "description": "The remaining amount for the maker",
+            "example": "70000000000"
+          },
+          "makerBalance": { "type": "string", "description": "The balance of the maker", "example": "0" },
+          "makerAllowance": {
+            "type": "string",
+            "description": "The allowance granted to the maker",
+            "example": "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+          },
+          "data": {
+            "description": "Data of the order",
+            "allOf": [{ "$ref": "#/components/schemas/LimitOrderV4Data" }]
+          },
+          "makerRate": {
+            "type": "string",
+            "description": "The maker rate",
+            "example": "1428571428.571428571428571429"
+          },
+          "takerRate": { "type": "string", "description": "The taker rate", "example": "0.000000000700000000" },
+          "isMakerContract": {
+            "type": "boolean",
+            "description": "Indicates if it is a maker contract",
+            "example": false
+          },
+          "orderInvalidReason": {
+            "description": "Reason for order invalidity (null or string)",
+            "example": null,
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": [
+          "signature",
+          "orderHash",
+          "createDateTime",
+          "remainingMakerAmount",
+          "makerBalance",
+          "makerAllowance",
+          "data",
+          "makerRate",
+          "takerRate",
+          "isMakerContract",
+          "orderInvalidReason"
+        ]
+      },
+      "GetLimitOrdersCountV4Response": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number",
+            "description": "The count of limit order by specified filter params",
+            "example": "124"
+          }
+        },
+        "required": ["count"]
+      },
+      "GetEventsV4Response": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "number" },
+          "network": { "type": "number" },
+          "logId": { "type": "string" },
+          "version": { "type": "number" },
+          "action": { "type": "string" },
+          "orderHash": { "type": "string" },
+          "taker": { "type": "string" },
+          "remainingMakerAmount": { "type": "string" },
+          "transactionHash": { "type": "string" },
+          "blockNumber": { "type": "number" },
+          "createDateTime": { "type": "string" }
+        },
+        "required": [
+          "id",
+          "network",
+          "logId",
+          "version",
+          "action",
+          "orderHash",
+          "taker",
+          "remainingMakerAmount",
+          "transactionHash",
+          "blockNumber",
+          "createDateTime"
+        ]
+      },
+      "GetHasActiveOrdersWithPermitV4Response": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "boolean",
+            "description": "true or false if it has active order with permit or no",
+            "example": "false"
+          }
+        },
+        "required": ["result"]
+      },
+      "Meta": {
+        "type": "object",
+        "properties": {
+          "totalItems": { "type": "number" },
+          "itemsPerPage": { "type": "number" },
+          "totalPages": { "type": "number" },
+          "currentPage": { "type": "number" }
+        },
+        "required": ["totalItems", "itemsPerPage", "totalPages", "currentPage"]
+      },
+      "UniquePairs": {
+        "type": "object",
+        "properties": {
+          "makerAsset": {
+            "type": "string",
+            "description": "The address of the maker asset (token address)",
+            "example": "0x1234567890abcdef1234567890abcdef12345678"
+          },
+          "takerAsset": {
+            "type": "string",
+            "description": "The address of the taker asset (token address)",
+            "example": "0xabcdef1234567890abcdef1234567890abcdef12"
+          }
+        },
+        "required": ["makerAsset", "takerAsset"]
+      },
+      "GetActiveUniquePairsResponse": {
+        "type": "object",
+        "properties": {
+          "meta": { "$ref": "#/components/schemas/Meta" },
+          "items": {
+            "description": "array if unique active asset pairs",
+            "example": [
+              {
+                "makerAsset": "0x89deb6c8918a42457bd6ddbcaaf979216c4d774c",
+                "takerAsset": "0xdac17f958d2ee523a2206206994597c13d831ec7"
+              },
+              {
+                "makerAsset": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+                "takerAsset": "0x2f109021afe75b949429fe30523ee7c0d5b27207"
+              }
+            ],
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/UniquePairs" }
+          }
+        },
+        "required": ["meta", "items"]
+      }
+    }
+  }
+}
