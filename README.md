@@ -18,6 +18,7 @@ A comprehensive Java SDK for the 1inch DEX Aggregation Protocol, providing easy 
 - ✅ Orderbook API for limit order management
 - ✅ History API for transaction history tracking
 - ✅ Portfolio API for DeFi position tracking and analytics
+- ✅ Balance API for token balance and allowance checking
 - ✅ Type-safe models with Jackson and BigInteger precision
 - ✅ Extensive unit test coverage
 
@@ -243,6 +244,17 @@ Portfolio operations provide comprehensive DeFi position tracking and analytics:
 - ✅ `getProtocolsMetrics(request)` - Get profit/loss, ROI, and APR metrics for protocol positions
 - ✅ `getTokensMetrics(request)` - Get profit/loss, ROI, and APR metrics for token positions
 
+### Balance API (`client.balance()`) - **Chain-Specific**
+Balance operations provide token balance and allowance checking across different chains:
+- ✅ `getBalances(request)` - Get all token balances for a wallet address on specific chain
+- ✅ `getCustomBalances(request)` - Get balances for specific tokens on specific chain
+- ✅ `getAllowances(request)` - Get token allowances by spender for wallet on specific chain
+- ✅ `getCustomAllowances(request)` - Get allowances for specific tokens by spender on specific chain
+- ✅ `getAllowancesAndBalances(request)` - Get combined balance and allowance data on specific chain
+- ✅ `getCustomAllowancesAndBalances(request)` - Get combined data for specific tokens on specific chain
+- ✅ `getAggregatedBalancesAndAllowances(request)` - Get aggregated data for multiple wallets on specific chain
+- ✅ `getBalancesByMultipleWallets(request)` - Get balances for multiple wallets and tokens on specific chain
+
 ## Configuration
 
 ### Authentication
@@ -298,6 +310,7 @@ The SDK includes complete example classes demonstrating all APIs:
 - **`HistoryExample.java`** - Transaction history tracking and analysis
 - **`HistoryConsoleExample.java`** - Command-line tool for displaying transaction history
 - **`PortfolioExample.java`** - DeFi portfolio tracking, position analysis, and P&L metrics
+- **`BalanceExample.java`** - Token balance and allowance checking across chains
 
 #### Running Examples
 
@@ -331,6 +344,9 @@ mvn exec:java -pl oneinch-sdk-examples -Dexec.mainClass="io.oneinch.sdk.examples
 
 # Run the Portfolio example
 mvn exec:java -pl oneinch-sdk-examples -Dexec.mainClass="io.oneinch.sdk.examples.PortfolioExample"
+
+# Run the Balance example
+mvn exec:java -pl oneinch-sdk-examples -Dexec.mainClass="io.oneinch.sdk.examples.BalanceExample"
 ```
 
 ### Reactive Swap Flow
@@ -1113,6 +1129,139 @@ AddressValidationResponse validation = client.portfolio().checkAddresses(validat
 
 validation.getResult().forEach((address, isValid) -> 
     log.info("Address {} is {}", address, isValid ? "valid" : "invalid"));
+```
+
+### Balance API Examples
+
+The Balance API provides token balance and allowance checking capabilities across different blockchain networks.
+
+#### Basic Wallet Balance Checking
+```java
+try (OneInchClient client = OneInchClient.builder().build()) {
+    
+    // Get all token balances for a wallet
+    BalanceRequest request = BalanceRequest.builder()
+            .chainId(1) // Ethereum
+            .walletAddress("0x111111111117dc0aa78b770fa6a738034120c302")
+            .build();
+    
+    Map<String, String> balances = client.balance().getBalances(request);
+    
+    log.info("Found {} token balances", balances.size());
+    balances.entrySet().stream()
+            .filter(entry -> !entry.getValue().equals("0"))
+            .limit(5)
+            .forEach(entry -> log.info("  Token {}: {} wei", entry.getKey(), entry.getValue()));
+}
+```
+
+#### Custom Token Balance Queries
+```java
+// Check balances for specific tokens only
+CustomBalanceRequest request = CustomBalanceRequest.builder()
+        .chainId(1) // Ethereum
+        .walletAddress("0x111111111117dc0aa78b770fa6a738034120c302")
+        .tokens(Arrays.asList(
+            "0xA0b86a33E6aB6b6ce4e5a5B7db2e8Df6b1D2b9C7", // USDC
+            "0xdAC17F958D2ee523a2206206994597C13D831ec7"  // USDT
+        ))
+        .build();
+
+Map<String, String> customBalances = client.balance().getCustomBalances(request);
+
+customBalances.forEach((token, balance) -> 
+    log.info("Token {}: {} wei", token, balance));
+```
+
+#### Allowance Checking for DEX Interactions
+```java
+// Check token allowances for a DEX router
+AllowanceBalanceRequest request = AllowanceBalanceRequest.builder()
+        .chainId(1) // Ethereum
+        .spender("0x1111111254eeb25477b68fb85ed929f73a960582") // 1inch v5 router
+        .walletAddress("0x111111111117dc0aa78b770fa6a738034120c302")
+        .build();
+
+Map<String, String> allowances = client.balance().getAllowances(request);
+
+log.info("Token allowances for 1inch router:");
+allowances.entrySet().stream()
+        .filter(entry -> !entry.getValue().equals("0"))
+        .forEach(entry -> log.info("  Token {}: {} wei allowance", entry.getKey(), entry.getValue()));
+```
+
+#### Combined Balance and Allowance Data
+```java
+// Get both balance and allowance in a single call
+AllowanceBalanceRequest request = AllowanceBalanceRequest.builder()
+        .chainId(1) // Ethereum
+        .spender("0x1111111254eeb25477b68fb85ed929f73a960582")
+        .walletAddress("0x111111111117dc0aa78b770fa6a738034120c302")
+        .build();
+
+Map<String, BalanceAndAllowanceItem> combined = client.balance().getAllowancesAndBalances(request);
+
+combined.entrySet().stream()
+        .limit(5)
+        .forEach(entry -> {
+            BalanceAndAllowanceItem item = entry.getValue();
+            log.info("Token {}: balance={} wei, allowance={} wei", 
+                entry.getKey(), item.getBalance(), item.getAllowance());
+        });
+```
+
+#### Multi-Wallet Balance Aggregation
+```java
+// Check balances across multiple wallets for portfolio management
+MultiWalletBalanceRequest request = MultiWalletBalanceRequest.builder()
+        .chainId(1) // Ethereum
+        .wallets(Arrays.asList(
+            "0x111111111117dc0aa78b770fa6a738034120c302",
+            "0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8"
+        ))
+        .tokens(Arrays.asList(
+            "0xA0b86a33E6aB6b6ce4e5a5B7db2e8Df6b1D2b9C7", // USDC
+            "0xdAC17F958D2ee523a2206206994597C13D831ec7"  // USDT
+        ))
+        .build();
+
+Map<String, Map<String, String>> multiWalletBalances = client.balance().getBalancesByMultipleWallets(request);
+
+multiWalletBalances.forEach((wallet, tokenBalances) -> {
+    log.info("Wallet: {}", wallet);
+    tokenBalances.forEach((token, balance) -> 
+        log.info("  Token {}: {} wei", token, balance));
+});
+```
+
+#### Reactive Balance Operations
+```java
+// Reactive balance checking with RxJava
+BalanceRequest request = BalanceRequest.builder()
+        .chainId(1) // Ethereum
+        .walletAddress("0x111111111117dc0aa78b770fa6a738034120c302")
+        .build();
+
+client.balance().getBalancesRx(request)
+    .flatMap(balances -> {
+        log.info("Found {} token balances", balances.size());
+        
+        // Chain to get allowances
+        AllowanceBalanceRequest allowanceRequest = AllowanceBalanceRequest.builder()
+            .chainId(request.getChainId())
+            .spender("0x1111111254eeb25477b68fb85ed929f73a960582")
+            .walletAddress(request.getWalletAddress())
+            .build();
+            
+        return client.balance().getAllowancesRx(allowanceRequest);
+    })
+    .subscribe(
+        allowances -> {
+            log.info("Reactive chain completed!");
+            log.info("Found {} token allowances", allowances.size());
+        },
+        error -> log.error("Reactive balance chain failed", error)
+    );
 ```
 
 ## Error Handling

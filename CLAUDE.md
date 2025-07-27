@@ -93,6 +93,18 @@ ChainId is optional query parameter - can work across chains:
 - **Tokens Snapshot**: `GET /portfolio/v5.0/tokens/snapshot` - Get tokens snapshot
 - **Tokens Metrics**: `GET /portfolio/v5.0/tokens/metrics` - Get tokens metrics with P&L, ROI calculations
 
+### Balance API v1.2 (Chain-Specific)
+ChainId is required as path parameter for all operations:
+- **Base URL**: `https://api.1inch.dev/`
+- **Get Balances**: `GET /balance/v1.2/{chainId}/balances/{walletAddress}` - Get all token balances for wallet on specific chain
+- **Get Custom Balances**: `POST /balance/v1.2/{chainId}/balances/{walletAddress}` - Get balances for specific tokens on specific chain
+- **Get Allowances**: `GET /balance/v1.2/{chainId}/allowances/{spender}/{walletAddress}` - Get token allowances by spender on specific chain
+- **Get Custom Allowances**: `POST /balance/v1.2/{chainId}/allowances/{spender}/{walletAddress}` - Get allowances for specific tokens on specific chain
+- **Get Balances and Allowances**: `GET /balance/v1.2/{chainId}/allowancesAndBalances/{spender}/{walletAddress}` - Get combined data on specific chain
+- **Get Custom Balances and Allowances**: `POST /balance/v1.2/{chainId}/allowancesAndBalances/{spender}/{walletAddress}` - Get combined data for specific tokens on specific chain
+- **Get Aggregated Data**: `GET /balance/v1.2/{chainId}/aggregatedBalancesAndAllowances/{spender}` - Get aggregated data for multiple wallets on specific chain
+- **Get Multi-Wallet Balances**: `POST /balance/v1.2/{chainId}/balances/multiple/walletsAndTokens` - Get balances for multiple wallets and tokens on specific chain
+
 ## Common Maven Commands
 ```bash
 mvn clean compile    # Compile the project
@@ -152,6 +164,7 @@ swagger/
 - `./swagger/token-details/swagger.json` - Token Details API endpoints
 - `./swagger/history/swagger.json` - History API endpoints
 - `./swagger/portfolio/v5/portfolio.json` - Portfolio API endpoints
+- `./swagger/balance/ethereum.json` - Balance API endpoints
 
 ## Token API Implementation
 
@@ -241,7 +254,7 @@ Single<Map<String, ProviderTokenDto>> rxTokens = tokenService.getTokensRx(reques
 - **Connection pooling**: OkHttp connection reuse across all services
 
 **API Routing Strategy:**
-- **Chain-Specific APIs**: ChainId in path parameter (`/swap/v6.1/{chainId}/`, `/orderbook/v4.0/{chainId}/`, `/token-details/v1.0/*/{chainId}/`)
+- **Chain-Specific APIs**: ChainId in path parameter (`/swap/v6.1/{chainId}/`, `/orderbook/v4.0/{chainId}/`, `/token-details/v1.0/*/{chainId}/`, `/balance/v1.2/{chainId}/`)
 - **Multi-Chain APIs**: ChainId as optional query parameter (`/history/v2.0/history/{address}/events?chainId=1`, `/portfolio/v5.0/general/*`)
 - **Hybrid APIs**: Token API supports both multi-chain endpoints (`/token/v1.3/multi-chain`) and chain-specific endpoints (`/token/v1.3/{chainId}`)
 
@@ -455,6 +468,133 @@ CurrentValueResponse result = envelope.getResult(); // Extract actual data
 - **Protocol endpoints**: Snapshots and metrics for DeFi protocol positions
 - **Token endpoints**: Snapshots and metrics for individual token positions
 - **Address validation**: Compliance checking for wallet addresses
+
+## Balance API v1.2 Implementation
+
+### Service Architecture
+The Balance API v1.2 provides token balance and allowance checking capabilities across different blockchain networks.
+
+#### BalanceService Interface
+Provides comprehensive balance and allowance operations:
+- **Basic balance operations**: Get all token balances for wallet addresses
+- **Custom balance operations**: Get balances for specific token lists
+- **Allowance operations**: Check token approvals for spender addresses (DEX routers)
+- **Combined operations**: Get both balance and allowance data in single calls
+- **Multi-wallet operations**: Aggregate data across multiple wallet addresses
+- **Chain-specific**: All operations require chainId parameter
+
+### Key Features
+
+#### Basic Balance Checking
+```java
+// Get all token balances for a wallet
+BalanceRequest request = BalanceRequest.builder()
+    .chainId(1) // Ethereum
+    .walletAddress("0x111111111117dc0aa78b770fa6a738034120c302")
+    .build();
+
+Map<String, String> balances = client.balance().getBalances(request);
+```
+
+#### Custom Token Balance Queries
+```java
+// Get balances for specific tokens only
+CustomBalanceRequest request = CustomBalanceRequest.builder()
+    .chainId(1) // Ethereum
+    .walletAddress("0x111111111117dc0aa78b770fa6a738034120c302")
+    .tokens(Arrays.asList("0xA0b86a33E6aB6b6ce4e5a5B7db2e8Df6b1D2b9C7"))
+    .build();
+
+Map<String, String> customBalances = client.balance().getCustomBalances(request);
+```
+
+#### Allowance Checking for DEX Integration
+```java
+// Check token allowances for 1inch router
+AllowanceBalanceRequest request = AllowanceBalanceRequest.builder()
+    .chainId(1) // Ethereum
+    .spender("0x1111111254eeb25477b68fb85ed929f73a960582") // 1inch v5 router
+    .walletAddress("0x111111111117dc0aa78b770fa6a738034120c302")
+    .build();
+
+Map<String, String> allowances = client.balance().getAllowances(request);
+```
+
+#### Combined Balance and Allowance Data
+```java
+// Get both balance and allowance in single call
+AllowanceBalanceRequest request = AllowanceBalanceRequest.builder()
+    .chainId(1) // Ethereum
+    .spender("0x1111111254eeb25477b68fb85ed929f73a960582")
+    .walletAddress("0x111111111117dc0aa78b770fa6a738034120c302")
+    .build();
+
+Map<String, BalanceAndAllowanceItem> combined = client.balance().getAllowancesAndBalances(request);
+```
+
+#### Model Classes
+**Request Models**:
+- `BalanceRequest` - For basic balance queries
+- `CustomBalanceRequest` - For custom token balance queries
+- `AllowanceBalanceRequest` - For allowance queries
+- `CustomAllowanceBalanceRequest` - For custom token allowance queries
+- `AggregatedBalanceRequest` - For multi-wallet aggregated queries
+- `MultiWalletBalanceRequest` - For multiple wallets and tokens
+
+**Response Models**:
+- `BalanceAndAllowanceItem` - Combined balance and allowance data
+- `AggregatedBalanceResponse` - Rich aggregated response with token metadata
+- Standard `Map<String, String>` responses for simple balance/allowance queries
+- `Map<String, Map<String, String>>` for multi-wallet responses
+
+**Internal Request Models**:
+- `CustomTokensBalanceRequest` - Maps to swagger CustomTokensRequest schema
+- `CustomTokensAndWalletsBalanceRequest` - Maps to swagger CustomTokensAndWalletsRequest schema
+
+#### String Precision for Wei Amounts
+All balance and allowance amounts are returned as `String` type for precision:
+- Token balances in wei (can exceed `Long.MAX_VALUE`)
+- Allowance amounts in wei
+- Direct conversion to `BigInteger` for arithmetic operations
+- Maintains full precision for large token amounts
+
+### Integration Points
+
+#### Client Integration
+```java
+OneInchClient client = OneInchClient.builder()
+    .apiKey("your-api-key")
+    .build();
+
+// Access balance service
+BalanceService balanceService = client.balance();
+
+// All three programming models supported
+Map<String, String> syncBalances = balanceService.getBalances(request);
+CompletableFuture<Map<String, String>> asyncBalances = balanceService.getBalancesAsync(request);
+Single<Map<String, String>> rxBalances = balanceService.getBalancesRx(request);
+```
+
+#### API Service Classes
+- **OneInchBalanceApiService**: Retrofit interface for Balance API v1.2 endpoints
+- **BalanceServiceImpl**: Service implementation with error handling and logging
+
+### Balance API Endpoint Structure
+
+The Balance API v1.2 uses chain-specific routing with comprehensive operation coverage:
+
+#### Endpoint Categories
+- **Basic Operations**: Simple GET requests for all tokens
+- **Custom Operations**: POST requests with token lists in request body
+- **Allowance Operations**: Include spender address for DEX approval checking
+- **Combined Operations**: Get both balance and allowance data efficiently
+- **Multi-wallet Operations**: Portfolio-level balance aggregation
+
+#### Chain-Specific Design
+All Balance API endpoints require chainId as path parameter:
+- `/balance/v1.2/{chainId}/balances/{walletAddress}` - Chain-specific balance queries
+- `/balance/v1.2/{chainId}/allowances/{spender}/{walletAddress}` - Chain-specific allowance queries
+- Follows same pattern as Swap and Orderbook APIs for consistency
 
 ## Architecture Notes
 
