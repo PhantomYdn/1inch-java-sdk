@@ -1352,6 +1352,134 @@ To run integration tests with real API calls:
 
 **Note**: `test.properties` is gitignored to prevent accidental commits of API keys. Always use `test.properties.sample` as a reference for the expected format.
 
+## Roadmap
+
+The 1inch Java SDK is actively developed with a focus on providing comprehensive coverage of the 1inch ecosystem. Here's our development roadmap and current API implementation status.
+
+### Current Implementation Status
+
+The SDK currently implements **7 out of 19 available 1inch APIs** (37% coverage), providing solid foundational functionality with room for significant expansion.
+
+#### ✅ **Fully Implemented APIs**
+- **Swap API** - Complete swap operations with chain-specific support (12 chains)
+- **Token API** - Multi-chain token lists, search, and custom token information
+- **Token Details API** - Token pricing, charts, and market data
+- **Orderbook API** - Limit order management and trading pair analysis (12 chains)  
+- **History API** - Transaction history tracking and analysis
+- **Portfolio API v5** - Comprehensive DeFi position tracking and P&L analytics
+- **Balance API** - Token balance and allowance checking (13 chains)
+
+All implemented APIs support the triple programming model: **Reactive (RxJava)**, **Synchronous**, and **Asynchronous (CompletableFuture)**.
+
+### Development Roadmap
+
+#### 🚀 **Phase 1: Core Trading Infrastructure** (Q2-Q3 2024)
+**Priority: HIGH** - Essential for advanced trading applications
+
+| API | Status | Chains | Key Features |
+|-----|--------|--------|--------------|
+| **Fusion API** | 🔄 Planned | 13 | Gasless swaps, 1inch's core innovation |
+| **Fusion Plus API** | 🔄 Planned | 12 | Enhanced gasless swaps with premium features |
+| **Price API** | 🔄 Planned | 13 | Real-time pricing across 60+ fiat currencies |
+| **Cross-Chain API** | 🔄 Planned | Multi | Bridge operations and cross-chain liquidity |
+
+**Business Impact**: These APIs are critical for accessing 1inch's competitive advantages, particularly gasless swaps and cross-chain operations.
+
+#### ⚡ **Phase 2: Infrastructure & Analytics** (Q4 2024)
+**Priority: MEDIUM** - Enhanced user experience and trading tools
+
+| API | Status | Chains | Key Features |
+|-----|--------|--------|--------------|
+| **Gas Price API** | 🔄 Planned | 12 | Optimized gas pricing for better transaction costs |
+| **Charts API** | 🔄 Planned | 12 | Historical price charts and technical analysis |
+| **Transaction Gateway API** | 🔄 Planned | 12 | MEV protection and transaction broadcasting |
+
+#### 🔧 **Phase 3: Specialized Features** (Q1 2025)
+**Priority: LOW** - Niche and specialized use cases
+
+| API | Status | Chains | Key Features |
+|-----|--------|--------|--------------|
+| **Traces API** | 🔄 Planned | 1 | Transaction trace analysis and debugging |
+| **NFT API v2** | 🔄 Planned | 1 | NFT trading and marketplace integration |
+| **Spot Price API** | 🔄 Planned | 1 | High-frequency spot price feeds |
+| **Domains API** | 🔄 Planned | 1 | ENS and domain resolution services |
+| **Web3 API** | 🔄 Planned | 2 | Blockchain data and Web3 utilities |
+
+### Chain Support Matrix
+
+The SDK aims to provide comprehensive multi-chain support across the 1inch ecosystem:
+
+| Blockchain | Supported APIs | Total Available | Coverage |
+|------------|----------------|-----------------|----------|
+| **Ethereum** | 7/19 | 19 | 37% |
+| **Polygon** | 5/13 | 13 | 38% |
+| **BSC** | 5/13 | 13 | 38% |
+| **Arbitrum** | 5/13 | 13 | 38% |
+| **Optimism** | 5/12 | 12 | 42% |
+| **Avalanche** | 5/12 | 12 | 42% |
+| **Gnosis** | 5/12 | 12 | 42% |
+| **Base** | 4/9 | 9 | 44% |
+| **Linea** | 4/8 | 8 | 50% |
+| **zkSync Era** | 4/8 | 8 | 50% |
+| **Solana** | 2/5 | 5 | 40% |
+| **Sonic** | 3/7 | 7 | 43% |
+| **Unichain** | 3/7 | 7 | 43% |
+
+### Future Enhancements
+
+#### 🎯 **Planned Features**
+- **WebSocket Support** - Real-time price feeds and order updates
+- **Rate Limiting Management** - Intelligent request throttling and queuing
+- **Advanced Error Recovery** - Automatic retry with exponential backoff
+- **Performance Optimizations** - HTTP/2 connection pooling and caching
+- **Metrics & Monitoring** - Built-in observability and performance tracking
+
+#### 📊 **SDK Improvements**
+- **Enhanced Documentation** - Interactive API documentation with live examples
+- **Code Generation** - Automated model generation from OpenAPI specs
+- **Testing Framework** - Comprehensive integration test suite
+- **Spring Boot Integration** - Auto-configuration and starter modules
+
+### Community & Contributions
+
+#### 🤝 **How to Help Prioritize Development**
+
+We welcome community input on roadmap priorities! Here's how you can influence development:
+
+1. **Feature Requests**: [Create an issue](https://github.com/1inch/1inch-java-sdk/issues/new) with your use case
+2. **API Priority Voting**: Comment on roadmap issues to vote for features you need
+3. **Business Case**: Share how specific APIs would benefit your project
+4. **Community Discussion**: Join our [Discord](https://discord.gg/1inch) to discuss priorities
+
+#### 💡 **Contribution Areas**
+- **API Implementation**: Help implement missing APIs following existing patterns
+- **Documentation**: Improve examples and API documentation
+- **Testing**: Add integration tests and edge case coverage
+- **Performance**: Optimize HTTP client configuration and caching
+- **Multi-chain**: Add support for new blockchain networks
+
+#### 🎯 **Current Priority Requests**
+Based on community feedback, these are the most requested features:
+1. **Fusion API** - Gasless swaps (15+ requests)
+2. **Price API** - Real-time pricing (12+ requests)  
+3. **Cross-Chain API** - Bridge operations (8+ requests)
+4. **WebSocket Support** - Real-time updates (6+ requests)
+
+### Getting Involved
+
+Want to contribute to the roadmap? We'd love your help:
+
+- **Developers**: Pick up issues labeled `help-wanted` or `good-first-issue`
+- **Companies**: Share your integration requirements and priority APIs
+- **Community**: Provide feedback on API designs and examples
+- **Testers**: Help validate new APIs with real-world use cases
+
+For development guidelines and contribution process, see our [Contributing](#contributing) section.
+
+---
+
+*Roadmap last updated: January 2025. Timelines are estimates and may change based on community needs and technical complexity.*
+
 ## License
 
 This project is licensed under the MIT License.
