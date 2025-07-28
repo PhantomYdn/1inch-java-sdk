@@ -23,6 +23,7 @@ public class OneInchClient implements AutoCloseable {
     private final HistoryService historyService;
     private final PortfolioService portfolioService;
     private final BalanceService balanceService;
+    private final PriceService priceService;
 
     
     private OneInchClient(String apiKey, OkHttpClient customOkHttpClient) {
@@ -37,6 +38,7 @@ public class OneInchClient implements AutoCloseable {
         this.historyService = new HistoryServiceImpl(this.httpClient.getHistoryApiService());
         this.portfolioService = new PortfolioServiceImpl(this.httpClient.getPortfolioApiService());
         this.balanceService = new BalanceServiceImpl(this.httpClient.getBalanceApiService());
+        this.priceService = new PriceServiceImpl(this.httpClient.getPriceApiService());
     }
     
     public static OneInchClientBuilder builder() {
@@ -69,6 +71,10 @@ public class OneInchClient implements AutoCloseable {
     
     public BalanceService balance() {
         return balanceService;
+    }
+    
+    public PriceService price() {
+        return priceService;
     }
     
     @Override

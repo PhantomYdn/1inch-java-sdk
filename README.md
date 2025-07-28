@@ -19,6 +19,7 @@ A comprehensive Java SDK for the 1inch DEX Aggregation Protocol, providing easy 
 - ✅ History API for transaction history tracking
 - ✅ Portfolio API for DeFi position tracking and analytics
 - ✅ Balance API for token balance and allowance checking
+- ✅ Price API for real-time token pricing across 60+ currencies
 - ✅ Type-safe models with Jackson and BigInteger precision
 - ✅ Extensive unit test coverage
 
@@ -243,6 +244,16 @@ Portfolio operations provide comprehensive DeFi position tracking and analytics:
 - ✅ `getTokensSnapshot(request)` - Get token positions across all DeFi protocols
 - ✅ `getProtocolsMetrics(request)` - Get profit/loss, ROI, and APR metrics for protocol positions
 - ✅ `getTokensMetrics(request)` - Get profit/loss, ROI, and APR metrics for token positions
+
+### Price API (`client.price()`) - **Chain-Specific**
+Real-time token pricing across multiple currencies and chains:
+- ✅ `getWhitelistPrices(chainId, currency)` - Get prices for all whitelisted tokens on specific chain
+- ✅ `getPrices(request)` - Get prices for specific token addresses with currency conversion
+- ✅ `getPrice(chainId, address, currency)` - Get price for single token with currency conversion
+- ✅ `getSupportedCurrencies(chainId)` - Get list of supported fiat currencies for price conversion
+
+**Currency Support**: 60+ fiat currencies (USD, EUR, JPY, GBP, CNY, etc.) + native Wei format
+**Multi-Chain**: 13+ blockchain networks supported
 
 ### Balance API (`client.balance()`) - **Chain-Specific**
 Balance operations provide token balance and allowance checking across different chains:
@@ -1358,7 +1369,7 @@ The 1inch Java SDK is actively developed with a focus on providing comprehensive
 
 ### Current Implementation Status
 
-The SDK currently implements **7 out of 19 available 1inch APIs** (37% coverage), providing solid foundational functionality with room for significant expansion.
+The SDK currently implements **8 out of 19 available 1inch APIs** (42% coverage), providing solid foundational functionality with room for significant expansion.
 
 #### ✅ **Fully Implemented APIs**
 - **Swap API** - Complete swap operations with chain-specific support (12 chains)
@@ -1368,6 +1379,7 @@ The SDK currently implements **7 out of 19 available 1inch APIs** (37% coverage)
 - **History API** - Transaction history tracking and analysis
 - **Portfolio API v5** - Comprehensive DeFi position tracking and P&L analytics
 - **Balance API** - Token balance and allowance checking (13 chains)
+- **Price API** - Real-time token pricing across 60+ fiat currencies (13 chains)
 
 All implemented APIs support the triple programming model: **Reactive (RxJava)**, **Synchronous**, and **Asynchronous (CompletableFuture)**.
 
@@ -1380,7 +1392,7 @@ All implemented APIs support the triple programming model: **Reactive (RxJava)**
 |-----|--------|--------|--------------|
 | **Fusion API** | 🔄 Planned | 13 | Gasless swaps, 1inch's core innovation |
 | **Fusion Plus API** | 🔄 Planned | 12 | Enhanced gasless swaps with premium features |
-| **Price API** | 🔄 Planned | 13 | Real-time pricing across 60+ fiat currencies |
+| **Price API** | ✅ **Implemented** | 13 | Real-time pricing across 60+ fiat currencies |
 | **Cross-Chain API** | 🔄 Planned | Multi | Bridge operations and cross-chain liquidity |
 
 **Business Impact**: These APIs are critical for accessing 1inch's competitive advantages, particularly gasless swaps and cross-chain operations.
@@ -1411,19 +1423,19 @@ The SDK aims to provide comprehensive multi-chain support across the 1inch ecosy
 
 | Blockchain | Supported APIs | Total Available | Coverage |
 |------------|----------------|-----------------|----------|
-| **Ethereum** | 7/19 | 19 | 37% |
-| **Polygon** | 5/13 | 13 | 38% |
-| **BSC** | 5/13 | 13 | 38% |
-| **Arbitrum** | 5/13 | 13 | 38% |
-| **Optimism** | 5/12 | 12 | 42% |
-| **Avalanche** | 5/12 | 12 | 42% |
-| **Gnosis** | 5/12 | 12 | 42% |
-| **Base** | 4/9 | 9 | 44% |
-| **Linea** | 4/8 | 8 | 50% |
-| **zkSync Era** | 4/8 | 8 | 50% |
-| **Solana** | 2/5 | 5 | 40% |
-| **Sonic** | 3/7 | 7 | 43% |
-| **Unichain** | 3/7 | 7 | 43% |
+| **Ethereum** | 8/19 | 19 | 42% |
+| **Polygon** | 6/13 | 13 | 46% |
+| **BSC** | 6/13 | 13 | 46% |
+| **Arbitrum** | 6/13 | 13 | 46% |
+| **Optimism** | 6/12 | 12 | 50% |
+| **Avalanche** | 6/12 | 12 | 50% |
+| **Gnosis** | 6/12 | 12 | 50% |
+| **Base** | 5/9 | 9 | 56% |
+| **Linea** | 5/8 | 8 | 63% |
+| **zkSync Era** | 5/8 | 8 | 63% |
+| **Solana** | 3/5 | 5 | 60% |
+| **Sonic** | 4/7 | 7 | 57% |
+| **Unichain** | 4/7 | 7 | 57% |
 
 ### Future Enhancements
 
@@ -1461,7 +1473,7 @@ We welcome community input on roadmap priorities! Here's how you can influence d
 #### 🎯 **Current Priority Requests**
 Based on community feedback, these are the most requested features:
 1. **Fusion API** - Gasless swaps (15+ requests)
-2. **Price API** - Real-time pricing (12+ requests)  
+2. ✅ **Price API** - Real-time pricing (**COMPLETED**)
 3. **Cross-Chain API** - Bridge operations (8+ requests)
 4. **WebSocket Support** - Real-time updates (6+ requests)
 

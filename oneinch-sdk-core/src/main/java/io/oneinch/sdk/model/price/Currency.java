@@ -1,0 +1,53 @@
+package io.oneinch.sdk.model.price;
+
+/**
+ * Supported currencies for price API
+ * If no currency provided, prices are returned in native Wei
+ */
+public enum Currency {
+    USD,
+    AED,
+    ARS,
+    AUD,
+    BDT,
+    BHD,
+    BMD,
+    BRL,
+    CAD,
+    CHF,
+    CLP,
+    CNY,
+    CZK,
+    DKK,
+    EUR,
+    GBP,
+    HKD,
+    HUF,
+    IDR,
+    ILS,
+    INR,
+    JPY,
+    KRW,
+    KWD,
+    LKR,
+    MMK,
+    MXN,
+    MYR,
+    NGN,
+    NOK,
+    NZD,
+    PHP,
+    PKR,
+    PLN,
+    RUB,
+    SAR,
+    SEK,
+    SGD,
+    THB,
+    TRY,
+    TWD,
+    UAH,
+    VEF,
+    VND,
+    ZAR
+}
