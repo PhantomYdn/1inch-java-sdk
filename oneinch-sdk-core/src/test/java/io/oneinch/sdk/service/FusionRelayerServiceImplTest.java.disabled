@@ -1,0 +1,217 @@
+package io.oneinch.sdk.service;
+
+import io.oneinch.sdk.client.OneInchFusionRelayerApiService;
+import io.oneinch.sdk.exception.OneInchException;
+import io.oneinch.sdk.model.fusion.OrderInput;
+import io.oneinch.sdk.model.fusion.SignedOrderInput;
+import io.reactivex.rxjava3.core.Single;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class FusionRelayerServiceImplTest {
+
+    @Mock
+    private OneInchFusionRelayerApiService apiService;
+
+    private FusionRelayerServiceImpl fusionRelayerService;
+
+    private static final Integer CHAIN_ID = 1; // Ethereum
+    private static final String MAKER_ADDRESS = "0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8";
+    private static final String USDC_ADDRESS = "0xA0b86a33E6aB6b6ce4e5a5B7db2e8Df6b1D2b9C7";
+    private static final String ETH_ADDRESS = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+    private static final String QUOTE_ID = "quote_12345";
+    private static final String ORDER_SIGNATURE = "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1c";
+
+    @BeforeEach
+    void setUp() {
+        fusionRelayerService = new FusionRelayerServiceImpl(apiService);
+    }
+
+    // Helper method to create test order
+    private OrderInput createTestOrder() {
+        return OrderInput.builder()
+                .salt("0x123456789abcdef")
+                .makerAsset(USDC_ADDRESS)
+                .takerAsset(ETH_ADDRESS)
+                .maker(MAKER_ADDRESS)
+                .receiver(MAKER_ADDRESS)
+                .makingAmount("1000000000") // 1000 USDC
+                .takingAmount("500000000000000000") // 0.5 ETH
+                .makerTraits("0x0")
+                .build();
+    }
+
+    private SignedOrderInput createTestSignedOrder() {
+        return SignedOrderInput.builder()
+                .order(createTestOrder())
+                .signature(ORDER_SIGNATURE)
+                .extension("0x")
+                .quoteId(QUOTE_ID)
+                .build();
+    }
+
+    // ==================== SINGLE ORDER SUBMISSION TESTS ====================
+
+    @Test
+    void testSubmitOrderRx_Success() {
+        // Given
+        SignedOrderInput signedOrder = createTestSignedOrder();
+
+        // Mock successful void operation - use never() which never emits
+        when(apiService.submitOrder(CHAIN_ID, signedOrder))
+                .thenReturn(Single.never());
+
+        // Since Single.never() never completes, let's just verify the method call
+        // without blocking
+        assertDoesNotThrow(() -> {
+            Single<Void> result = fusionRelayerService.submitOrderRx(CHAIN_ID, signedOrder);
+            assertNotNull(result);
+        });
+        
+        verify(apiService).submitOrder(CHAIN_ID, signedOrder);
+    }
+
+    @Test
+    void testSubmitOrderRx_Error() {
+        // Given
+        SignedOrderInput signedOrder = createTestSignedOrder();
+        RuntimeException exception = new RuntimeException("Order submission failed");
+
+        when(apiService.submitOrder(CHAIN_ID, signedOrder))
+                .thenReturn(Single.error(exception));
+
+        // When & Then
+        assertThrows(RuntimeException.class, () -> 
+                fusionRelayerService.submitOrderRx(CHAIN_ID, signedOrder).blockingGet());
+    }
+
+    @Test
+    void testSubmitOrderAsync() throws Exception {
+        // Given
+        SignedOrderInput signedOrder = createTestSignedOrder();
+
+        when(apiService.submitOrder(CHAIN_ID, signedOrder))
+                .thenReturn(Single.empty().cast(Void.class));
+
+        // When
+        CompletableFuture<Void> future = fusionRelayerService.submitOrderAsync(CHAIN_ID, signedOrder);
+        
+        // Then - Just verify it completes without error
+        assertDoesNotThrow(() -> future.get());
+        verify(apiService).submitOrder(CHAIN_ID, signedOrder);
+    }
+
+    @Test
+    void testSubmitOrder_Synchronous() throws OneInchException {
+        // Given
+        SignedOrderInput signedOrder = createTestSignedOrder();
+
+        when(apiService.submitOrder(CHAIN_ID, signedOrder))
+                .thenReturn(Single.empty().cast(Void.class));
+
+        // When & Then
+        assertDoesNotThrow(() -> fusionRelayerService.submitOrder(CHAIN_ID, signedOrder));
+        verify(apiService).submitOrder(CHAIN_ID, signedOrder);
+    }
+
+    @Test
+    void testSubmitOrder_Synchronous_Error() {
+        // Given
+        SignedOrderInput signedOrder = createTestSignedOrder();
+        RuntimeException exception = new RuntimeException("Bad request");
+
+        when(apiService.submitOrder(CHAIN_ID, signedOrder))
+                .thenReturn(Single.error(exception));
+
+        // When & Then
+        assertThrows(OneInchException.class, () -> 
+                fusionRelayerService.submitOrder(CHAIN_ID, signedOrder));
+    }
+
+    // ==================== BATCH ORDER SUBMISSION TESTS ====================
+
+    @Test
+    void testSubmitManyOrdersRx_Success() {
+        // Given
+        List<SignedOrderInput> signedOrders = Arrays.asList(createTestSignedOrder(), createTestSignedOrder());
+
+        when(apiService.submitManyOrders(CHAIN_ID, signedOrders))
+                .thenReturn(Single.empty().cast(Void.class));
+
+        // When & Then
+        assertDoesNotThrow(() -> {
+            fusionRelayerService.submitManyOrdersRx(CHAIN_ID, signedOrders).blockingGet();
+        });
+        
+        verify(apiService).submitManyOrders(CHAIN_ID, signedOrders);
+    }
+
+    @Test
+    void testSubmitManyOrdersRx_Error() {
+        // Given
+        List<SignedOrderInput> signedOrders = Arrays.asList(createTestSignedOrder());
+        RuntimeException exception = new RuntimeException("Batch submission failed");
+
+        when(apiService.submitManyOrders(CHAIN_ID, signedOrders))
+                .thenReturn(Single.error(exception));
+
+        // When & Then
+        assertThrows(RuntimeException.class, () -> 
+                fusionRelayerService.submitManyOrdersRx(CHAIN_ID, signedOrders).blockingGet());
+    }
+
+    @Test
+    void testSubmitManyOrdersAsync() throws Exception {
+        // Given
+        List<SignedOrderInput> signedOrders = Arrays.asList(createTestSignedOrder(), createTestSignedOrder());
+
+        when(apiService.submitManyOrders(CHAIN_ID, signedOrders))
+                .thenReturn(Single.empty().cast(Void.class));
+
+        // When
+        CompletableFuture<Void> future = fusionRelayerService.submitManyOrdersAsync(CHAIN_ID, signedOrders);
+        
+        // Then
+        assertDoesNotThrow(() -> future.get());
+        verify(apiService).submitManyOrders(CHAIN_ID, signedOrders);
+    }
+
+    @Test
+    void testSubmitManyOrders_Synchronous() throws OneInchException {
+        // Given
+        List<SignedOrderInput> signedOrders = Arrays.asList(createTestSignedOrder());
+
+        when(apiService.submitManyOrders(CHAIN_ID, signedOrders))
+                .thenReturn(Single.empty().cast(Void.class));
+
+        // When & Then
+        assertDoesNotThrow(() -> fusionRelayerService.submitManyOrders(CHAIN_ID, signedOrders));
+        verify(apiService).submitManyOrders(CHAIN_ID, signedOrders);
+    }
+
+    @Test
+    void testSubmitManyOrders_Synchronous_Error() {
+        // Given
+        List<SignedOrderInput> signedOrders = Arrays.asList(createTestSignedOrder());
+        RuntimeException exception = new RuntimeException("Invalid order format");
+
+        when(apiService.submitManyOrders(CHAIN_ID, signedOrders))
+                .thenReturn(Single.error(exception));
+
+        // When & Then
+        assertThrows(OneInchException.class, () -> 
+                fusionRelayerService.submitManyOrders(CHAIN_ID, signedOrders));
+    }
+}

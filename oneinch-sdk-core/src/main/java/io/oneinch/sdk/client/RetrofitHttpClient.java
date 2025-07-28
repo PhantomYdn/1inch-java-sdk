@@ -32,6 +32,9 @@ public class RetrofitHttpClient implements HttpClient {
     private final PortfolioApiClient portfolioApiService;
     private final OneInchBalanceApiService balanceApiService;
     private final OneInchPriceApiService priceApiService;
+    private final OneInchFusionOrdersApiService fusionOrdersApiService;
+    private final OneInchFusionQuoterApiService fusionQuoterApiService;
+    private final OneInchFusionRelayerApiService fusionRelayerApiService;
     private final OkHttpClient okHttpClient;
     
     public RetrofitHttpClient(String apiKey) {
@@ -57,6 +60,9 @@ public class RetrofitHttpClient implements HttpClient {
         this.portfolioApiService = retrofit.create(PortfolioApiClient.class);
         this.balanceApiService = retrofit.create(OneInchBalanceApiService.class);
         this.priceApiService = retrofit.create(OneInchPriceApiService.class);
+        this.fusionOrdersApiService = retrofit.create(OneInchFusionOrdersApiService.class);
+        this.fusionQuoterApiService = retrofit.create(OneInchFusionQuoterApiService.class);
+        this.fusionRelayerApiService = retrofit.create(OneInchFusionRelayerApiService.class);
     }
     
     private static OkHttpClient createDefaultOkHttpClient(String apiKey) {
@@ -127,6 +133,18 @@ public class RetrofitHttpClient implements HttpClient {
     
     public OneInchPriceApiService getPriceApiService() {
         return priceApiService;
+    }
+    
+    public OneInchFusionOrdersApiService getFusionOrdersApiService() {
+        return fusionOrdersApiService;
+    }
+    
+    public OneInchFusionQuoterApiService getFusionQuoterApiService() {
+        return fusionQuoterApiService;
+    }
+    
+    public OneInchFusionRelayerApiService getFusionRelayerApiService() {
+        return fusionRelayerApiService;
     }
     
     @Override

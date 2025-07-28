@@ -24,6 +24,9 @@ public class OneInchClient implements AutoCloseable {
     private final PortfolioService portfolioService;
     private final BalanceService balanceService;
     private final PriceService priceService;
+    private final FusionOrdersService fusionOrdersService;
+    private final FusionQuoterService fusionQuoterService;
+    private final FusionRelayerService fusionRelayerService;
 
     
     private OneInchClient(String apiKey, OkHttpClient customOkHttpClient) {
@@ -39,6 +42,9 @@ public class OneInchClient implements AutoCloseable {
         this.portfolioService = new PortfolioServiceImpl(this.httpClient.getPortfolioApiService());
         this.balanceService = new BalanceServiceImpl(this.httpClient.getBalanceApiService());
         this.priceService = new PriceServiceImpl(this.httpClient.getPriceApiService());
+        this.fusionOrdersService = new FusionOrdersServiceImpl(this.httpClient.getFusionOrdersApiService());
+        this.fusionQuoterService = new FusionQuoterServiceImpl(this.httpClient.getFusionQuoterApiService());
+        this.fusionRelayerService = new FusionRelayerServiceImpl(this.httpClient.getFusionRelayerApiService());
     }
     
     public static OneInchClientBuilder builder() {
@@ -75,6 +81,18 @@ public class OneInchClient implements AutoCloseable {
     
     public PriceService price() {
         return priceService;
+    }
+    
+    public FusionOrdersService fusionOrders() {
+        return fusionOrdersService;
+    }
+    
+    public FusionQuoterService fusionQuoter() {
+        return fusionQuoterService;
+    }
+    
+    public FusionRelayerService fusionRelayer() {
+        return fusionRelayerService;
     }
     
     @Override

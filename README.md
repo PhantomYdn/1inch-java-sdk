@@ -20,6 +20,7 @@ A comprehensive Java SDK for the 1inch DEX Aggregation Protocol, providing easy 
 - ✅ Portfolio API for DeFi position tracking and analytics
 - ✅ Balance API for token balance and allowance checking
 - ✅ Price API for real-time token pricing across 60+ currencies
+- ✅ Fusion API for gasless swaps with professional market makers
 - ✅ Type-safe models with Jackson and BigInteger precision
 - ✅ Extensive unit test coverage
 
@@ -255,6 +256,18 @@ Real-time token pricing across multiple currencies and chains:
 **Currency Support**: 60+ fiat currencies (USD, EUR, JPY, GBP, CNY, etc.) + native Wei format
 **Multi-Chain**: 13+ blockchain networks supported
 
+### Fusion API (`client.fusionOrders()`, `client.fusionQuoter()`, `client.fusionRelayer()`) - **Chain-Specific**
+1inch's revolutionary gasless swap technology with professional market makers:
+- ✅ `getQuote(request)` - Get quotes with auction presets (fast/medium/slow/custom)
+- ✅ `getQuoteWithCustomPresets(request, preset)` - Get quotes with custom auction parameters
+- ✅ `getActiveOrders(request)` - Get currently active orders in the Fusion network
+- ✅ `getSettlementContract(chainId)` - Get settlement contract address for chain
+- ✅ `getOrderByOrderHash(chainId, hash)` - Get order status and fills by hash
+- ✅ `getOrdersByOrderHashes(chainId, request)` - Get multiple orders by hashes
+- ✅ `getOrdersByMaker(request)` - Get order history for specific maker address
+- ✅ `submitOrder(chainId, signedOrder)` - Submit single order to Fusion network
+- ✅ `submitManyOrders(chainId, signedOrders)` - Submit multiple orders in batch
+
 ### Balance API (`client.balance()`) - **Chain-Specific**
 Balance operations provide token balance and allowance checking across different chains:
 - ✅ `getBalances(request)` - Get all token balances for a wallet address on specific chain
@@ -322,6 +335,7 @@ The SDK includes complete example classes demonstrating all APIs:
 - **`HistoryConsoleExample.java`** - Command-line tool for displaying transaction history
 - **`PortfolioExample.java`** - DeFi portfolio tracking, position analysis, and P&L metrics
 - **`BalanceExample.java`** - Token balance and allowance checking across chains
+- **`FusionExample.java`** - Gasless swaps with quotes, order submission, and status tracking
 
 #### Running Examples
 
@@ -358,6 +372,9 @@ mvn exec:java -pl oneinch-sdk-examples -Dexec.mainClass="io.oneinch.sdk.examples
 
 # Run the Balance example
 mvn exec:java -pl oneinch-sdk-examples -Dexec.mainClass="io.oneinch.sdk.examples.BalanceExample"
+
+# Run the Fusion example
+mvn exec:java -pl oneinch-sdk-examples -Dexec.mainClass="io.oneinch.sdk.examples.FusionExample"
 ```
 
 ### Reactive Swap Flow
@@ -1369,7 +1386,7 @@ The 1inch Java SDK is actively developed with a focus on providing comprehensive
 
 ### Current Implementation Status
 
-The SDK currently implements **8 out of 19 available 1inch APIs** (42% coverage), providing solid foundational functionality with room for significant expansion.
+The SDK currently implements **9 out of 19 available 1inch APIs** (47% coverage), providing solid foundational functionality with room for significant expansion.
 
 #### ✅ **Fully Implemented APIs**
 - **Swap API** - Complete swap operations with chain-specific support (12 chains)
@@ -1380,6 +1397,7 @@ The SDK currently implements **8 out of 19 available 1inch APIs** (42% coverage)
 - **Portfolio API v5** - Comprehensive DeFi position tracking and P&L analytics
 - **Balance API** - Token balance and allowance checking (13 chains)
 - **Price API** - Real-time token pricing across 60+ fiat currencies (13 chains)
+- **Fusion API** - Gasless swaps with professional market makers and auction system (13 chains)
 
 All implemented APIs support the triple programming model: **Reactive (RxJava)**, **Synchronous**, and **Asynchronous (CompletableFuture)**.
 
@@ -1390,7 +1408,7 @@ All implemented APIs support the triple programming model: **Reactive (RxJava)**
 
 | API | Status | Chains | Key Features |
 |-----|--------|--------|--------------|
-| **Fusion API** | 🔄 Planned | 13 | Gasless swaps, 1inch's core innovation |
+| **Fusion API** | ✅ **Implemented** | 13 | Gasless swaps, 1inch's core innovation |
 | **Fusion Plus API** | 🔄 Planned | 12 | Enhanced gasless swaps with premium features |
 | **Price API** | ✅ **Implemented** | 13 | Real-time pricing across 60+ fiat currencies |
 | **Cross-Chain API** | 🔄 Planned | Multi | Bridge operations and cross-chain liquidity |
@@ -1423,19 +1441,19 @@ The SDK aims to provide comprehensive multi-chain support across the 1inch ecosy
 
 | Blockchain | Supported APIs | Total Available | Coverage |
 |------------|----------------|-----------------|----------|
-| **Ethereum** | 8/19 | 19 | 42% |
-| **Polygon** | 6/13 | 13 | 46% |
-| **BSC** | 6/13 | 13 | 46% |
-| **Arbitrum** | 6/13 | 13 | 46% |
-| **Optimism** | 6/12 | 12 | 50% |
-| **Avalanche** | 6/12 | 12 | 50% |
-| **Gnosis** | 6/12 | 12 | 50% |
-| **Base** | 5/9 | 9 | 56% |
-| **Linea** | 5/8 | 8 | 63% |
-| **zkSync Era** | 5/8 | 8 | 63% |
-| **Solana** | 3/5 | 5 | 60% |
-| **Sonic** | 4/7 | 7 | 57% |
-| **Unichain** | 4/7 | 7 | 57% |
+| **Ethereum** | 9/19 | 19 | 47% |
+| **Polygon** | 7/13 | 13 | 54% |
+| **BSC** | 7/13 | 13 | 54% |
+| **Arbitrum** | 7/13 | 13 | 54% |
+| **Optimism** | 7/12 | 12 | 58% |
+| **Avalanche** | 7/12 | 12 | 58% |
+| **Gnosis** | 7/12 | 12 | 58% |
+| **Base** | 6/9 | 9 | 67% |
+| **Linea** | 6/8 | 8 | 75% |
+| **zkSync Era** | 6/8 | 8 | 75% |
+| **Solana** | 4/5 | 5 | 80% |
+| **Sonic** | 5/7 | 7 | 71% |
+| **Unichain** | 5/7 | 7 | 71% |
 
 ### Future Enhancements
 
@@ -1472,7 +1490,7 @@ We welcome community input on roadmap priorities! Here's how you can influence d
 
 #### 🎯 **Current Priority Requests**
 Based on community feedback, these are the most requested features:
-1. **Fusion API** - Gasless swaps (15+ requests)
+1. ✅ **Fusion API** - Gasless swaps (**COMPLETED**)
 2. ✅ **Price API** - Real-time pricing (**COMPLETED**)
 3. **Cross-Chain API** - Bridge operations (8+ requests)
 4. **WebSocket Support** - Real-time updates (6+ requests)
