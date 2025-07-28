@@ -27,6 +27,9 @@ public class OneInchClient implements AutoCloseable {
     private final FusionOrdersService fusionOrdersService;
     private final FusionQuoterService fusionQuoterService;
     private final FusionRelayerService fusionRelayerService;
+    private final FusionPlusOrdersService fusionPlusOrdersService;
+    private final FusionPlusQuoterService fusionPlusQuoterService;
+    private final FusionPlusRelayerService fusionPlusRelayerService;
 
     
     private OneInchClient(String apiKey, OkHttpClient customOkHttpClient) {
@@ -45,6 +48,9 @@ public class OneInchClient implements AutoCloseable {
         this.fusionOrdersService = new FusionOrdersServiceImpl(this.httpClient.getFusionOrdersApiService());
         this.fusionQuoterService = new FusionQuoterServiceImpl(this.httpClient.getFusionQuoterApiService());
         this.fusionRelayerService = new FusionRelayerServiceImpl(this.httpClient.getFusionRelayerApiService());
+        this.fusionPlusOrdersService = new FusionPlusOrdersServiceImpl(this.httpClient.getFusionPlusOrdersApiService());
+        this.fusionPlusQuoterService = new FusionPlusQuoterServiceImpl(this.httpClient.getFusionPlusQuoterApiService());
+        this.fusionPlusRelayerService = new FusionPlusRelayerServiceImpl(this.httpClient.getFusionPlusRelayerApiService(), new com.fasterxml.jackson.databind.ObjectMapper());
     }
     
     public static OneInchClientBuilder builder() {
@@ -93,6 +99,18 @@ public class OneInchClient implements AutoCloseable {
     
     public FusionRelayerService fusionRelayer() {
         return fusionRelayerService;
+    }
+    
+    public FusionPlusOrdersService fusionPlusOrders() {
+        return fusionPlusOrdersService;
+    }
+    
+    public FusionPlusQuoterService fusionPlusQuoter() {
+        return fusionPlusQuoterService;
+    }
+    
+    public FusionPlusRelayerService fusionPlusRelayer() {
+        return fusionPlusRelayerService;
     }
     
     @Override

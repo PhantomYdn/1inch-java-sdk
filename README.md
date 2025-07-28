@@ -21,6 +21,7 @@ A comprehensive Java SDK for the 1inch DEX Aggregation Protocol, providing easy 
 - ✅ Balance API for token balance and allowance checking
 - ✅ Price API for real-time token pricing across 60+ currencies
 - ✅ Fusion API for gasless swaps with professional market makers
+- ✅ FusionPlus API for cross-chain gasless swaps with enhanced security
 - ✅ Type-safe models with Jackson and BigInteger precision
 - ✅ Extensive unit test coverage
 
@@ -267,6 +268,22 @@ Real-time token pricing across multiple currencies and chains:
 - ✅ `getOrdersByMaker(request)` - Get order history for specific maker address
 - ✅ `submitOrder(chainId, signedOrder)` - Submit single order to Fusion network
 - ✅ `submitManyOrders(chainId, signedOrders)` - Submit multiple orders in batch
+
+### FusionPlus API (`client.fusionPlusOrders()`, `client.fusionPlusQuoter()`, `client.fusionPlusRelayer()`) - **Cross-Chain**
+1inch's next-generation cross-chain gasless swap technology with enhanced security:
+- ✅ `getQuote(request)` - Get cross-chain quotes with escrow and time lock configurations
+- ✅ `getQuoteWithCustomPresets(request, preset)` - Get cross-chain quotes with custom auction parameters
+- ✅ `buildQuoteTypedData(request, body)` - Build cross-chain orders with EIP712 typed data and secret hashes
+- ✅ `getActiveOrders(request)` - Get currently active cross-chain orders in the FusionPlus network
+- ✅ `getOrderByOrderHash(srcChain, dstChain, hash)` - Get cross-chain order status by hash
+- ✅ `getOrdersByOrderHashes(srcChain, dstChain, hashes)` - Get multiple cross-chain orders by hashes
+- ✅ `getOrdersByMaker(srcChain, dstChain, address, page, limit)` - Get cross-chain order history for maker
+- ✅ `getEscrowEvents(srcChain, dstChain, orderHash, page, limit)` - Get escrow events for cross-chain orders
+- ✅ `getPublicActions(srcChain, dstChain, orderHash)` - Get available public actions for cross-chain orders
+- ✅ `getSupportedChains()` - Get list of supported chains for FusionPlus
+- ✅ `submitOrder(srcChainId, signedOrder)` - Submit single cross-chain order to FusionPlus network
+- ✅ `submitManyOrders(srcChainId, signedOrders)` - Submit multiple cross-chain orders in batch
+- ✅ `submitSecret(chainId, secretInput)` - Submit secret for cross-chain order execution (atomic swap completion)
 
 ### Balance API (`client.balance()`) - **Chain-Specific**
 Balance operations provide token balance and allowance checking across different chains:
@@ -1409,7 +1426,7 @@ All implemented APIs support the triple programming model: **Reactive (RxJava)**
 | API | Status | Chains | Key Features |
 |-----|--------|--------|--------------|
 | **Fusion API** | ✅ **Implemented** | 13 | Gasless swaps, 1inch's core innovation |
-| **Fusion Plus API** | 🔄 Planned | 12 | Enhanced gasless swaps with premium features |
+| **FusionPlus API** | ✅ **Implemented** | 12+ | Cross-chain gasless swaps with enhanced security |
 | **Price API** | ✅ **Implemented** | 13 | Real-time pricing across 60+ fiat currencies |
 | **Cross-Chain API** | 🔄 Planned | Multi | Bridge operations and cross-chain liquidity |
 
@@ -1491,9 +1508,10 @@ We welcome community input on roadmap priorities! Here's how you can influence d
 #### 🎯 **Current Priority Requests**
 Based on community feedback, these are the most requested features:
 1. ✅ **Fusion API** - Gasless swaps (**COMPLETED**)
-2. ✅ **Price API** - Real-time pricing (**COMPLETED**)
-3. **Cross-Chain API** - Bridge operations (8+ requests)
-4. **WebSocket Support** - Real-time updates (6+ requests)
+2. ✅ **FusionPlus API** - Cross-chain gasless swaps (**COMPLETED**)
+3. ✅ **Price API** - Real-time pricing (**COMPLETED**)
+4. **Cross-Chain API** - Bridge operations (8+ requests)
+5. **WebSocket Support** - Real-time updates (6+ requests)
 
 ### Getting Involved
 

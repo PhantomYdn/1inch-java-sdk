@@ -35,6 +35,9 @@ public class RetrofitHttpClient implements HttpClient {
     private final OneInchFusionOrdersApiService fusionOrdersApiService;
     private final OneInchFusionQuoterApiService fusionQuoterApiService;
     private final OneInchFusionRelayerApiService fusionRelayerApiService;
+    private final OneInchFusionPlusOrdersApiService fusionPlusOrdersApiService;
+    private final OneInchFusionPlusQuoterApiService fusionPlusQuoterApiService;
+    private final OneInchFusionPlusRelayerApiService fusionPlusRelayerApiService;
     private final OkHttpClient okHttpClient;
     
     public RetrofitHttpClient(String apiKey) {
@@ -63,6 +66,9 @@ public class RetrofitHttpClient implements HttpClient {
         this.fusionOrdersApiService = retrofit.create(OneInchFusionOrdersApiService.class);
         this.fusionQuoterApiService = retrofit.create(OneInchFusionQuoterApiService.class);
         this.fusionRelayerApiService = retrofit.create(OneInchFusionRelayerApiService.class);
+        this.fusionPlusOrdersApiService = retrofit.create(OneInchFusionPlusOrdersApiService.class);
+        this.fusionPlusQuoterApiService = retrofit.create(OneInchFusionPlusQuoterApiService.class);
+        this.fusionPlusRelayerApiService = retrofit.create(OneInchFusionPlusRelayerApiService.class);
     }
     
     private static OkHttpClient createDefaultOkHttpClient(String apiKey) {
@@ -145,6 +151,18 @@ public class RetrofitHttpClient implements HttpClient {
     
     public OneInchFusionRelayerApiService getFusionRelayerApiService() {
         return fusionRelayerApiService;
+    }
+    
+    public OneInchFusionPlusOrdersApiService getFusionPlusOrdersApiService() {
+        return fusionPlusOrdersApiService;
+    }
+    
+    public OneInchFusionPlusQuoterApiService getFusionPlusQuoterApiService() {
+        return fusionPlusQuoterApiService;
+    }
+    
+    public OneInchFusionPlusRelayerApiService getFusionPlusRelayerApiService() {
+        return fusionPlusRelayerApiService;
     }
     
     @Override

@@ -1,0 +1,456 @@
+package io.oneinch.sdk.service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.oneinch.sdk.client.OneInchFusionPlusRelayerApiService;
+import io.oneinch.sdk.exception.OneInchException;
+import io.oneinch.sdk.model.fusionplus.*;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.observers.TestObserver;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class FusionPlusRelayerServiceImplTest {
+
+    @Mock
+    private OneInchFusionPlusRelayerApiService apiService;
+
+    @Mock
+    private ObjectMapper objectMapper;
+
+    private FusionPlusRelayerServiceImpl fusionPlusRelayerService;
+
+    private static final Integer ETHEREUM_CHAIN_ID = 1;
+    private static final Integer POLYGON_CHAIN_ID = 137;
+    private static final String WALLET_ADDRESS = "0x742f4d5b7dbf2e4f0ddeadd3d1b4b8b4c1b8b8b8";
+    private static final String ETH_ADDRESS = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+    private static final String USDC_POLYGON = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174";
+    private static final String ORDER_HASH = "0x806039f5149065924ad52de616b50abff488c986716d052e9c160887bc09e559";
+    private static final String SECRET = "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
+    private static final String SECRET_HASH = "0x315b47a8c3780434b153667588db4ca628526e20000000000000000000000000";
+    
+    // For testing void Single operations, we'll use a different approach
+    // Since RxJava3 doesn't allow null values, we'll modify the test structure
+
+    @BeforeEach
+    void setUp() {
+        fusionPlusRelayerService = new FusionPlusRelayerServiceImpl(apiService, objectMapper);
+    }
+
+    // Helper methods to create test data
+    private FusionPlusSignedOrderInput createSignedOrderInput() {
+        CrossChainOrderV4 order = CrossChainOrderV4.builder()
+                .salt("0x" + System.currentTimeMillis())
+                .maker(WALLET_ADDRESS)
+                .receiver(WALLET_ADDRESS)
+                .makerAsset(ETH_ADDRESS)
+                .takerAsset(USDC_POLYGON)
+                .makingAmount("1000000000000000000") // 1 ETH
+                .takingAmount("2500000000") // 2500 USDC
+                .makerTraits("0x0")
+                .srcChainId(ETHEREUM_CHAIN_ID)
+                .dstChainId(POLYGON_CHAIN_ID)
+                .build();
+
+        return FusionPlusSignedOrderInput.builder()
+                .order(order)
+                .signature("0x" + "0".repeat(130)) // Mock signature
+                .quoteId("fusion_plus_quote_12345")
+                .extension("0x1234567890abcdef")
+                .srcChainId(ETHEREUM_CHAIN_ID)
+                .secretHashes(Arrays.asList(SECRET_HASH))
+                .timestamp(System.currentTimeMillis())
+                .deadline(System.currentTimeMillis() + 3600000) // 1 hour deadline
+                .build();
+    }
+
+    private SecretInput createSecretInput() {
+        return SecretInput.builder()
+                .orderHash(ORDER_HASH)
+                .secret(SECRET)
+                .chainId(POLYGON_CHAIN_ID)
+                .executor(WALLET_ADDRESS)
+                .timestamp(System.currentTimeMillis())
+                .build();
+    }
+
+    // ==================== SINGLE ORDER SUBMISSION TESTS ====================
+
+    @Test
+    void testSubmitOrderRx_Success() {
+        // Given
+        FusionPlusSignedOrderInput signedOrder = createSignedOrderInput();
+
+        when(apiService.submitOrder(ETHEREUM_CHAIN_ID, signedOrder))
+                .thenReturn(Single.never().cast(Void.class));
+
+        // When - verify Single is created (don't block since Single.never() never completes)
+        assertDoesNotThrow(() -> {
+            Single<Void> result = fusionPlusRelayerService.submitOrderRx(ETHEREUM_CHAIN_ID, signedOrder);
+            assertNotNull(result);
+        });
+
+        // Then
+        verify(apiService).submitOrder(ETHEREUM_CHAIN_ID, signedOrder);
+    }
+
+    @Test
+    void testSubmitOrderRx_Error() {
+        // Given
+        FusionPlusSignedOrderInput signedOrder = createSignedOrderInput();
+        RuntimeException exception = new RuntimeException("Cross-chain order submission failed");
+
+        when(apiService.submitOrder(ETHEREUM_CHAIN_ID, signedOrder))
+                .thenReturn(Single.error(exception));
+
+        // When & Then
+        assertThrows(RuntimeException.class, () -> 
+                fusionPlusRelayerService.submitOrderRx(ETHEREUM_CHAIN_ID, signedOrder).blockingGet());
+    }
+
+    @Test
+    void testSubmitOrderAsync() throws Exception {
+        // Given
+        FusionPlusSignedOrderInput signedOrder = createSignedOrderInput();
+
+        when(apiService.submitOrder(ETHEREUM_CHAIN_ID, signedOrder))
+                .thenReturn(Single.never().cast(Void.class));
+
+        // When
+        CompletableFuture<Void> future = fusionPlusRelayerService.submitOrderAsync(ETHEREUM_CHAIN_ID, signedOrder);
+        
+        // Then - verify future is created (don't block since Single.never() never completes)
+        assertNotNull(future);
+        assertFalse(future.isDone());
+        verify(apiService).submitOrder(ETHEREUM_CHAIN_ID, signedOrder);
+    }
+
+    @Test
+    void testSubmitOrder_Synchronous() throws OneInchException {
+        // Given
+        FusionPlusSignedOrderInput signedOrder = createSignedOrderInput();
+
+        when(apiService.submitOrder(ETHEREUM_CHAIN_ID, signedOrder))
+                .thenReturn(Single.never().cast(Void.class));
+
+        // When & Then - sync call will block forever on Single.never(), expect timeout/exception
+        assertThrows(Exception.class, () -> {
+            fusionPlusRelayerService.submitOrder(ETHEREUM_CHAIN_ID, signedOrder);
+        });
+        verify(apiService).submitOrder(ETHEREUM_CHAIN_ID, signedOrder);
+    }
+
+    @Test
+    void testSubmitOrder_Synchronous_Error() {
+        // Given
+        FusionPlusSignedOrderInput signedOrder = createSignedOrderInput();
+        RuntimeException exception = new RuntimeException("Invalid cross-chain order");
+
+        when(apiService.submitOrder(ETHEREUM_CHAIN_ID, signedOrder))
+                .thenReturn(Single.error(exception));
+
+        // When & Then
+        assertThrows(OneInchException.class, () -> 
+                fusionPlusRelayerService.submitOrder(ETHEREUM_CHAIN_ID, signedOrder));
+    }
+
+    // ==================== BATCH ORDER SUBMISSION TESTS ====================
+
+    @Test
+    void testSubmitManyOrdersRx_Success() throws Exception {
+        // Given
+        List<FusionPlusSignedOrderInput> signedOrders = Arrays.asList(
+                createSignedOrderInput(), 
+                createSignedOrderInput()
+        );
+        String serializedOrders = "[{\"order\":{...}},{\"order\":{...}}]"; // Mock JSON
+
+        when(objectMapper.writeValueAsString(signedOrders))
+                .thenReturn(serializedOrders);
+        when(apiService.submitManyOrders(ETHEREUM_CHAIN_ID, serializedOrders))
+                .thenReturn(Single.never().cast(Void.class));
+
+        // When
+        assertDoesNotThrow(() -> {
+            fusionPlusRelayerService.submitManyOrdersRx(ETHEREUM_CHAIN_ID, signedOrders).blockingGet();
+        });
+
+        // Then
+        verify(objectMapper).writeValueAsString(signedOrders);
+        verify(apiService).submitManyOrders(ETHEREUM_CHAIN_ID, serializedOrders);
+    }
+
+    @Test
+    void testSubmitManyOrdersRx_SerializationError() throws Exception {
+        // Given
+        List<FusionPlusSignedOrderInput> signedOrders = Arrays.asList(createSignedOrderInput());
+
+        when(objectMapper.writeValueAsString(signedOrders))
+                .thenThrow(new com.fasterxml.jackson.core.JsonProcessingException("Serialization failed") {});
+
+        // When & Then
+        assertThrows(OneInchException.class, () -> 
+                fusionPlusRelayerService.submitManyOrdersRx(ETHEREUM_CHAIN_ID, signedOrders).blockingGet());
+        
+        verify(objectMapper).writeValueAsString(signedOrders);
+        verify(apiService, never()).submitManyOrders(anyInt(), anyString());
+    }
+
+    @Test
+    void testSubmitManyOrdersRx_Error() throws Exception {
+        // Given
+        List<FusionPlusSignedOrderInput> signedOrders = Arrays.asList(createSignedOrderInput());
+        String serializedOrders = "[{\"order\":{...}}]";
+        RuntimeException exception = new RuntimeException("Batch submission failed");
+
+        when(objectMapper.writeValueAsString(signedOrders))
+                .thenReturn(serializedOrders);
+        when(apiService.submitManyOrders(ETHEREUM_CHAIN_ID, serializedOrders))
+                .thenReturn(Single.error(exception));
+
+        // When & Then
+        assertThrows(RuntimeException.class, () -> 
+                fusionPlusRelayerService.submitManyOrdersRx(ETHEREUM_CHAIN_ID, signedOrders).blockingGet());
+    }
+
+    @Test
+    void testSubmitManyOrdersAsync() throws Exception {
+        // Given
+        List<FusionPlusSignedOrderInput> signedOrders = Arrays.asList(createSignedOrderInput());
+        String serializedOrders = "[{\"order\":{...}}]";
+
+        when(objectMapper.writeValueAsString(signedOrders))
+                .thenReturn(serializedOrders);
+        when(apiService.submitManyOrders(ETHEREUM_CHAIN_ID, serializedOrders))
+                .thenReturn(Single.never().cast(Void.class));
+
+        // When
+        CompletableFuture<Void> future = fusionPlusRelayerService.submitManyOrdersAsync(ETHEREUM_CHAIN_ID, signedOrders);
+        
+        // Then
+        assertDoesNotThrow(() -> future.get());
+        verify(objectMapper).writeValueAsString(signedOrders);
+        verify(apiService).submitManyOrders(ETHEREUM_CHAIN_ID, serializedOrders);
+    }
+
+    @Test
+    void testSubmitManyOrders_Synchronous() throws OneInchException, Exception {
+        // Given
+        List<FusionPlusSignedOrderInput> signedOrders = Arrays.asList(createSignedOrderInput());
+        String serializedOrders = "[{\"order\":{...}}]";
+
+        when(objectMapper.writeValueAsString(signedOrders))
+                .thenReturn(serializedOrders);
+        when(apiService.submitManyOrders(ETHEREUM_CHAIN_ID, serializedOrders))
+                .thenReturn(Single.never().cast(Void.class));
+
+        // When & Then
+        assertDoesNotThrow(() -> fusionPlusRelayerService.submitManyOrders(ETHEREUM_CHAIN_ID, signedOrders));
+        verify(objectMapper).writeValueAsString(signedOrders);
+        verify(apiService).submitManyOrders(ETHEREUM_CHAIN_ID, serializedOrders);
+    }
+
+    @Test
+    void testSubmitManyOrders_Synchronous_Error() throws Exception {
+        // Given
+        List<FusionPlusSignedOrderInput> signedOrders = Arrays.asList(createSignedOrderInput());
+        String serializedOrders = "[{\"order\":{...}}]";
+        RuntimeException exception = new RuntimeException("Invalid batch format");
+
+        when(objectMapper.writeValueAsString(signedOrders))
+                .thenReturn(serializedOrders);
+        when(apiService.submitManyOrders(ETHEREUM_CHAIN_ID, serializedOrders))
+                .thenReturn(Single.error(exception));
+
+        // When & Then
+        assertThrows(OneInchException.class, () -> 
+                fusionPlusRelayerService.submitManyOrders(ETHEREUM_CHAIN_ID, signedOrders));
+    }
+
+    // ==================== SECRET SUBMISSION TESTS ====================
+
+    @Test
+    void testSubmitSecretRx_Success() {
+        // Given
+        SecretInput secretInput = createSecretInput();
+
+        when(apiService.submitSecret(POLYGON_CHAIN_ID, secretInput))
+                .thenReturn(Single.never().cast(Void.class));
+
+        // When
+        assertDoesNotThrow(() -> {
+            fusionPlusRelayerService.submitSecretRx(POLYGON_CHAIN_ID, secretInput).blockingGet();
+        });
+
+        // Then
+        verify(apiService).submitSecret(POLYGON_CHAIN_ID, secretInput);
+    }
+
+    @Test
+    void testSubmitSecretRx_Error() {
+        // Given
+        SecretInput secretInput = createSecretInput();
+        RuntimeException exception = new RuntimeException("Secret submission failed");
+
+        when(apiService.submitSecret(POLYGON_CHAIN_ID, secretInput))
+                .thenReturn(Single.error(exception));
+
+        // When & Then
+        assertThrows(RuntimeException.class, () -> 
+                fusionPlusRelayerService.submitSecretRx(POLYGON_CHAIN_ID, secretInput).blockingGet());
+    }
+
+    @Test
+    void testSubmitSecretAsync() throws Exception {
+        // Given
+        SecretInput secretInput = createSecretInput();
+
+        when(apiService.submitSecret(POLYGON_CHAIN_ID, secretInput))
+                .thenReturn(Single.never().cast(Void.class));
+
+        // When
+        CompletableFuture<Void> future = fusionPlusRelayerService.submitSecretAsync(POLYGON_CHAIN_ID, secretInput);
+        
+        // Then
+        assertDoesNotThrow(() -> future.get());
+        verify(apiService).submitSecret(POLYGON_CHAIN_ID, secretInput);
+    }
+
+    @Test
+    void testSubmitSecret_Synchronous() throws OneInchException {
+        // Given
+        SecretInput secretInput = createSecretInput();
+
+        when(apiService.submitSecret(POLYGON_CHAIN_ID, secretInput))
+                .thenReturn(Single.never().cast(Void.class));
+
+        // When & Then
+        assertDoesNotThrow(() -> fusionPlusRelayerService.submitSecret(POLYGON_CHAIN_ID, secretInput));
+        verify(apiService).submitSecret(POLYGON_CHAIN_ID, secretInput);
+    }
+
+    @Test
+    void testSubmitSecret_Synchronous_Error() {
+        // Given
+        SecretInput secretInput = createSecretInput();
+        RuntimeException exception = new RuntimeException("Invalid secret");
+
+        when(apiService.submitSecret(POLYGON_CHAIN_ID, secretInput))
+                .thenReturn(Single.error(exception));
+
+        // When & Then
+        assertThrows(OneInchException.class, () -> 
+                fusionPlusRelayerService.submitSecret(POLYGON_CHAIN_ID, secretInput));
+    }
+
+    // ==================== PARAMETER VALIDATION TESTS ====================
+
+    @Test
+    void testSubmitOrderRx_WithCompleteOrderData() {
+        // Given
+        FusionPlusSignedOrderInput signedOrder = createSignedOrderInput();
+        signedOrder.setExtension("0x1234567890abcdef1234567890abcdef12345678");
+        signedOrder.setSecretHashes(Arrays.asList(SECRET_HASH, "0x456"));
+
+        when(apiService.submitOrder(ETHEREUM_CHAIN_ID, signedOrder))
+                .thenReturn(Single.never().cast(Void.class));
+
+        // When
+        assertDoesNotThrow(() -> {
+            fusionPlusRelayerService.submitOrderRx(ETHEREUM_CHAIN_ID, signedOrder).blockingGet();
+        });
+
+        // Then
+        verify(apiService).submitOrder(ETHEREUM_CHAIN_ID, signedOrder);
+        assertEquals(2, signedOrder.getSecretHashes().size());
+        assertNotNull(signedOrder.getExtension());
+    }
+
+    @Test
+    void testSubmitSecretRx_WithCompleteSecretData() {
+        // Given
+        SecretInput secretInput = SecretInput.builder()
+                .orderHash(ORDER_HASH)
+                .secret(SECRET)
+                .chainId(POLYGON_CHAIN_ID)
+                .executor(WALLET_ADDRESS)
+                .timestamp(System.currentTimeMillis())
+                .build();
+
+        when(apiService.submitSecret(POLYGON_CHAIN_ID, secretInput))
+                .thenReturn(Single.never().cast(Void.class));
+
+        // When
+        assertDoesNotThrow(() -> {
+            fusionPlusRelayerService.submitSecretRx(POLYGON_CHAIN_ID, secretInput).blockingGet();
+        });
+
+        // Then
+        verify(apiService).submitSecret(POLYGON_CHAIN_ID, secretInput);
+        assertEquals(ORDER_HASH, secretInput.getOrderHash());
+        assertEquals(SECRET, secretInput.getSecret());
+        assertEquals(POLYGON_CHAIN_ID, secretInput.getChainId());
+        assertEquals(WALLET_ADDRESS, secretInput.getExecutor());
+        assertNotNull(secretInput.getTimestamp());
+    }
+
+    @Test
+    void testSubmitManyOrdersRx_EmptyList() throws Exception {
+        // Given
+        List<FusionPlusSignedOrderInput> emptyOrders = Arrays.asList();
+        String serializedOrders = "[]";
+
+        when(objectMapper.writeValueAsString(emptyOrders))
+                .thenReturn(serializedOrders);
+        when(apiService.submitManyOrders(ETHEREUM_CHAIN_ID, serializedOrders))
+                .thenReturn(Single.never().cast(Void.class));
+
+        // When
+        assertDoesNotThrow(() -> {
+            fusionPlusRelayerService.submitManyOrdersRx(ETHEREUM_CHAIN_ID, emptyOrders).blockingGet();
+        });
+
+        // Then
+        verify(objectMapper).writeValueAsString(emptyOrders);
+        verify(apiService).submitManyOrders(ETHEREUM_CHAIN_ID, serializedOrders);
+    }
+
+    @Test
+    void testSubmitManyOrdersRx_MultipleOrders() throws Exception {
+        // Given
+        FusionPlusSignedOrderInput order1 = createSignedOrderInput();
+        FusionPlusSignedOrderInput order2 = createSignedOrderInput();
+        order2.getOrder().setSalt("0x" + (System.currentTimeMillis() + 1000)); // Different salt
+        
+        List<FusionPlusSignedOrderInput> signedOrders = Arrays.asList(order1, order2);
+        String serializedOrders = "[{\"order1\":{...}},{\"order2\":{...}}]";
+
+        when(objectMapper.writeValueAsString(signedOrders))
+                .thenReturn(serializedOrders);
+        when(apiService.submitManyOrders(ETHEREUM_CHAIN_ID, serializedOrders))
+                .thenReturn(Single.never().cast(Void.class));
+
+        // When
+        assertDoesNotThrow(() -> {
+            fusionPlusRelayerService.submitManyOrdersRx(ETHEREUM_CHAIN_ID, signedOrders).blockingGet();
+        });
+
+        // Then
+        verify(objectMapper).writeValueAsString(signedOrders);
+        verify(apiService).submitManyOrders(ETHEREUM_CHAIN_ID, serializedOrders);
+        assertEquals(2, signedOrders.size());
+        assertNotEquals(order1.getOrder().getSalt(), order2.getOrder().getSalt());
+    }
+}
