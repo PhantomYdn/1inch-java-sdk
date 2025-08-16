@@ -31,6 +31,7 @@ This project is organized as a multi-module Maven project:
 
 - **`oneinch-sdk-core`** - The core SDK functionality with all APIs and models
 - **`oneinch-sdk-examples`** - Example applications demonstrating SDK usage
+- **`oneinch-sdk-mcp`** - Model Context Protocol (MCP) server for AI-enhanced DeFi analysis
 
 ## Installation
 
@@ -61,6 +62,11 @@ mvn clean install -pl oneinch-sdk-core
 ### Build Only Examples  
 ```bash
 mvn clean install -pl oneinch-sdk-examples
+```
+
+### Build Only MCP Server
+```bash
+mvn clean install -pl oneinch-sdk-mcp
 ```
 
 ## High-Precision Arithmetic
@@ -1420,6 +1426,18 @@ All implemented APIs support the triple programming model: **Reactive (RxJava)**
 
 ### Development Roadmap
 
+#### 🤖 **AI Integration Initiative** (2025)
+**Priority: HIGH** - Bringing AI to DeFi through Model Context Protocol (MCP)
+
+| Component | Status | Description |
+|-----------|---------|-------------|
+| **MCP Server** | 🔄 Specification Complete | Quarkus-based server providing AI-friendly DeFi data access |
+| **Resources** | 🔄 Planned | Read-only data endpoints for tokens, prices, portfolios, history |
+| **Tools** | 🔄 Planned | AI-callable functions for analysis, optimization, and insights |
+| **Prompts** | 🔄 Planned | Pre-built templates for common DeFi analysis tasks |
+
+**Vision**: Transform 1inch into an AI-native DeFi platform where intelligent agents can analyze markets, optimize trades, and provide personalized insights while maintaining security through read-only operations.
+
 #### 🚀 **Phase 1: Core Trading Infrastructure** (Q2-Q3 2024)
 **Priority: HIGH** - Essential for advanced trading applications
 
@@ -1428,7 +1446,7 @@ All implemented APIs support the triple programming model: **Reactive (RxJava)**
 | **Fusion API** | ✅ **Implemented** | 13 | Gasless swaps, 1inch's core innovation |
 | **FusionPlus API** | ✅ **Implemented** | 12+ | Cross-chain gasless swaps with enhanced security |
 | **Price API** | ✅ **Implemented** | 13 | Real-time pricing across 60+ fiat currencies |
-| **Cross-Chain API** | 🔄 Planned | Multi | Bridge operations and cross-chain liquidity |
+| **Gas Price API** | 🔄 Planned | 12 | Real-time gas optimization for better transaction costs |
 
 **Business Impact**: These APIs are critical for accessing 1inch's competitive advantages, particularly gasless swaps and cross-chain operations.
 
@@ -1499,6 +1517,7 @@ We welcome community input on roadmap priorities! Here's how you can influence d
 4. **Community Discussion**: Join our [Discord](https://discord.gg/1inch) to discuss priorities
 
 #### 💡 **Contribution Areas**
+- **MCP Development**: Help build the AI-enhanced DeFi analysis server
 - **API Implementation**: Help implement missing APIs following existing patterns
 - **Documentation**: Improve examples and API documentation
 - **Testing**: Add integration tests and edge case coverage
@@ -1510,8 +1529,9 @@ Based on community feedback, these are the most requested features:
 1. ✅ **Fusion API** - Gasless swaps (**COMPLETED**)
 2. ✅ **FusionPlus API** - Cross-chain gasless swaps (**COMPLETED**)
 3. ✅ **Price API** - Real-time pricing (**COMPLETED**)
-4. **Cross-Chain API** - Bridge operations (8+ requests)
-5. **WebSocket Support** - Real-time updates (6+ requests)
+4. 🤖 **MCP Server** - AI-enhanced DeFi analysis (**IN PLANNING**)
+5. **Gas Price API** - Real-time gas optimization (8+ requests)
+6. **WebSocket Support** - Real-time updates (6+ requests)
 
 ### Getting Involved
 

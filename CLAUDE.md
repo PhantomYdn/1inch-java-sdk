@@ -22,6 +22,10 @@ src/main/java/io/oneinch/sdk/
 ├── service/         # Service interfaces and implementations
 ├── exception/       # Custom exceptions
 └── util/           # Utility classes
+
+oneinch-sdk-mcp/     # Model Context Protocol (MCP) server sub-project
+├── src/main/java/   # Quarkus-based MCP server implementation
+└── README.md        # Complete MCP specification and implementation plan
 ```
 
 ## Key Requirements
@@ -168,11 +172,82 @@ swagger/
 
 [... rest of the existing content remains the same ...]
 
+## MCP Server Development Guide
+
+### Model Context Protocol Integration
+The 1inch MCP Server provides AI-enhanced access to DeFi data through a **read-only** Quarkus-based server that implements the Model Context Protocol (MCP).
+
+#### MCP Architecture Principles
+- **Read-Only Operations**: MCP server NEVER executes transactions or modifies blockchain state
+- **Three Primitives**: Resources (data access), Tools (AI functions), Prompts (user templates)
+- **Multi-Transport**: Support for stdio, HTTP/SSE, and Streamable HTTP transports
+- **Chain-Aware**: Leverage SDK's multi-chain support across 13+ networks
+
+#### MCP Component Design Patterns
+
+**Resources** - Direct data access with no side effects:
+```java
+@Resource("/tokens/{chainId}")
+public class TokenResource {
+    // Read-only token data access
+}
+```
+
+**Tools** - AI-callable analysis functions:
+```java
+@Tool
+public SwapAnalysisResult analyzeSwapRoute(String src, String dst, BigInteger amount, Integer chainId) {
+    // Analysis logic using SDK
+}
+```
+
+**Prompts** - Pre-built templates:
+```java
+@Prompt("swap-analysis")
+public String analyzeSwap(@Argument String srcToken, @Argument String dstToken) {
+    return "Analyze the best way to swap " + srcToken + " to " + dstToken;
+}
+```
+
+#### SDK Integration Requirements
+- **Available APIs**: Leverage Swap, Token, Portfolio, Balance, Price, History, Orderbook, Fusion, FusionPlus APIs
+- **Missing APIs**: Identify gaps (Gas Price, Charts, Transaction Gateway) and document in specification
+- **SDK-Only Access**: MCP server MUST use only the SDK, never direct API calls to 1inch
+- **Error Handling**: Graceful degradation when APIs are unavailable
+- **Caching Strategy**: Intelligent caching to minimize API calls and respect rate limits
+
+#### Security Constraints
+- **No Private Keys**: Never handle or store private keys
+- **No Transaction Signing**: Purely informational and analytical
+- **API Key Protection**: Secure handling of 1inch API credentials
+- **Rate Limiting**: Respect API limits and implement intelligent throttling
+
+#### Development Priorities
+1. **Phase 1**: Core resources and basic tools using existing SDK APIs
+2. **Phase 2**: Advanced analytics tools and prompts  
+3. **Phase 3**: SDK expansion for missing APIs (Gas, Charts, Transaction Gateway)
+4. **Phase 4**: Performance optimization and advanced features
+
+#### Cross-Chain Capabilities
+- **FusionPlus API**: Primary API for cross-chain operations and gasless swaps
+- **Multi-Chain Support**: Leverage existing SDK multi-chain capabilities across 13+ networks
+- **No Separate Bridge API**: Cross-chain functionality provided through FusionPlus integration
+
+### Architecture Decisions
+- **Framework**: Quarkus for native compilation and enterprise features  
+- **Transport**: Start with stdio, add HTTP/SSE for web integration
+- **Caching**: Redis/Caffeine for performance optimization
+- **Monitoring**: Micrometer metrics for observability
+
 ## Memories
 
 ### Development Practices
 - Prior to adding new model types into model: always check - is it possible to reuse some of the existing model types.
 - Use "git mv" for any file moves. Switch to "mv" only when file eventually was not under git version control yet.
+- **MCP Development**: Focus on read-only information access, never transaction execution
+- **API Gap Tracking**: Clearly document which 1inch APIs are needed but not yet available in SDK
+- **FusionPlus = Cross-Chain**: Remember that FusionPlus API provides cross-chain capabilities, no separate bridge API needed
 
 ### Memory Updates
 - Always update README.md and CLAUDE.md when some impacting changes are happening.
+- **MCP Specification**: The complete MCP server specification is in `oneinch-sdk-mcp/README.md` with detailed implementation checklist
