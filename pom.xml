@@ -12,6 +12,7 @@
   <modules>
     <module>oneinch-sdk-core</module>
     <module>oneinch-sdk-examples</module>
+    <module>oneinch-sdk-mcp</module>
   </modules>
 
   <properties>
