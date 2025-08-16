@@ -85,7 +85,7 @@ class OneInchIntegrationServiceTest {
         try {
             var method = OneInchIntegrationService.class.getMethod("getSwapQuote", QuoteRequest.class);
             var rateLimitAnnotation = method.getAnnotation(
-                io.oneinch.mcp.ratelimit.RateLimitInterceptor.RateLimit.class
+                io.oneinch.mcp.ratelimit.RateLimit.class
             );
             assertNotNull(rateLimitAnnotation, "Rate limiting annotation should be present");
             assertEquals("swap-quote", rateLimitAnnotation.clientId());

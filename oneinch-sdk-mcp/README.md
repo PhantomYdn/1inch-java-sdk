@@ -240,7 +240,7 @@ mcp.rate-limit.burst-capacity=10
 - [x] `/tokens/{chainId}` resource - Token lists and metadata
 - [x] `/prices/{chainId}/{token}` resource - Real-time pricing data
 - [x] `/portfolio/{address}` resource - Portfolio snapshots
-- [ ] `/balances/{chainId}/{address}` resource - Balance information
+- [x] `/balances/{chainId}/{address}` resource - Balance information
 - [ ] `/history/{address}` resource - Transaction history
 - [ ] `/swap-routes/{chainId}` resource - Swap quote data
 

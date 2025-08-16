@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -567,22 +568,7 @@ public class OneInchIntegrationService {
         });
     }
 
-    // === BALANCE API INTEGRATION ===
-
-    /**
-     * Gets token balances with caching and rate limiting.
-     */
-    @RateLimit(clientId = "balance-request")
-    public CompletableFuture<Map<String, BigInteger>> getBalances(BalanceRequest request) {
-        log.debug("Getting balances for {}:{}", request.getChainId(), request.getWalletAddress());
-
-        return cacheService.cacheBalanceData(
-            request.getChainId(),
-            request.getWalletAddress(),
-            "balances",
-            () -> executeGetBalances(request)
-        );
-    }
+    // === BALANCE API EXECUTION METHODS ===
 
     private CompletableFuture<Map<String, BigInteger>> executeGetBalances(BalanceRequest request) {
         return CompletableFuture.supplyAsync(() -> {
@@ -593,6 +579,151 @@ public class OneInchIntegrationService {
                 log.error("Error getting balances", e);
                 throw new RuntimeException("Failed to get balances: " + e.getMessage(), e);
             }
+        });
+    }
+
+    private CompletableFuture<Map<String, BigInteger>> executeGetCustomBalances(CustomBalanceRequest request) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                OneInchClient client = clientService.getClient();
+                return client.balance().getCustomBalances(request);
+            } catch (OneInchException e) {
+                log.error("Error getting custom balances", e);
+                throw new RuntimeException("Failed to get custom balances: " + e.getMessage(), e);
+            }
+        });
+    }
+
+    private CompletableFuture<Map<String, BigInteger>> executeGetAllowances(AllowanceBalanceRequest request) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                OneInchClient client = clientService.getClient();
+                return client.balance().getAllowances(request);
+            } catch (OneInchException e) {
+                log.error("Error getting allowances", e);
+                throw new RuntimeException("Failed to get allowances: " + e.getMessage(), e);
+            }
+        });
+    }
+
+    private CompletableFuture<Map<String, Object>> executeGetBalancesAndAllowances(AllowanceBalanceRequest request) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                OneInchClient client = clientService.getClient();
+                Map<String, BalanceAndAllowanceItem> response = client.balance().getAllowancesAndBalances(request);
+                return responseMapper.mapBalanceAndAllowanceData(response);
+            } catch (OneInchException e) {
+                log.error("Error getting balances and allowances", e);
+                throw new RuntimeException("Failed to get balances and allowances: " + e.getMessage(), e);
+            }
+        });
+    }
+
+    private CompletableFuture<Map<String, Object>> executeGetAggregatedBalances(AggregatedBalanceRequest request) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                OneInchClient client = clientService.getClient();
+                List<AggregatedBalanceResponse> response = client.balance().getAggregatedBalancesAndAllowances(request);
+                return responseMapper.mapAggregatedBalanceList(response);
+            } catch (OneInchException e) {
+                log.error("Error getting aggregated balances", e);
+                throw new RuntimeException("Failed to get aggregated balances: " + e.getMessage(), e);
+            }
+        });
+    }
+
+    // === BALANCE API INTEGRATION ===
+
+    /**
+     * Gets wallet token balances with caching and rate limiting.
+     */
+    @RateLimit(clientId = "balance-request")
+    @Monitored
+    public CompletableFuture<Map<String, BigInteger>> getBalances(BalanceRequest request) {
+        log.debug("Getting balances for address {} on chain {}", request.getWalletAddress(), request.getChainId());
+
+        String cacheKey = "balances-" + request.getWalletAddress();
+        return cacheService.cacheBalanceData(
+            request.getChainId(),
+            request.getWalletAddress(),
+            cacheKey,
+            () -> executeGetBalances(request)
+        );
+    }
+
+    /**
+     * Gets custom token balances with caching and rate limiting.
+     */
+    @RateLimit(clientId = "balance-custom")
+    @Monitored
+    public CompletableFuture<Map<String, BigInteger>> getCustomBalances(CustomBalanceRequest request) {
+        log.debug("Getting custom balances for address {} tokens {} on chain {}", 
+                request.getWalletAddress(), request.getTokens(), request.getChainId());
+
+        String tokenKey = String.join(",", request.getTokens());
+        String cacheKey = "custom-" + tokenKey;
+        return cacheService.cacheBalanceData(
+            request.getChainId(),
+            request.getWalletAddress(),
+            cacheKey,
+            () -> executeGetCustomBalances(request)
+        );
+    }
+
+    /**
+     * Gets token allowances with caching and rate limiting.
+     */
+    @RateLimit(clientId = "balance-allowances")
+    @Monitored
+    public CompletableFuture<Map<String, BigInteger>> getAllowances(AllowanceBalanceRequest request) {
+        log.debug("Getting allowances for address {} spender {} on chain {}", 
+                request.getWalletAddress(), request.getSpender(), request.getChainId());
+
+        String cacheKey = "allowances-" + request.getSpender();
+        return cacheService.cacheBalanceData(
+            request.getChainId(),
+            request.getWalletAddress(),
+            cacheKey,
+            () -> executeGetAllowances(request)
+        );
+    }
+
+    /**
+     * Gets combined balances and allowances with caching and rate limiting.
+     */
+    @RateLimit(clientId = "balance-combined")
+    @Monitored
+    public CompletableFuture<Map<String, BalanceAndAllowanceItem>> getBalancesAndAllowances(AllowanceBalanceRequest request) {
+        log.debug("Getting combined balances and allowances for address {} spender {} on chain {}", 
+                request.getWalletAddress(), request.getSpender(), request.getChainId());
+
+        String cacheKey = "combined-" + request.getSpender();
+        return cacheService.cacheTokenData(
+            request.getChainId(),
+            cacheKey,
+            () -> executeGetBalancesAndAllowances(request)
+        ).thenApply(cachedData -> {
+            return responseMapper.unmapBalanceAndAllowanceData(cachedData);
+        });
+    }
+
+    /**
+     * Gets aggregated balance data with caching and rate limiting.
+     */
+    @RateLimit(clientId = "balance-aggregated")
+    @Monitored
+    public CompletableFuture<List<AggregatedBalanceResponse>> getAggregatedBalances(AggregatedBalanceRequest request) {
+        log.debug("Getting aggregated balances for spender {} on chain {} addresses {}", 
+                request.getSpender(), request.getChainId(), request.getWallets());
+
+        String addressKey = String.join(",", request.getWallets());
+        String cacheKey = "aggregated-" + request.getSpender();
+        return cacheService.cacheTokenData(
+            request.getChainId(),
+            cacheKey,
+            () -> executeGetAggregatedBalances(request)
+        ).thenApply(cachedData -> {
+            return responseMapper.unmapAggregatedBalanceList(cachedData);
         });
     }
 

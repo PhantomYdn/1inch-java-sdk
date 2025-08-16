@@ -251,3 +251,4 @@ public String analyzeSwap(@Argument String srcToken, @Argument String dstToken) 
 ### Memory Updates
 - Always update README.md and CLAUDE.md when some impacting changes are happening.
 - **MCP Specification**: The complete MCP server specification is in `oneinch-sdk-mcp/README.md` with detailed implementation checklist
+- Always verify that code has been compilable by running "mvn clean package". It might be done in a changed submodule. Spawn sub-agent for this check and subsequent fix.

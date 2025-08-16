@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -599,9 +600,198 @@ public class ApiResponseMapper {
 
     public Map<String, Object> mapBalanceData(Map<String, BigInteger> balances) {
         Map<String, Object> map = new HashMap<>();
-        map.put("balances", balances);
+        
+        if (balances != null) {
+            // Convert BigInteger values to String for serialization
+            Map<String, String> balanceStrings = balances.entrySet().stream()
+                    .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().toString()
+                    ));
+            map.put("balances", balanceStrings);
+            map.put("count", balances.size());
+        } else {
+            map.put("balances", new HashMap<>());
+            map.put("count", 0);
+        }
+        
         map.put("timestamp", System.currentTimeMillis());
         return map;
+    }
+
+    public Map<String, BigInteger> unmapBalances(Map<String, Object> map) {
+        Map<String, BigInteger> balances = new HashMap<>();
+        
+        if (map.containsKey("balances") && map.get("balances") instanceof Map) {
+            Map<String, Object> balancesMap = (Map<String, Object>) map.get("balances");
+            for (Map.Entry<String, Object> entry : balancesMap.entrySet()) {
+                try {
+                    BigInteger balance = new BigInteger(entry.getValue().toString());
+                    balances.put(entry.getKey(), balance);
+                } catch (NumberFormatException e) {
+                    log.warn("Invalid balance format for {}: {}", entry.getKey(), entry.getValue());
+                    balances.put(entry.getKey(), BigInteger.ZERO);
+                }
+            }
+        }
+        
+        return balances;
+    }
+
+    public Map<String, Object> mapBalanceAndAllowanceData(Map<String, BalanceAndAllowanceItem> items) {
+        Map<String, Object> map = new HashMap<>();
+        
+        if (items != null) {
+            Map<String, Map<String, String>> itemMaps = items.entrySet().stream()
+                    .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> mapBalanceAndAllowanceItem(entry.getValue())
+                    ));
+            map.put("items", itemMaps);
+            map.put("count", items.size());
+        } else {
+            map.put("items", new HashMap<>());
+            map.put("count", 0);
+        }
+        
+        map.put("timestamp", System.currentTimeMillis());
+        return map;
+    }
+
+    public Map<String, BalanceAndAllowanceItem> unmapBalanceAndAllowanceData(Map<String, Object> map) {
+        Map<String, BalanceAndAllowanceItem> items = new HashMap<>();
+        
+        if (map.containsKey("items") && map.get("items") instanceof Map) {
+            Map<String, Object> itemsMap = (Map<String, Object>) map.get("items");
+            for (Map.Entry<String, Object> entry : itemsMap.entrySet()) {
+                try {
+                    BalanceAndAllowanceItem item = unmapBalanceAndAllowanceItem((Map<String, Object>) entry.getValue());
+                    items.put(entry.getKey(), item);
+                } catch (Exception e) {
+                    log.warn("Error unmapping balance and allowance item for {}: {}", entry.getKey(), e.getMessage());
+                }
+            }
+        }
+        
+        return items;
+    }
+
+    private Map<String, String> mapBalanceAndAllowanceItem(BalanceAndAllowanceItem item) {
+        Map<String, String> map = new HashMap<>();
+        
+        if (item.getBalance() != null) {
+            map.put("balance", item.getBalance().toString());
+        }
+        
+        if (item.getAllowance() != null) {
+            map.put("allowance", item.getAllowance().toString());
+        }
+        
+        return map;
+    }
+
+    private BalanceAndAllowanceItem unmapBalanceAndAllowanceItem(Map<String, Object> map) {
+        BalanceAndAllowanceItem item = new BalanceAndAllowanceItem();
+        
+        if (map.containsKey("balance")) {
+            try {
+                item.setBalance(new BigInteger(map.get("balance").toString()));
+            } catch (NumberFormatException e) {
+                item.setBalance(BigInteger.ZERO);
+            }
+        }
+        
+        if (map.containsKey("allowance")) {
+            try {
+                item.setAllowance(new BigInteger(map.get("allowance").toString()));
+            } catch (NumberFormatException e) {
+                item.setAllowance(BigInteger.ZERO);
+            }
+        }
+        
+        return item;
+    }
+
+    public Map<String, Object> mapAggregatedBalanceResponse(AggregatedBalanceResponse response) {
+        Map<String, Object> map = new HashMap<>();
+        
+        if (response.getAddress() != null) {
+            map.put("address", response.getAddress());
+        }
+        
+        if (response.getName() != null) {
+            map.put("name", response.getName());
+        }
+        
+        if (response.getSymbol() != null) {
+            map.put("symbol", response.getSymbol());
+        }
+        
+        if (response.getDecimals() != null) {
+            map.put("decimals", response.getDecimals());
+        }
+        
+        if (response.getWallets() != null) {
+            map.put("wallets", response.getWallets());
+        }
+        
+        return map;
+    }
+
+    public Map<String, Object> mapAggregatedBalanceList(List<AggregatedBalanceResponse> responses) {
+        Map<String, Object> map = new HashMap<>();
+        
+        if (responses != null) {
+            List<Map<String, Object>> responseMaps = responses.stream()
+                    .map(this::mapAggregatedBalanceResponse)
+                    .collect(Collectors.toList());
+            map.put("responses", responseMaps);
+            map.put("count", responses.size());
+        } else {
+            map.put("responses", List.of());
+            map.put("count", 0);
+        }
+        
+        return map;
+    }
+
+    public List<AggregatedBalanceResponse> unmapAggregatedBalanceList(Map<String, Object> map) {
+        List<AggregatedBalanceResponse> responses = new ArrayList<>();
+        
+        if (map.containsKey("responses") && map.get("responses") instanceof List) {
+            List<Object> responsesList = (List<Object>) map.get("responses");
+            responses = responsesList.stream()
+                    .map(obj -> unmapAggregatedBalanceResponse((Map<String, Object>) obj))
+                    .collect(Collectors.toList());
+        }
+        
+        return responses;
+    }
+
+    private AggregatedBalanceResponse unmapAggregatedBalanceResponse(Map<String, Object> map) {
+        AggregatedBalanceResponse response = new AggregatedBalanceResponse();
+        
+        if (map.containsKey("address")) {
+            response.setAddress((String) map.get("address"));
+        }
+        
+        if (map.containsKey("name")) {
+            response.setName((String) map.get("name"));
+        }
+        
+        if (map.containsKey("symbol")) {
+            response.setSymbol((String) map.get("symbol"));
+        }
+        
+        if (map.containsKey("decimals")) {
+            response.setDecimals((Integer) map.get("decimals"));
+        }
+        
+        if (map.containsKey("wallets") && map.get("wallets") instanceof Map) {
+            response.setWallets((Map<String, Object>) map.get("wallets"));
+        }
+        
+        return response;
     }
 
     // === UTILITY MAPPINGS ===
