@@ -418,6 +418,7 @@ public class OneInchIntegrationService {
      * Gets portfolio data with caching and rate limiting.
      */
     @RateLimit(clientId = "portfolio-value")
+    @Monitored
     public CompletableFuture<CurrentValueResponse> getPortfolioValue(PortfolioV5OverviewRequest request) {
         log.debug("Getting portfolio value for addresses: {}", request.getAddresses());
 
@@ -428,18 +429,140 @@ public class OneInchIntegrationService {
             addressKey,
             chainKey,
             () -> executeGetPortfolioValue(request)
-        ).thenApply(data -> convertToCurrentValueResponse(data));
+        ).thenApply(data -> responseMapper.unmapCurrentValueResponse(data));
     }
+
+    /**
+     * Gets protocols snapshot with caching and rate limiting.
+     */
+    @RateLimit(clientId = "portfolio-protocols")
+    @Monitored
+    public CompletableFuture<List<AdapterResult>> getProtocolsSnapshot(PortfolioV5SnapshotRequest request) {
+        log.debug("Getting protocols snapshot for addresses: {}", request.getAddresses());
+
+        String addressKey = String.join(",", request.getAddresses());
+        String chainKey = request.getChainId() != null ? request.getChainId().toString() : "all";
+        String timestampKey = request.getTimestamp() != null ? request.getTimestamp().toString() : "current";
+
+        return cacheService.cachePortfolioData(
+            addressKey,
+            "protocols-" + chainKey + "-" + timestampKey,
+            () -> executeGetProtocolsSnapshot(request)
+        ).thenApply(data -> responseMapper.unmapAdapterResultList(data));
+    }
+
+    /**
+     * Gets tokens snapshot with caching and rate limiting.
+     */
+    @RateLimit(clientId = "portfolio-tokens")
+    @Monitored
+    public CompletableFuture<List<AdapterResult>> getTokensSnapshot(PortfolioV5SnapshotRequest request) {
+        log.debug("Getting tokens snapshot for addresses: {}", request.getAddresses());
+
+        String addressKey = String.join(",", request.getAddresses());
+        String chainKey = request.getChainId() != null ? request.getChainId().toString() : "all";
+        String timestampKey = request.getTimestamp() != null ? request.getTimestamp().toString() : "current";
+
+        return cacheService.cachePortfolioData(
+            addressKey,
+            "tokens-" + chainKey + "-" + timestampKey,
+            () -> executeGetTokensSnapshot(request)
+        ).thenApply(data -> responseMapper.unmapAdapterResultList(data));
+    }
+
+    /**
+     * Gets supported chains with caching and rate limiting.
+     */
+    @RateLimit(clientId = "portfolio-chains")
+    @Monitored
+    public CompletableFuture<List<SupportedChainResponse>> getSupportedChains() {
+        log.debug("Getting supported chains for portfolio");
+
+        return cacheService.cachePortfolioData(
+            "system",
+            "supported-chains",
+            () -> executeGetSupportedChains()
+        ).thenApply(data -> responseMapper.unmapSupportedChainsList(data));
+    }
+
+    /**
+     * Gets supported protocols with caching and rate limiting.
+     */
+    @RateLimit(clientId = "portfolio-protocols-list")
+    @Monitored
+    public CompletableFuture<List<SupportedProtocolGroupResponse>> getSupportedProtocols() {
+        log.debug("Getting supported protocols for portfolio");
+
+        return cacheService.cachePortfolioData(
+            "system",
+            "supported-protocols",
+            () -> executeGetSupportedProtocols()
+        ).thenApply(data -> responseMapper.unmapSupportedProtocolsList(data));
+    }
+
+    // === PORTFOLIO API EXECUTION METHODS ===
 
     private CompletableFuture<Map<String, Object>> executeGetPortfolioValue(PortfolioV5OverviewRequest request) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 OneInchClient client = clientService.getClient();
                 CurrentValueResponse response = client.portfolio().getCurrentValue(request);
-                return convertPortfolioToMap(response);
+                return responseMapper.mapCurrentValueResponse(response);
             } catch (OneInchException e) {
                 log.error("Error getting portfolio value", e);
                 throw new RuntimeException("Failed to get portfolio value: " + e.getMessage(), e);
+            }
+        });
+    }
+
+    private CompletableFuture<Map<String, Object>> executeGetProtocolsSnapshot(PortfolioV5SnapshotRequest request) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                OneInchClient client = clientService.getClient();
+                List<AdapterResult> response = client.portfolio().getProtocolsSnapshot(request);
+                return responseMapper.mapAdapterResultList(response);
+            } catch (OneInchException e) {
+                log.error("Error getting protocols snapshot", e);
+                throw new RuntimeException("Failed to get protocols snapshot: " + e.getMessage(), e);
+            }
+        });
+    }
+
+    private CompletableFuture<Map<String, Object>> executeGetTokensSnapshot(PortfolioV5SnapshotRequest request) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                OneInchClient client = clientService.getClient();
+                List<AdapterResult> response = client.portfolio().getTokensSnapshot(request);
+                return responseMapper.mapAdapterResultList(response);
+            } catch (OneInchException e) {
+                log.error("Error getting tokens snapshot", e);
+                throw new RuntimeException("Failed to get tokens snapshot: " + e.getMessage(), e);
+            }
+        });
+    }
+
+    private CompletableFuture<Map<String, Object>> executeGetSupportedChains() {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                OneInchClient client = clientService.getClient();
+                List<SupportedChainResponse> response = client.portfolio().getSupportedChains();
+                return responseMapper.mapSupportedChainsList(response);
+            } catch (OneInchException e) {
+                log.error("Error getting supported chains", e);
+                throw new RuntimeException("Failed to get supported chains: " + e.getMessage(), e);
+            }
+        });
+    }
+
+    private CompletableFuture<Map<String, Object>> executeGetSupportedProtocols() {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                OneInchClient client = clientService.getClient();
+                List<SupportedProtocolGroupResponse> response = client.portfolio().getSupportedProtocols();
+                return responseMapper.mapSupportedProtocolsList(response);
+            } catch (OneInchException e) {
+                log.error("Error getting supported protocols", e);
+                throw new RuntimeException("Failed to get supported protocols: " + e.getMessage(), e);
             }
         });
     }

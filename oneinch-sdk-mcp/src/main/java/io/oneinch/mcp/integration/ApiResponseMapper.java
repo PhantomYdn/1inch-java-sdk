@@ -321,6 +321,213 @@ public class ApiResponseMapper {
         return response;
     }
 
+    // === ADDITIONAL PORTFOLIO API MAPPINGS ===
+
+    public Map<String, Object> mapAdapterResult(AdapterResult adapter) {
+        Map<String, Object> map = new HashMap<>();
+        
+        map.put("chainId", adapter.getChainId());
+        map.put("contractAddress", adapter.getContractAddress());
+        map.put("address", adapter.getAddress());
+        map.put("protocolType", adapter.getProtocolType());
+        map.put("protocolHandlerId", adapter.getProtocolHandlerId());
+        map.put("protocolGroupId", adapter.getProtocolGroupId());
+        map.put("protocolGroupName", adapter.getProtocolGroupName());
+        
+        if (adapter.getValueUsd() != null) {
+            map.put("valueUsd", adapter.getValueUsd());
+        }
+        
+        return map;
+    }
+
+    public List<AdapterResult> unmapAdapterResultList(Map<String, Object> map) {
+        if (map.containsKey("adapters") && map.get("adapters") instanceof List) {
+            List<Object> adaptersList = (List<Object>) map.get("adapters");
+            return adaptersList.stream()
+                    .map(obj -> unmapAdapterResult((Map<String, Object>) obj))
+                    .collect(Collectors.toList());
+        }
+        return List.of();
+    }
+
+    public AdapterResult unmapAdapterResult(Map<String, Object> map) {
+        AdapterResult adapter = new AdapterResult();
+        
+        if (map.containsKey("chainId")) {
+            adapter.setChainId((Integer) map.get("chainId"));
+        }
+        
+        if (map.containsKey("contractAddress")) {
+            adapter.setContractAddress((String) map.get("contractAddress"));
+        }
+        
+        if (map.containsKey("address")) {
+            adapter.setAddress((String) map.get("address"));
+        }
+        
+        if (map.containsKey("protocolType")) {
+            adapter.setProtocolType((String) map.get("protocolType"));
+        }
+        
+        if (map.containsKey("protocolHandlerId")) {
+            adapter.setProtocolHandlerId((String) map.get("protocolHandlerId"));
+        }
+        
+        if (map.containsKey("protocolGroupId")) {
+            adapter.setProtocolGroupId((String) map.get("protocolGroupId"));
+        }
+        
+        if (map.containsKey("protocolGroupName")) {
+            adapter.setProtocolGroupName((String) map.get("protocolGroupName"));
+        }
+        
+        if (map.containsKey("valueUsd")) {
+            Object value = map.get("valueUsd");
+            if (value instanceof Number) {
+                adapter.setValueUsd(((Number) value).doubleValue());
+            }
+        }
+        
+        return adapter;
+    }
+
+    public Map<String, Object> mapAdapterResultList(List<AdapterResult> adapters) {
+        Map<String, Object> map = new HashMap<>();
+        
+        if (adapters != null) {
+            List<Map<String, Object>> adapterMaps = adapters.stream()
+                    .map(this::mapAdapterResult)
+                    .collect(Collectors.toList());
+            map.put("adapters", adapterMaps);
+            map.put("count", adapters.size());
+        }
+        
+        return map;
+    }
+
+    public Map<String, Object> mapSupportedChainResponse(SupportedChainResponse chain) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("chainId", chain.getChainId());
+        map.put("chainName", chain.getChainName());
+        
+        if (chain.getChainIcon() != null) {
+            map.put("chainIcon", chain.getChainIcon());
+        }
+        
+        if (chain.getNativeToken() != null) {
+            map.put("nativeToken", mapToken(chain.getNativeToken()));
+        }
+        
+        return map;
+    }
+
+    public List<SupportedChainResponse> unmapSupportedChainsList(Map<String, Object> map) {
+        if (map.containsKey("chains") && map.get("chains") instanceof List) {
+            List<Object> chainsList = (List<Object>) map.get("chains");
+            return chainsList.stream()
+                    .map(obj -> unmapSupportedChainResponse((Map<String, Object>) obj))
+                    .collect(Collectors.toList());
+        }
+        return List.of();
+    }
+
+    public SupportedChainResponse unmapSupportedChainResponse(Map<String, Object> map) {
+        SupportedChainResponse chain = new SupportedChainResponse();
+        
+        if (map.containsKey("chainId")) {
+            chain.setChainId((Integer) map.get("chainId"));
+        }
+        
+        if (map.containsKey("chainName")) {
+            chain.setChainName((String) map.get("chainName"));
+        }
+        
+        if (map.containsKey("chainIcon")) {
+            chain.setChainIcon((String) map.get("chainIcon"));
+        }
+        
+        if (map.containsKey("nativeToken") && map.get("nativeToken") instanceof Map) {
+            chain.setNativeToken(unmapToken((Map<String, Object>) map.get("nativeToken")));
+        }
+        
+        return chain;
+    }
+
+    public Map<String, Object> mapSupportedChainsList(List<SupportedChainResponse> chains) {
+        Map<String, Object> map = new HashMap<>();
+        
+        if (chains != null) {
+            List<Map<String, Object>> chainMaps = chains.stream()
+                    .map(this::mapSupportedChainResponse)
+                    .collect(Collectors.toList());
+            map.put("chains", chainMaps);
+            map.put("count", chains.size());
+        }
+        
+        return map;
+    }
+
+    public Map<String, Object> mapSupportedProtocolGroupResponse(SupportedProtocolGroupResponse protocol) {
+        Map<String, Object> map = new HashMap<>();
+        
+        map.put("chainId", protocol.getChainId());
+        map.put("protocolGroupId", protocol.getProtocolGroupId());
+        map.put("protocolGroupName", protocol.getProtocolGroupName());
+        
+        if (protocol.getProtocolGroupIcon() != null) {
+            map.put("protocolGroupIcon", protocol.getProtocolGroupIcon());
+        }
+        
+        return map;
+    }
+
+    public List<SupportedProtocolGroupResponse> unmapSupportedProtocolsList(Map<String, Object> map) {
+        if (map.containsKey("protocols") && map.get("protocols") instanceof List) {
+            List<Object> protocolsList = (List<Object>) map.get("protocols");
+            return protocolsList.stream()
+                    .map(obj -> unmapSupportedProtocolGroupResponse((Map<String, Object>) obj))
+                    .collect(Collectors.toList());
+        }
+        return List.of();
+    }
+
+    public SupportedProtocolGroupResponse unmapSupportedProtocolGroupResponse(Map<String, Object> map) {
+        SupportedProtocolGroupResponse protocol = new SupportedProtocolGroupResponse();
+        
+        if (map.containsKey("chainId")) {
+            protocol.setChainId((Integer) map.get("chainId"));
+        }
+        
+        if (map.containsKey("protocolGroupId")) {
+            protocol.setProtocolGroupId((String) map.get("protocolGroupId"));
+        }
+        
+        if (map.containsKey("protocolGroupName")) {
+            protocol.setProtocolGroupName((String) map.get("protocolGroupName"));
+        }
+        
+        if (map.containsKey("protocolGroupIcon")) {
+            protocol.setProtocolGroupIcon((String) map.get("protocolGroupIcon"));
+        }
+        
+        return protocol;
+    }
+
+    public Map<String, Object> mapSupportedProtocolsList(List<SupportedProtocolGroupResponse> protocols) {
+        Map<String, Object> map = new HashMap<>();
+        
+        if (protocols != null) {
+            List<Map<String, Object>> protocolMaps = protocols.stream()
+                    .map(this::mapSupportedProtocolGroupResponse)
+                    .collect(Collectors.toList());
+            map.put("protocols", protocolMaps);
+            map.put("count", protocols.size());
+        }
+        
+        return map;
+    }
+
     // === HISTORY API MAPPINGS ===
 
     public Map<String, Object> mapHistoryResponseDto(HistoryResponseDto response) {

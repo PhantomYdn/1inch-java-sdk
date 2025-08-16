@@ -43,7 +43,7 @@ Resources provide direct access to DeFi data with no side effects, similar to RE
 | Resource | Description | Available APIs | Chain Support |
 |----------|-------------|----------------|---------------|
 | `/tokens/{chainId}` | Token lists and metadata | ✅ Token API | 13+ chains |
-| `/prices/{chainId}` | Real-time token pricing | ✅ Price API | 13+ chains |
+| `/prices/{chainId}/{token}` | Real-time token pricing | ✅ Price API | 13+ chains |
 | `/portfolio/{address}` | Portfolio snapshots and metrics | ✅ Portfolio API | Multi-chain |
 | `/balances/{chainId}/{address}` | Token balances and allowances | ✅ Balance API | 13+ chains |
 | `/history/{address}` | Transaction history | ✅ History API | Multi-chain |
@@ -239,7 +239,7 @@ mcp.rate-limit.burst-capacity=10
 ### Phase 2: Core Resources (Data Access)
 - [x] `/tokens/{chainId}` resource - Token lists and metadata
 - [x] `/prices/{chainId}/{token}` resource - Real-time pricing data
-- [ ] `/portfolio/{address}` resource - Portfolio snapshots
+- [x] `/portfolio/{address}` resource - Portfolio snapshots
 - [ ] `/balances/{chainId}/{address}` resource - Balance information
 - [ ] `/history/{address}` resource - Transaction history
 - [ ] `/swap-routes/{chainId}` resource - Swap quote data
