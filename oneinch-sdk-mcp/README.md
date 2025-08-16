@@ -228,16 +228,16 @@ mcp.rate-limit.burst-capacity=10
 
 ## Implementation Plan
 
-### Phase 1: Foundation
+### Phase 1: Foundation ✅
 - [x] Project setup with Quarkus and MCP dependencies
 - [x] Basic MCP server structure with stdio transport
 - [x] Configuration management and API key handling
 - [x] Rate limiting and caching infrastructure
-- [ ] Integration with oneinch-sdk-core
-- [ ] Basic health checks and monitoring
+- [x] Integration with oneinch-sdk-core
+- [x] Basic health checks and monitoring
 
 ### Phase 2: Core Resources (Data Access)
-- [ ] `/tokens/{chainId}` resource - Token lists and metadata
+- [x] `/tokens/{chainId}` resource - Token lists and metadata
 - [ ] `/prices/{chainId}/{token}` resource - Real-time pricing data
 - [ ] `/portfolio/{address}` resource - Portfolio snapshots
 - [ ] `/balances/{chainId}/{address}` resource - Balance information

@@ -84,4 +84,13 @@ public class OneInchClientService {
     public boolean isReady() {
         return client != null;
     }
+
+    /**
+     * Validates that the client is ready and throws exception if not.
+     */
+    public void validateClientReady() {
+        if (!isReady()) {
+            throw new IllegalStateException("1inch SDK client is not initialized. Check API key configuration.");
+        }
+    }
 }
