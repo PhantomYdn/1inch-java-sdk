@@ -231,7 +231,7 @@ mcp.rate-limit.burst-capacity=10
 ### Phase 1: Foundation
 - [x] Project setup with Quarkus and MCP dependencies
 - [x] Basic MCP server structure with stdio transport
-- [ ] Configuration management and API key handling
+- [x] Configuration management and API key handling
 - [ ] Rate limiting and caching infrastructure
 - [ ] Integration with oneinch-sdk-core
 - [ ] Basic health checks and monitoring

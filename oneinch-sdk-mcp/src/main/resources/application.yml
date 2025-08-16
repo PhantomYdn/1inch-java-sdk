@@ -1,0 +1,92 @@
+# Alternative YAML configuration for 1inch MCP Server
+# This provides a more structured way to configure the server
+
+# Application Info
+quarkus:
+  application:
+    name: 1inch-mcp-server
+    version: 1.0.0
+
+  # MCP Server Configuration
+  mcp:
+    server:
+      server-info:
+        name: 1inch-mcp-server
+        version: 1.0.0
+        title: 1inch DeFi MCP Server
+        description: AI-enhanced read-only access to DeFi data through the 1inch ecosystem
+
+  # Logging Configuration  
+  log:
+    level: INFO
+    category:
+      "io.oneinch.mcp": DEBUG
+    console:
+      json: false
+
+  # Health and Metrics
+  smallrye-health:
+    root-path: /health
+
+  micrometer:
+    enabled: true
+    binder:
+      http-server:
+        enabled: true
+
+  # Caching Configuration
+  cache:
+    caffeine:
+      prices:
+        initial-capacity: 100
+        maximum-size: 1000
+        expire-after-write: 30s
+      tokens:
+        initial-capacity: 500
+        maximum-size: 5000
+        expire-after-write: 1h
+      portfolio:
+        initial-capacity: 50
+        maximum-size: 500
+        expire-after-write: 5m
+
+# 1inch API Configuration
+oneinch:
+  api:
+    key: ${ONEINCH_API_KEY:}
+    base-url: https://api.1inch.dev
+
+# MCP Configuration
+mcp:
+  server:
+    name: 1inch-mcp-server
+    version: 1.0.0
+  rate-limit:
+    requests-per-minute: 60
+    burst-capacity: 10
+
+# Profile-specific configurations
+"%dev":
+  quarkus:
+    log:
+      level: DEBUG
+      console:
+        json: false
+
+"%test":
+  oneinch:
+    api:
+      key: test-api-key
+  quarkus:
+    log:
+      level: DEBUG
+
+"%prod":
+  quarkus:
+    log:
+      console:
+        json: true
+    micrometer:
+      binder:
+        jvm: true
+        system: true

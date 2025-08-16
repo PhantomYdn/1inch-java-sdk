@@ -1,5 +1,6 @@
 package io.oneinch.mcp.service;
 
+import io.oneinch.mcp.config.ConfigValidator;
 import io.oneinch.mcp.config.OneInchConfig;
 import io.oneinch.sdk.client.OneInchClient;
 import jakarta.annotation.PostConstruct;
@@ -21,20 +22,24 @@ public class OneInchClientService {
     @Inject
     OneInchConfig config;
 
+    @Inject
+    ConfigValidator configValidator;
+
     private OneInchClient client;
 
     @PostConstruct
     void init() {
         log.info("Initializing 1inch SDK client...");
         
-        if (config.apiKey() == null || config.apiKey().trim().isEmpty()) {
-            log.warn("1inch API key not configured. Set ONEINCH_API_KEY environment variable.");
-            throw new IllegalStateException("1inch API key is required but not configured");
-        }
-
         try {
+            // Use validated configuration
+            String apiKey = configValidator.getEffectiveApiKey();
+            String maskedKey = configValidator.maskApiKey(apiKey);
+            
+            log.debug("Using API key: {}", maskedKey);
+            
             this.client = OneInchClient.builder()
-                    .apiKey(config.apiKey())
+                    .apiKey(apiKey)
                     .build();
             
             log.info("1inch SDK client initialized successfully");
