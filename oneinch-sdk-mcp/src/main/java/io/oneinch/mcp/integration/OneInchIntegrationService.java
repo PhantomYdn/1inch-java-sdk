@@ -733,8 +733,10 @@ public class OneInchIntegrationService {
      * Gets transaction history with caching and rate limiting.
      */
     @RateLimit(clientId = "history-request")
+    @Monitored
     public CompletableFuture<HistoryResponseDto> getHistory(HistoryEventsRequest request) {
-        log.debug("Getting history for address: {}", request.getAddress());
+        log.debug("Getting history for address {} chain {} limit {}", 
+                request.getAddress(), request.getChainId(), request.getLimit());
 
         String chainKey = request.getChainId() != null ? request.getChainId().toString() : "all";
         Integer limit = request.getLimit() != null ? request.getLimit() : 10;
@@ -744,7 +746,9 @@ public class OneInchIntegrationService {
             chainKey,
             limit,
             () -> executeGetHistory(request)
-        ).thenApply(data -> convertToHistoryResponse(data));
+        ).thenApply(data -> {
+            return responseMapper.unmapHistoryResponseDto(data);
+        });
     }
 
     private CompletableFuture<List<Map<String, Object>>> executeGetHistory(HistoryEventsRequest request) {
@@ -752,7 +756,8 @@ public class OneInchIntegrationService {
             try {
                 OneInchClient client = clientService.getClient();
                 HistoryResponseDto response = client.history().getHistoryEvents(request);
-                return List.of(convertHistoryToMap(response));
+                Map<String, Object> historyMap = responseMapper.mapHistoryResponseDto(response);
+                return List.of(historyMap);
             } catch (OneInchException e) {
                 log.error("Error getting history", e);
                 throw new RuntimeException("Failed to get history: " + e.getMessage(), e);

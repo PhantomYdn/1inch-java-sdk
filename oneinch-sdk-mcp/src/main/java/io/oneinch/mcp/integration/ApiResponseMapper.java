@@ -547,6 +547,106 @@ public class ApiResponseMapper {
         return map;
     }
 
+    public HistoryResponseDto unmapHistoryResponseDto(List<Map<String, Object>> data) {
+        HistoryResponseDto response = new HistoryResponseDto();
+        
+        if (data != null && !data.isEmpty()) {
+            Map<String, Object> historyData = data.get(0); // Get first item from list
+            
+            if (historyData.containsKey("items") && historyData.get("items") instanceof List) {
+                List<Object> itemsList = (List<Object>) historyData.get("items");
+                List<HistoryEventDto> events = itemsList.stream()
+                        .map(obj -> unmapHistoryEventDto((Map<String, Object>) obj))
+                        .collect(Collectors.toList());
+                response.setItems(events);
+            }
+            
+            if (historyData.containsKey("cache_counter")) {
+                response.setCacheCounter((Integer) historyData.get("cache_counter"));
+            }
+        }
+        
+        return response;
+    }
+
+    public HistoryEventDto unmapHistoryEventDto(Map<String, Object> map) {
+        HistoryEventDto event = new HistoryEventDto();
+        
+        if (map.containsKey("id")) {
+            event.setId((String) map.get("id"));
+        }
+        
+        if (map.containsKey("type")) {
+            event.setType((String) map.get("type"));
+        }
+        
+        if (map.containsKey("details") && map.get("details") instanceof Map) {
+            event.setDetails(unmapTransactionDetailsDto((Map<String, Object>) map.get("details")));
+        }
+        
+        return event;
+    }
+
+    public TransactionDetailsDto unmapTransactionDetailsDto(Map<String, Object> map) {
+        TransactionDetailsDto details = new TransactionDetailsDto();
+        
+        if (map.containsKey("txHash")) {
+            details.setTxHash((String) map.get("txHash"));
+        }
+        
+        if (map.containsKey("chainId")) {
+            details.setChainId((Integer) map.get("chainId"));
+        }
+        
+        if (map.containsKey("blockNumber")) {
+            Object blockNumber = map.get("blockNumber");
+            if (blockNumber instanceof Number) {
+                details.setBlockNumber(((Number) blockNumber).longValue());
+            }
+        }
+        
+        if (map.containsKey("status")) {
+            details.setStatus((String) map.get("status"));
+        }
+        
+        if (map.containsKey("tokenActions") && map.get("tokenActions") instanceof List) {
+            List<Object> actionsList = (List<Object>) map.get("tokenActions");
+            List<TokenActionDto> actions = actionsList.stream()
+                    .map(obj -> unmapTokenActionDto((Map<String, Object>) obj))
+                    .collect(Collectors.toList());
+            details.setTokenActions(actions);
+        }
+        
+        return details;
+    }
+
+    public TokenActionDto unmapTokenActionDto(Map<String, Object> map) {
+        TokenActionDto action = new TokenActionDto();
+        
+        if (map.containsKey("direction")) {
+            action.setDirection((String) map.get("direction"));
+        }
+        
+        if (map.containsKey("amount")) {
+            Object amount = map.get("amount");
+            if (amount instanceof String) {
+                action.setAmount(new java.math.BigInteger((String) amount));
+            } else if (amount instanceof java.math.BigInteger) {
+                action.setAmount((java.math.BigInteger) amount);
+            }
+        }
+        
+        if (map.containsKey("fromAddress")) {
+            action.setFromAddress((String) map.get("fromAddress"));
+        }
+        
+        if (map.containsKey("toAddress")) {
+            action.setToAddress((String) map.get("toAddress"));
+        }
+        
+        return action;
+    }
+
     public Map<String, Object> mapHistoryEventDto(HistoryEventDto event) {
         Map<String, Object> map = new HashMap<>();
         map.put("id", event.getId());

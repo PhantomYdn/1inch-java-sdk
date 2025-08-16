@@ -241,14 +241,14 @@ mcp.rate-limit.burst-capacity=10
 - [x] `/prices/{chainId}/{token}` resource - Real-time pricing data
 - [x] `/portfolio/{address}` resource - Portfolio snapshots
 - [x] `/balances/{chainId}/{address}` resource - Balance information
-- [ ] `/history/{address}` resource - Transaction history
-- [ ] `/swap-routes/{chainId}` resource - Swap quote data
+- [x] `/history/{address}` resource - Transaction history
+- [x] `/swap-routes/{chainId}` resource - Swap quote data
 
 ### Phase 3: Essential Tools (AI Functions)
-- [ ] `getSwapQuote` - Generate swap quotes with route analysis
-- [ ] `analyzeToken` - Comprehensive token analysis
-- [ ] `getPortfolioValue` - Portfolio valuation and metrics
-- [ ] `searchTokens` - Multi-chain token search functionality
+- [x] `getSwapQuote` - Generate swap quotes with route analysis
+- [x] `analyzeToken` - Comprehensive token analysis
+- [x] `getPortfolioValue` - Portfolio valuation and metrics
+- [x] `searchTokens` - Multi-chain token search functionality
 - [ ] `compareProtocols` - Protocol performance comparison
 - [ ] `calculateSlippage` - Slippage calculation for trades
 
