@@ -232,7 +232,7 @@ mcp.rate-limit.burst-capacity=10
 - [x] Project setup with Quarkus and MCP dependencies
 - [x] Basic MCP server structure with stdio transport
 - [x] Configuration management and API key handling
-- [ ] Rate limiting and caching infrastructure
+- [x] Rate limiting and caching infrastructure
 - [ ] Integration with oneinch-sdk-core
 - [ ] Basic health checks and monitoring
 
