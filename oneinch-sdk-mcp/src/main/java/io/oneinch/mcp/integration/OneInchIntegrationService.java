@@ -269,28 +269,147 @@ public class OneInchIntegrationService {
      * Gets token prices with caching and rate limiting.
      */
     @RateLimit(clientId = "price-request")
+    @Monitored
     public CompletableFuture<Map<String, BigInteger>> getTokenPrices(PriceRequest request) {
-        log.debug("Getting prices for chain {} with currency {}", request.getChainId(), request.getCurrency());
+        log.debug("Getting prices for chain {} addresses {} currency {}", 
+                request.getChainId(), request.getAddresses(), request.getCurrency());
 
-        return cacheService.cacheTokenPrice(
+        String cacheKey = buildPriceCacheKey(request);
+        return cacheService.cacheTokenData(
             request.getChainId(),
-            "prices:" + request.getCurrency(),
+            cacheKey,
             () -> executeGetPrices(request)
-        ).thenApply(price -> Map.of("price", price));
+        ).thenApply(cachedData -> {
+            return responseMapper.unmapPrices(cachedData);
+        });
     }
 
-    private CompletableFuture<BigInteger> executeGetPrices(PriceRequest request) {
+    /**
+     * Gets whitelist prices (all tokens) with caching and rate limiting.
+     */
+    @RateLimit(clientId = "price-whitelist")
+    @Monitored
+    public CompletableFuture<Map<String, BigInteger>> getWhitelistPrices(Integer chainId, Currency currency) {
+        log.debug("Getting whitelist prices for chain {} currency {}", chainId, currency);
+
+        String currencyKey = currency != null ? currency.name() : "native";
+        return cacheService.cacheTokenData(
+            chainId,
+            "whitelist-" + currencyKey,
+            () -> executeGetWhitelistPrices(chainId, currency)
+        ).thenApply(cachedData -> {
+            return responseMapper.unmapPrices(cachedData);
+        });
+    }
+
+    /**
+     * Gets single token price with caching and rate limiting.
+     */
+    @RateLimit(clientId = "price-single")
+    @Monitored
+    public CompletableFuture<BigInteger> getSingleTokenPrice(Integer chainId, String address, Currency currency) {
+        log.debug("Getting single token price for {}:{} currency {}", chainId, address, currency);
+
+        String currencyKey = currency != null ? currency.name() : "native";
+        return cacheService.cacheTokenData(
+            chainId,
+            "single-" + address + "-" + currencyKey,
+            () -> executeGetSinglePrice(chainId, address, currency)
+        ).thenApply(cachedData -> {
+            if (cachedData instanceof Map && ((Map<?, ?>) cachedData).containsKey("price")) {
+                Object priceValue = ((Map<String, Object>) cachedData).get("price");
+                return new BigInteger(priceValue.toString());
+            }
+            return BigInteger.ZERO;
+        });
+    }
+
+    /**
+     * Gets supported currencies with caching and rate limiting.
+     */
+    @RateLimit(clientId = "price-currencies")
+    @Monitored
+    public CompletableFuture<List<String>> getSupportedCurrencies(Integer chainId) {
+        log.debug("Getting supported currencies for chain {}", chainId);
+
+        return cacheService.cacheTokenData(
+            chainId,
+            "currencies",
+            () -> executeGetSupportedCurrencies(chainId)
+        ).thenApply(cachedData -> {
+            if (cachedData instanceof Map && ((Map<?, ?>) cachedData).containsKey("currencies")) {
+                return (List<String>) ((Map<String, Object>) cachedData).get("currencies");
+            }
+            return List.of();
+        });
+    }
+
+    // === PRICE API EXECUTION METHODS ===
+
+    private CompletableFuture<Map<String, Object>> executeGetPrices(PriceRequest request) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 OneInchClient client = clientService.getClient();
                 Map<String, BigInteger> response = client.price().getPrices(request);
-                // Return first price as example - real implementation would return full map
-                return response.values().stream().findFirst().orElse(BigInteger.ZERO);
+                return responseMapper.mapPrices(response);
             } catch (OneInchException e) {
                 log.error("Error getting prices", e);
                 throw new RuntimeException("Failed to get prices: " + e.getMessage(), e);
             }
         });
+    }
+
+    private CompletableFuture<Map<String, Object>> executeGetWhitelistPrices(Integer chainId, Currency currency) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                OneInchClient client = clientService.getClient();
+                Map<String, BigInteger> response = client.price().getWhitelistPrices(chainId, currency);
+                return responseMapper.mapPrices(response);
+            } catch (OneInchException e) {
+                log.error("Error getting whitelist prices", e);
+                throw new RuntimeException("Failed to get whitelist prices: " + e.getMessage(), e);
+            }
+        });
+    }
+
+    private CompletableFuture<Map<String, Object>> executeGetSinglePrice(Integer chainId, String address, Currency currency) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                OneInchClient client = clientService.getClient();
+                BigInteger response = client.price().getPrice(chainId, address, currency);
+                return Map.of("price", response.toString());
+            } catch (OneInchException e) {
+                log.error("Error getting single price", e);
+                throw new RuntimeException("Failed to get single price: " + e.getMessage(), e);
+            }
+        });
+    }
+
+    private CompletableFuture<Map<String, Object>> executeGetSupportedCurrencies(Integer chainId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                OneInchClient client = clientService.getClient();
+                List<String> response = client.price().getSupportedCurrencies(chainId);
+                return Map.of("currencies", response);
+            } catch (OneInchException e) {
+                log.error("Error getting supported currencies", e);
+                throw new RuntimeException("Failed to get supported currencies: " + e.getMessage(), e);
+            }
+        });
+    }
+
+    private String buildPriceCacheKey(PriceRequest request) {
+        StringBuilder key = new StringBuilder("prices");
+        
+        if (request.getCurrency() != null) {
+            key.append("-").append(request.getCurrency().name());
+        }
+        
+        if (request.getAddresses() != null && !request.getAddresses().isEmpty()) {
+            key.append("-").append(String.join(",", request.getAddresses()));
+        }
+        
+        return key.toString();
     }
 
     // === PORTFOLIO API INTEGRATION ===

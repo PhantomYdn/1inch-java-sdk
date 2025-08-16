@@ -352,6 +352,42 @@ public class ApiResponseMapper {
         return map;
     }
 
+    // === PRICE API MAPPINGS ===
+
+    public Map<String, Object> mapPrices(Map<String, BigInteger> prices) {
+        Map<String, Object> map = new HashMap<>();
+        
+        if (prices != null) {
+            Map<String, String> priceStrings = prices.entrySet().stream()
+                    .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().toString()
+                    ));
+            map.put("prices", priceStrings);
+            map.put("count", prices.size());
+        }
+        
+        return map;
+    }
+
+    public Map<String, BigInteger> unmapPrices(Map<String, Object> map) {
+        Map<String, BigInteger> prices = new HashMap<>();
+        
+        if (map.containsKey("prices") && map.get("prices") instanceof Map) {
+            Map<String, Object> pricesMap = (Map<String, Object>) map.get("prices");
+            for (Map.Entry<String, Object> entry : pricesMap.entrySet()) {
+                try {
+                    BigInteger price = new BigInteger(entry.getValue().toString());
+                    prices.put(entry.getKey(), price);
+                } catch (NumberFormatException e) {
+                    log.warn("Invalid price format for {}: {}", entry.getKey(), entry.getValue());
+                }
+            }
+        }
+        
+        return prices;
+    }
+
     // === BALANCE API MAPPINGS ===
 
     public Map<String, Object> mapBalanceData(Map<String, BigInteger> balances) {

@@ -238,7 +238,7 @@ mcp.rate-limit.burst-capacity=10
 
 ### Phase 2: Core Resources (Data Access)
 - [x] `/tokens/{chainId}` resource - Token lists and metadata
-- [ ] `/prices/{chainId}/{token}` resource - Real-time pricing data
+- [x] `/prices/{chainId}/{token}` resource - Real-time pricing data
 - [ ] `/portfolio/{address}` resource - Portfolio snapshots
 - [ ] `/balances/{chainId}/{address}` resource - Balance information
 - [ ] `/history/{address}` resource - Transaction history
