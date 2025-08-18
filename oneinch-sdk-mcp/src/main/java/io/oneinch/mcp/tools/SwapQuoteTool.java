@@ -135,82 +135,7 @@ public class SwapQuoteTool {
         }
     }
 
-    /**
-     * Compare swap routes using different protocols.
-     */
-    @Tool(description = "Compare swap routes across different protocols to find the best option")
-    public ToolResponse compareRoutes(
-            @ToolArg(description = "Blockchain network ID") Integer chainId,
-            @ToolArg(description = "Source token address") String srcToken,
-            @ToolArg(description = "Destination token address") String dstToken,
-            @ToolArg(description = "Amount to swap in wei (string format)") String amount,
-            @ToolArg(description = "Comma-separated list of protocols to compare", defaultValue = "UNISWAP_V2,UNISWAP_V3") String alternativeProtocols) {
-        
-        log.info("Comparing routes for chain {} src {} dst {} amount {} protocols {}", 
-                chainId, srcToken, dstToken, amount, alternativeProtocols);
 
-        try {
-            // For now, provide a simplified comparison response
-            String comparison = String.format(
-                "{" +
-                "\"tool\": \"compareRoutes\"," +
-                "\"chain_id\": %d," +
-                "\"src_token\": \"%s\"," +
-                "\"dst_token\": \"%s\"," +
-                "\"amount\": \"%s\"," +
-                "\"alternative_protocols\": \"%s\"," +
-                "\"recommendation\": \"Route comparison functionality is available - implement specific protocol comparison logic\"," +
-                "\"timestamp\": %d" +
-                "}",
-                chainId, srcToken, dstToken, amount, alternativeProtocols, System.currentTimeMillis()
-            );
-            
-            return ToolResponse.success(new TextContent(comparison));
-            
-        } catch (Exception e) {
-            log.error("Error comparing routes: {}", e.getMessage());
-            String error = formatErrorResponse("route_comparison_failed", e.getMessage(), chainId, srcToken, dstToken, amount);
-            return ToolResponse.success(new TextContent(error));
-        }
-    }
-
-    /**
-     * Calculate price impact and slippage estimation.
-     */
-    @Tool(description = "Analyze price impact and slippage for large swap amounts")
-    public ToolResponse calculatePriceImpact(
-            @ToolArg(description = "Blockchain network ID") Integer chainId,
-            @ToolArg(description = "Source token address") String srcToken,
-            @ToolArg(description = "Destination token address") String dstToken,
-            @ToolArg(description = "Amount to swap in wei (string format)") String amount) {
-        
-        log.info("Calculating price impact for chain {} src {} dst {} amount {}", 
-                chainId, srcToken, dstToken, amount);
-
-        try {
-            // For now, provide a simplified price impact analysis
-            String analysis = String.format(
-                "{" +
-                "\"tool\": \"calculatePriceImpact\"," +
-                "\"chain_id\": %d," +
-                "\"src_token\": \"%s\"," +
-                "\"dst_token\": \"%s\"," +
-                "\"amount\": \"%s\"," +
-                "\"estimated_impact\": \"low\"," +
-                "\"recommendation\": \"Price impact analysis functionality is available - implement specific impact calculation logic\"," +
-                "\"timestamp\": %d" +
-                "}",
-                chainId, srcToken, dstToken, amount, System.currentTimeMillis()
-            );
-            
-            return ToolResponse.success(new TextContent(analysis));
-            
-        } catch (Exception e) {
-            log.error("Error calculating price impact: {}", e.getMessage());
-            String error = formatErrorResponse("price_impact_failed", e.getMessage(), chainId, srcToken, dstToken, amount);
-            return ToolResponse.success(new TextContent(error));
-        }
-    }
 
     // === RESPONSE FORMATTING METHODS ===
 
@@ -297,62 +222,6 @@ public class SwapQuoteTool {
                           .replaceAll("\"route_analysis\":\\s*\\{[^}]*\\},?", "");
     }
 
-    private String formatRouteComparison(String defaultRoute, String alternativeRoute, 
-                                        Integer chainId, String srcToken, String dstToken, String amount) {
-        return String.format(
-            "{" +
-            "\"tool\": \"compareRoutes\"," +
-            "\"type\": \"route_comparison\"," +
-            "\"chain_id\": %d," +
-            "\"chain_name\": \"%s\"," +
-            "\"swap_details\": {" +
-            "\"src_token\": \"%s\"," +
-            "\"dst_token\": \"%s\"," +
-            "\"input_amount\": \"%s\"" +
-            "}," +
-            "\"default_route\": %s," +
-            "\"alternative_route\": %s," +
-            "\"recommendation\": \"Comparison shows optimal routing options\"," +
-            "\"timestamp\": %d" +
-            "}",
-            chainId, getChainName(chainId),
-            srcToken, dstToken, amount,
-            defaultRoute,
-            alternativeRoute,
-            System.currentTimeMillis()
-        );
-    }
-
-    private String formatPriceImpactAnalysis(String mainQuote, String smallQuote, 
-                                           Integer chainId, String srcToken, String dstToken, String amount) {
-        return String.format(
-            "{" +
-            "\"tool\": \"calculatePriceImpact\"," +
-            "\"type\": \"price_impact_analysis\"," +
-            "\"chain_id\": %d," +
-            "\"chain_name\": \"%s\"," +
-            "\"swap_details\": {" +
-            "\"src_token\": \"%s\"," +
-            "\"dst_token\": \"%s\"," +
-            "\"input_amount\": \"%s\"" +
-            "}," +
-            "\"price_impact\": {" +
-            "\"estimated_impact\": \"low\"," +
-            "\"slippage_tolerance\": \"0.5%%\"," +
-            "\"liquidity_sufficient\": true" +
-            "}," +
-            "\"main_quote\": %s," +
-            "\"small_quote\": %s," +
-            "\"recommendation\": \"Price impact is acceptable for this swap size\"," +
-            "\"timestamp\": %d" +
-            "}",
-            chainId, getChainName(chainId),
-            srcToken, dstToken, amount,
-            mainQuote,
-            smallQuote != null ? smallQuote : "null",
-            System.currentTimeMillis()
-        );
-    }
 
     private String formatErrorResponse(String errorType, String message, Integer chainId, 
                                      String srcToken, String dstToken, String amount) {
