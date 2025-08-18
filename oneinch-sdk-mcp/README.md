@@ -286,8 +286,8 @@ mcp.rate-limit.burst-capacity=10
 - [ ] Plan integration once APIs are available in SDK
 
 ### Phase 8: Transport Layer Enhancements
-- [ ] HTTP/SSE transport implementation
-- [ ] Streamable HTTP transport support
+- [x] HTTP/SSE transport implementation
+- [x] Streamable HTTP transport support
 
 ### Phase 9: Other
 - [ ] Unit tests for all MCP components (resources, tools, prompts)
@@ -297,9 +297,62 @@ mcp.rate-limit.burst-capacity=10
 
 ## Usage Examples
 
-### Claude Integration
+The 1inch MCP Server supports multiple transport modes for different use cases:
+
+### Transport Modes
+
+#### 1. Stdio Transport (Local Development)
+Best for local development, Claude Desktop integration, and command-line AI applications.
+
 ```bash
-# Install via JBang
+# Set your 1inch API key
+export ONEINCH_API_KEY=your_api_key_here
+
+# Run in stdio mode
+./scripts/run-stdio.sh
+
+# Or with Maven
+mvn quarkus:dev -Dquarkus.profile=stdio,dev
+```
+
+#### 2. HTTP/SSE Transport (Web Applications)
+Ideal for web applications, remote access, and production deployments.
+
+```bash
+# Set required environment variables
+export ONEINCH_API_KEY=your_api_key_here
+export MCP_API_KEY=your_secure_mcp_api_key  # For client authentication
+
+# Run in HTTP mode
+./scripts/run-http.sh
+
+# Or with custom port and host
+MCP_PORT=9090 MCP_HOST=localhost ./scripts/run-http.sh
+
+# Production mode with security enabled
+MCP_PROFILE=http,prod ./scripts/run-http.sh
+```
+
+#### 3. Docker Deployment (Production)
+For containerized deployments and cloud platforms.
+
+```bash
+# Set required environment variables
+export ONEINCH_API_KEY=your_api_key_here
+export MCP_API_KEY=your_secure_mcp_api_key
+
+# Deploy with Docker
+./scripts/run-docker.sh
+
+# Custom configuration
+MCP_PORT=8080 MCP_CONTAINER_NAME=my-mcp-server ./scripts/run-docker.sh
+```
+
+### Client Integration Examples
+
+#### Claude Desktop Integration (Stdio)
+```bash
+# Install via JBang (when available)
 jbang 1inch-mcp-server@io.oneinch.mcp
 
 # Configure Claude with MCP server
@@ -327,7 +380,52 @@ Alternative routes:
 Recommendation: Use Uniswap V3 route for best price execution.
 ```
 
-### Cursor IDE Integration
+#### Web Application Integration (HTTP/SSE)
+```javascript
+// Connect to MCP server via SSE
+const eventSource = new EventSource('http://localhost:8080/mcp/sse', {
+  headers: {
+    'X-API-Key': 'your_mcp_api_key'
+  }
+});
+
+eventSource.onmessage = function(event) {
+  const data = JSON.parse(event.data);
+  console.log('MCP Data:', data);
+};
+
+// Or use Streamable HTTP (recommended)
+async function callMcpTool(toolName, params) {
+  const response = await fetch('http://localhost:8080/mcp/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': 'your_mcp_api_key'
+    },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: Date.now(),
+      method: 'tools/call',
+      params: {
+        name: toolName,
+        arguments: params
+      }
+    })
+  });
+  return response.json();
+}
+
+// Example: Get swap quote
+const swapQuote = await callMcpTool('getSwapQuote', {
+  chainId: 137,
+  srcToken: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174', // USDC
+  dstToken: '0x7ceb23fd6f88dc98aa049b4c9c4bd308e8bb9c79', // WETH  
+  amount: '1000000000' // 1000 USDC in wei
+});
+```
+
+#### Cursor IDE Integration
+**Stdio Mode:**
 ```json
 {
   "mcp": {
@@ -344,41 +442,197 @@ Recommendation: Use Uniswap V3 route for best price execution.
 }
 ```
 
-### Standalone HTTP Server
-```bash
-# Start HTTP server
-java -jar 1inch-mcp-server.jar
+**HTTP Mode:**
+```json
+{
+  "mcp": {
+    "servers": {
+      "1inch": {
+        "transport": {
+          "type": "sse",
+          "url": "http://localhost:8080/mcp/sse",
+          "headers": {
+            "X-API-Key": "${MCP_API_KEY}"
+          }
+        }
+      }
+    }
+  }
+}
+```
 
-# Access via HTTP/SSE
-curl -H "Authorization: Bearer <token>" \
+#### Python Client Example
+```python
+import asyncio
+import aiohttp
+import json
+
+class OneInchMcpClient:
+    def __init__(self, base_url="http://localhost:8080/mcp", api_key=None):
+        self.base_url = base_url
+        self.api_key = api_key
+        self.headers = {
+            'Content-Type': 'application/json',
+            'X-API-Key': api_key
+        } if api_key else {'Content-Type': 'application/json'}
+    
+    async def call_tool(self, tool_name, **params):
+        """Call an MCP tool via HTTP"""
+        async with aiohttp.ClientSession() as session:
+            payload = {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tools/call",
+                "params": {
+                    "name": tool_name,
+                    "arguments": params
+                }
+            }
+            
+            async with session.post(
+                f"{self.base_url}/messages",
+                headers=self.headers,
+                json=payload
+            ) as response:
+                return await response.json()
+    
+    async def get_swap_quote(self, chain_id, src_token, dst_token, amount):
+        """Get a swap quote using the MCP server"""
+        return await self.call_tool(
+            "getSwapQuote",
+            chainId=chain_id,
+            srcToken=src_token,
+            dstToken=dst_token,
+            amount=str(amount)
+        )
+
+# Usage example
+async def main():
+    client = OneInchMcpClient(api_key="your_mcp_api_key")
+    
+    quote = await client.get_swap_quote(
+        chain_id=1,
+        src_token="0xA0b86a33E6411d80acCB3dEfcb0b47A4Caaa5B18",  # USDC
+        dst_token="0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",  # WETH
+        amount=1000_000_000  # 1000 USDC
+    )
+    
+    print(json.dumps(quote, indent=2))
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+### API Testing and Development
+
+#### Test Server Health
+```bash
+# Check if server is running
+curl http://localhost:8080/mcp/health
+
+# Get server information
+curl http://localhost:8080/mcp/info
+
+# Test with authentication (if enabled)
+curl -H "X-API-Key: your_mcp_api_key" \
+     http://localhost:8080/mcp/info
+```
+
+#### Test SSE Connection
+```bash
+# Connect to SSE endpoint
+curl -H "Accept: text/event-stream" \
+     -H "X-API-Key: your_mcp_api_key" \
      http://localhost:8080/mcp/sse
+```
+
+#### Test HTTP Messages
+```bash
+# Send MCP request via HTTP
+curl -X POST http://localhost:8080/mcp/messages \
+     -H "Content-Type: application/json" \
+     -H "X-API-Key: your_mcp_api_key" \
+     -d '{
+       "jsonrpc": "2.0",
+       "id": 1,
+       "method": "tools/call",
+       "params": {
+         "name": "getSwapQuote",
+         "arguments": {
+           "chainId": 1,
+           "srcToken": "0xA0b86a33E6411d80acCB3dEfcb0b47A4Caaa5B18",
+           "dstToken": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", 
+           "amount": "1000000000"
+         }
+       }
+     }'
 ```
 
 ## Security Considerations
 
-### API Key Management
-- Environment variable configuration
-- Secure storage recommendations  
-- Rotation procedures
-- Access logging
+### Transport Security
 
-### Rate Limiting
-- Per-client rate limits
-- Burst capacity management
-- Fair usage policies
-- Abuse prevention
+#### Stdio Transport
+- **Local only**: Communication stays on local machine
+- **No network exposure**: Inherently secure for single-user scenarios
+- **Process isolation**: Runs as local application process
 
-### Data Privacy
-- No sensitive data storage
-- Audit logging capabilities
-- GDPR compliance considerations
-- Data retention policies
+#### HTTP/SSE Transport  
+- **Authentication required**: Always use API key authentication in production
+- **HTTPS recommended**: Use reverse proxy (nginx, Apache) for TLS termination
+- **CORS configuration**: Restrict origins in production environments
+- **Network security**: Firewall and network-level access controls
 
-### Network Security
-- HTTPS enforcement for HTTP transport
-- WebSocket security best practices
-- CORS policy configuration
-- DDoS protection strategies
+### Authentication Methods
+
+#### API Key Authentication (Recommended)
+```bash
+# Set secure API key for production
+export MCP_API_KEY=mcp_live_1234567890abcdef...
+
+# Clients must include header:
+# X-API-Key: mcp_live_1234567890abcdef...
+```
+
+#### JWT Authentication (Advanced)
+```yaml
+# application.yml
+mcp:
+  transport:
+    security:
+      auth-method: JWT
+      jwt:
+        issuer: https://your-auth-provider.com
+        audience: 1inch-mcp-server
+        jwks-url: https://your-auth-provider.com/.well-known/jwks.json
+```
+
+### Production Deployment Checklist
+
+- [ ] **API Keys**: Use strong, unique API keys for MCP authentication
+- [ ] **1inch API Key**: Secure 1inch API key storage (environment variables)
+- [ ] **HTTPS**: Deploy behind reverse proxy with TLS termination
+- [ ] **CORS**: Restrict allowed origins to specific domains
+- [ ] **Monitoring**: Enable metrics and health checks
+- [ ] **Logging**: Configure structured logging for audit trails
+- [ ] **Rate Limiting**: Configure appropriate rate limits per client
+- [ ] **Network**: Use firewalls and security groups to restrict access
+- [ ] **Updates**: Keep dependencies and base images updated
+
+### Environment Variables
+
+#### Required
+```bash
+ONEINCH_API_KEY=your_1inch_api_key_here    # 1inch API access
+MCP_API_KEY=your_mcp_api_key_here          # Client authentication (HTTP mode)
+```
+
+#### Optional Security
+```bash
+MCP_USERNAME=admin                          # Basic auth username
+MCP_PASSWORD=secure_password               # Basic auth password
+QUARKUS_PROFILE=prod                       # Production profile
+```
 
 ## Monitoring & Observability
 

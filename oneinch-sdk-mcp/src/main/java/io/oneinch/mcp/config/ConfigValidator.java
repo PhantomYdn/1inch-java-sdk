@@ -23,6 +23,9 @@ public class ConfigValidator {
     @Inject
     McpConfig mcpConfig;
 
+    @Inject
+    McpTransportConfig mcpTransportConfig;
+
     @ConfigProperty(name = "ONEINCH_API_KEY")
     Optional<String> envApiKey;
 
@@ -36,6 +39,7 @@ public class ConfigValidator {
         
         validateOneInchConfig();
         validateMcpConfig();
+        validateTransportConfig();
         
         log.info("Configuration validation successful");
     }
@@ -116,6 +120,47 @@ public class ConfigValidator {
         
         log.debug("MCP configuration validated: name={}, version={}, rate-limit={}/min", 
                 serverName, serverVersion, requestsPerMinute);
+    }
+
+    /**
+     * Validates MCP transport configuration.
+     */
+    private void validateTransportConfig() {
+        // Validate transport mode
+        var transportMode = mcpTransportConfig.mode();
+        if (transportMode == null) {
+            throw new IllegalStateException("MCP transport mode is required");
+        }
+
+        // Validate HTTP configuration if HTTP transport is enabled
+        if (transportMode == McpTransportConfig.TransportMode.HTTP_SSE || 
+            transportMode == McpTransportConfig.TransportMode.BOTH) {
+            
+            var httpConfig = mcpTransportConfig.http();
+            if (httpConfig.port() == null || httpConfig.port() <= 0 || httpConfig.port() > 65535) {
+                throw new IllegalStateException("Invalid HTTP port: must be between 1 and 65535");
+            }
+            
+            if (httpConfig.host() == null || httpConfig.host().trim().isEmpty()) {
+                throw new IllegalStateException("HTTP host is required");
+            }
+            
+            if (httpConfig.rootPath() == null || httpConfig.rootPath().trim().isEmpty()) {
+                throw new IllegalStateException("HTTP root path is required");
+            }
+            
+            log.debug("Transport HTTP configuration validated: host={}, port={}, root-path={}", 
+                    httpConfig.host(), httpConfig.port(), httpConfig.rootPath());
+        }
+
+        // Validate security configuration
+        var securityConfig = mcpTransportConfig.security();
+        if (securityConfig.enabled() && securityConfig.authMethod() == null) {
+            throw new IllegalStateException("Authentication method is required when security is enabled");
+        }
+        
+        log.debug("MCP transport configuration validated: mode={}, security-enabled={}", 
+                transportMode, securityConfig.enabled());
     }
 
     /**

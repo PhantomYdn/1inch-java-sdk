@@ -1,21 +1,12 @@
-# Alternative YAML configuration for 1inch MCP Server
-# This provides a more structured way to configure the server
+# 1inch MCP Server Configuration
+# Simplified configuration with only properly mapped properties
 
 # Application Info
 quarkus:
   application:
     name: 1inch-mcp-server
     version: 1.0.0
-
-  # MCP Server Configuration
-  mcp:
-    server:
-      server-info:
-        name: 1inch-mcp-server
-        version: 1.0.0
-        title: 1inch DeFi MCP Server
-        description: AI-enhanced read-only access to DeFi data through the 1inch ecosystem
-
+  
   # Logging Configuration  
   log:
     level: INFO
@@ -24,39 +15,13 @@ quarkus:
     console:
       json: false
 
-  # Health and Metrics
-  smallrye-health:
-    root-path: /health
-
-  micrometer:
-    enabled: true
-    binder:
-      http-server:
-        enabled: true
-
-  # Caching Configuration
-  cache:
-    caffeine:
-      prices:
-        initial-capacity: 100
-        maximum-size: 1000
-        expire-after-write: 30s
-      tokens:
-        initial-capacity: 500
-        maximum-size: 5000
-        expire-after-write: 1h
-      portfolio:
-        initial-capacity: 50
-        maximum-size: 500
-        expire-after-write: 5m
-
 # 1inch API Configuration
 oneinch:
   api:
     key: ${ONEINCH_API_KEY:}
     base-url: https://api.1inch.dev
 
-# MCP Configuration
+# MCP Configuration  
 mcp:
   server:
     name: 1inch-mcp-server
@@ -64,29 +29,83 @@ mcp:
   rate-limit:
     requests-per-minute: 60
     burst-capacity: 10
+  transport:
+    mode: BOTH
+    http:
+      root-path: /mcp
+      host: 0.0.0.0
+      port: 8080
+      enable-sse: true
+      enable-streamable: true
+      include-query-params: false
+      request-timeout-ms: 30000
+      max-message-size: 1048576
+    security:
+      enabled: true
+      auth-method: API_KEY
+      api-key-header: X-API-Key
+    cors:
+      enabled: true
+      allowed-origins:
+        - "*"
+      allowed-methods:
+        - GET
+        - POST  
+        - OPTIONS
+      allowed-headers:
+        - Content-Type
+        - Authorization
+        - X-API-Key
+      allow-credentials: true
+      max-age: 3600
 
 # Profile-specific configurations
 "%dev":
   quarkus:
     log:
       level: DEBUG
-      console:
-        json: false
+  mcp:
+    transport:
+      security:
+        enabled: false
+        auth-method: NONE
 
 "%test":
   oneinch:
     api:
       key: test-api-key
-  quarkus:
-    log:
-      level: DEBUG
+  mcp:
+    transport:
+      security:
+        enabled: false
+        auth-method: NONE
 
 "%prod":
   quarkus:
     log:
       console:
         json: true
-    micrometer:
-      binder:
-        jvm: true
-        system: true
+  mcp:
+    transport:
+      security:
+        enabled: true
+        auth-method: API_KEY
+      cors:
+        allowed-origins:
+          - "https://claude.ai"
+          - "https://cursor.sh"
+
+# Stdio-only profile
+"%stdio":
+  mcp:
+    transport:
+      mode: STDIO
+
+# HTTP-only profile  
+"%http":
+  mcp:
+    transport:
+      mode: HTTP_SSE
+      security:
+        enabled: true
+        auth-method: API_KEY

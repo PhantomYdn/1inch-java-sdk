@@ -20,7 +20,7 @@
         <quarkus.platform.version>3.20.2</quarkus.platform.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <maven.compiler.release>11</maven.compiler.release>
+        <maven.compiler.release>17</maven.compiler.release>
     </properties>
 
     <dependencyManagement>
@@ -46,10 +46,15 @@
             <artifactId>quarkus-config-yaml</artifactId>
         </dependency>
 
-        <!-- MCP Server Extension -->
+        <!-- MCP Server Extensions -->
         <dependency>
             <groupId>io.quarkiverse.mcp</groupId>
             <artifactId>quarkus-mcp-server-stdio</artifactId>
+            <version>1.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkiverse.mcp</groupId>
+            <artifactId>quarkus-mcp-server-sse</artifactId>
             <version>1.4.0</version>
         </dependency>
 

@@ -2,7 +2,12 @@ package io.oneinch.mcp.resources;
 
 import io.oneinch.mcp.integration.OneInchIntegrationService;
 import io.oneinch.mcp.integration.ApiResponseMapper;
+import io.oneinch.sdk.model.Token;
 import io.oneinch.sdk.model.token.*;
+import io.quarkiverse.mcp.server.Resource;
+import io.quarkiverse.mcp.server.ResourceTemplate;
+import io.quarkiverse.mcp.server.BlobResourceContents;
+import io.quarkiverse.mcp.server.RequestUri;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
@@ -29,10 +34,10 @@ public class TokenResource {
     ApiResponseMapper responseMapper;
 
     /**
-     * Get token list for a specific blockchain.
-     * Format: /tokens/{chainId}
+     * Get token list for any blockchain network.
      */
-    public CompletableFuture<String> getTokenList(String chainId) {
+    @ResourceTemplate(uriTemplate = "tokens/{chainId}")
+    public BlobResourceContents getTokenList(String chainId, RequestUri uri) {
         log.info("Retrieving token list for chain: {}", chainId);
         
         try {
@@ -44,123 +49,47 @@ public class TokenResource {
                     .provider("1inch") // Use 1inch as primary provider
                     .build();
             
-            return integrationService.getTokenList(request)
-                    .thenApply(response -> {
-                        Map<String, Object> result = responseMapper.mapTokenList(response);
-                        return formatTokenListResponse(result, chain);
-                    })
-                    .exceptionally(throwable -> {
-                        log.error("Error retrieving token list for chain {}: {}", chainId, throwable.getMessage());
-                        return formatErrorResponse("token_list_error", throwable.getMessage(), chainId);
-                    });
+            // Execute synchronously for MCP Resource
+            CompletableFuture<TokenListResponse> future = integrationService.getTokenList(request);
+            TokenListResponse response = future.join(); // Block until completion
+            
+            Map<String, Object> result = responseMapper.mapTokenList(response);
+            String content = formatTokenListResponse(result, chain);
+            
+            return BlobResourceContents.create("tokens/" + chainId, content.getBytes());
                     
         } catch (NumberFormatException e) {
             log.warn("Invalid chain ID format: {}", chainId);
-            return CompletableFuture.completedFuture(
-                formatErrorResponse("invalid_chain_id", "Chain ID must be a valid integer", chainId)
-            );
-        }
-    }
-
-    /**
-     * Search tokens across chains or on specific chain.
-     * Format: /tokens/{chainId}/search?q={query}
-     */
-    public CompletableFuture<String> searchTokens(String chainId, String query) {
-        log.info("Searching tokens on chain {} with query: {}", chainId, query);
-        
-        if (query == null || query.trim().isEmpty()) {
-            return CompletableFuture.completedFuture(
-                formatErrorResponse("missing_query", "Search query is required", chainId)
-            );
-        }
-        
-        try {
-            int chain = Integer.parseInt(chainId);
-            
-            // Create search request
-            TokenSearchRequest request = TokenSearchRequest.builder()
-                    .chainId(chain)
-                    .query(query.trim())
-                    .build();
-            
-            return integrationService.searchTokens(request)
-                    .thenApply(tokens -> {
-                        List<Map<String, Object>> tokenMaps = tokens.stream()
-                                .map(responseMapper::mapToken)
-                                .collect(Collectors.toList());
-                        return formatSearchResponse(tokenMaps, query, chain);
-                    })
-                    .exceptionally(throwable -> {
-                        log.error("Error searching tokens on chain {} with query {}: {}", 
-                                chainId, query, throwable.getMessage());
-                        return formatErrorResponse("token_search_error", throwable.getMessage(), chainId);
-                    });
-                    
-        } catch (NumberFormatException e) {
-            log.warn("Invalid chain ID format: {}", chainId);
-            return CompletableFuture.completedFuture(
-                formatErrorResponse("invalid_chain_id", "Chain ID must be a valid integer", chainId)
-            );
-        }
-    }
-
-    /**
-     * Get detailed information for specific tokens.
-     * Format: /tokens/{chainId}/details/{address}
-     */
-    public CompletableFuture<String> getTokenDetails(String chainId, String address) {
-        log.info("Retrieving token details for {}:{}", chainId, address);
-        
-        try {
-            int chain = Integer.parseInt(chainId);
-            
-            // Create custom token request
-            CustomTokenRequest request = CustomTokenRequest.builder()
-                    .chainId(chain)
-                    .addresses(List.of(address))
-                    .build();
-            
-            return integrationService.getCustomTokens(request)
-                    .thenApply(tokens -> {
-                        if (tokens.isEmpty()) {
-                            return formatErrorResponse("token_not_found", 
-                                "Token not found at address " + address, chainId);
-                        }
-                        
-                        Map<String, Object> tokenData = responseMapper.mapToken(tokens.get(0));
-                        return formatTokenDetailsResponse(tokenData, address, chain);
-                    })
-                    .exceptionally(throwable -> {
-                        log.error("Error retrieving token details for {}:{}: {}", 
-                                chainId, address, throwable.getMessage());
-                        return formatErrorResponse("token_details_error", throwable.getMessage(), chainId);
-                    });
-                    
-        } catch (NumberFormatException e) {
-            log.warn("Invalid chain ID format: {}", chainId);
-            return CompletableFuture.completedFuture(
-                formatErrorResponse("invalid_chain_id", "Chain ID must be a valid integer", chainId)
-            );
+            String error = formatErrorResponse("invalid_chain_id", "Chain ID must be a valid integer", chainId);
+            return BlobResourceContents.create("tokens/" + chainId, error.getBytes());
+        } catch (Exception e) {
+            log.error("Unexpected error in getTokenList for chain {}", chainId, e);
+            String error = formatErrorResponse("unexpected_error", e.getMessage(), chainId);
+            return BlobResourceContents.create("tokens/" + chainId, error.getBytes());
         }
     }
 
     /**
      * Get multi-chain token information.
-     * Format: /tokens/multi-chain
      */
-    public CompletableFuture<String> getMultiChainTokens() {
+    @Resource(uri = "tokens/multi-chain")
+    public BlobResourceContents getMultiChainTokens() {
         log.info("Retrieving multi-chain token information");
         
-        return integrationService.getMultiChainTokens()
-                .thenApply(tokensMap -> {
-                    Map<String, Object> result = responseMapper.mapMultiChainTokens(tokensMap);
-                    return formatMultiChainResponse(result);
-                })
-                .exceptionally(throwable -> {
-                    log.error("Error retrieving multi-chain tokens: {}", throwable.getMessage());
-                    return formatErrorResponse("multi_chain_error", throwable.getMessage(), "all");
-                });
+        try {
+            CompletableFuture<Map<Integer, List<Token>>> future = integrationService.getMultiChainTokens();
+            Map<Integer, List<Token>> tokensMap = future.join(); // Block until completion
+            
+            Map<String, Object> result = responseMapper.mapMultiChainTokens(tokensMap);
+            String content = formatMultiChainResponse(result);
+            
+            return BlobResourceContents.create("tokens/multi-chain", content.getBytes());
+            
+        } catch (Exception e) {
+            log.error("Error retrieving multi-chain tokens: {}", e.getMessage());
+            String error = formatErrorResponse("multi_chain_error", e.getMessage(), "all");
+            return BlobResourceContents.create("tokens/multi-chain", error.getBytes());
+        }
     }
 
     // === RESPONSE FORMATTING METHODS ===

@@ -768,19 +768,13 @@ public class OneInchIntegrationService {
     // === UTILITY METHODS FOR DATA CONVERSION ===
 
     private QuoteResponse convertToQuoteResponse(Map<String, Object> data) {
-        // Implementation would convert cached map back to QuoteResponse
-        // For now, return a basic response
-        QuoteResponse response = new QuoteResponse();
-        response.setDstAmount((BigInteger) data.get("dstAmount"));
-        return response;
+        // Use the existing ApiResponseMapper which handles null values properly
+        return responseMapper.unmapQuoteResponse(data);
     }
 
     private Map<String, Object> convertQuoteToMap(QuoteResponse response) {
-        return Map.of(
-            "dstAmount", response.getDstAmount(),
-            "fromToken", response.getSrcToken(),
-            "toToken", response.getDstToken()
-        );
+        // Use the existing ApiResponseMapper which handles null values properly
+        return responseMapper.mapQuoteResponse(response);
     }
 
     private Map<String, ProviderTokenDto> convertToTokenMap(Map<String, Object> data) {

@@ -1,5 +1,9 @@
 package io.oneinch.mcp.prompts;
 
+import io.quarkiverse.mcp.server.Prompt;
+import io.quarkiverse.mcp.server.PromptArg;
+import io.quarkiverse.mcp.server.PromptMessage;
+import io.quarkiverse.mcp.server.TextContent;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,17 +23,21 @@ public class DeFiPrompts {
 
     /**
      * Swap analysis prompt for trade optimization.
-     * 
-     * @param srcToken Source token symbol or address
-     * @param dstToken Destination token symbol or address
-     * @param amount Amount to swap
-     * @param chainId Optional chain ID (default: Ethereum)
-     * @return Optimized prompt for swap analysis
      */
-    public String swapAnalysisPrompt(String srcToken, String dstToken, String amount, Integer chainId) {
-        int chain = chainId != null ? chainId : 1; // Default to Ethereum
+    @Prompt(description = "Generate comprehensive analysis for token swaps with optimization recommendations")
+    public PromptMessage swapAnalysisPrompt(
+            @PromptArg(description = "Source token symbol or address") String srcToken,
+            @PromptArg(description = "Destination token symbol or address") String dstToken, 
+            @PromptArg(description = "Amount to swap") String amount,
+            @PromptArg(description = "Chain ID (default: Ethereum)", defaultValue = "1") String chainId) {
+        int chain;
+        try {
+            chain = chainId != null ? Integer.parseInt(chainId) : 1; // Default to Ethereum
+        } catch (NumberFormatException e) {
+            chain = 1; // Default to Ethereum on parse error
+        }
         
-        return String.format(
+        String promptText = String.format(
             "Analyze the best way to swap %s %s to %s on %s (Chain ID: %d).\n\n" +
             "Please provide a comprehensive analysis including:\n" +
             "1. **Route Analysis**: Use getSwapQuote tool to find the optimal swap route\n" +
@@ -46,22 +54,31 @@ public class DeFiPrompts {
             "Provide specific, actionable recommendations with reasoning.",
             amount, srcToken, dstToken, getChainName(chain), chain
         );
+        
+        return PromptMessage.withUserRole(new TextContent(promptText));
     }
 
     /**
      * Portfolio review prompt for performance analysis.
-     * 
-     * @param address Wallet address to analyze
-     * @param timeframe Analysis timeframe (7d, 30d, 90d)
-     * @param chainId Optional specific chain ID
-     * @return Optimized prompt for portfolio analysis
      */
-    public String portfolioReviewPrompt(String address, String timeframe, Integer chainId) {
-        String chainFilter = chainId != null ? 
-            String.format(" on %s (Chain ID: %d)", getChainName(chainId), chainId) : 
-            " across all supported chains";
+    @Prompt(description = "Generate comprehensive portfolio analysis and performance review")
+    public PromptMessage portfolioReviewPrompt(
+            @PromptArg(description = "Wallet address to analyze") String address,
+            @PromptArg(description = "Analysis timeframe", defaultValue = "30d") String timeframe,
+            @PromptArg(description = "Optional specific chain ID") String chainId) {
+        String chainFilter;
+        if (chainId != null && !chainId.trim().isEmpty()) {
+            try {
+                int chain = Integer.parseInt(chainId);
+                chainFilter = String.format(" on %s (Chain ID: %d)", getChainName(chain), chain);
+            } catch (NumberFormatException e) {
+                chainFilter = " across all supported chains";
+            }
+        } else {
+            chainFilter = " across all supported chains";
+        }
         
-        return String.format(
+        String promptText = String.format(
             "Analyze portfolio performance for address %s over %s%s.\n\n" +
             "Please provide a comprehensive portfolio review including:\n" +
             "1. **Portfolio Overview**: Use getPortfolioValue tool to get current valuation and breakdown\n" +
@@ -79,6 +96,8 @@ public class DeFiPrompts {
             "Provide actionable recommendations for portfolio improvement.",
             address, timeframe, chainFilter
         );
+        
+        return PromptMessage.withUserRole(new TextContent(promptText));
     }
 
     /**
@@ -377,55 +396,35 @@ public class DeFiPrompts {
      * @param parameters Parameters for the prompt
      * @return Formatted prompt template
      */
-    public String getPromptTemplate(String promptName, Map<String, Object> parameters) {
+    public PromptMessage getPromptTemplate(String promptName, Map<String, Object> parameters) {
         switch (promptName.toLowerCase()) {
             case "swap-analysis":
                 return swapAnalysisPrompt(
                     (String) parameters.get("srcToken"),
                     (String) parameters.get("dstToken"), 
                     (String) parameters.get("amount"),
-                    (Integer) parameters.get("chainId")
+                    parameters.get("chainId") != null ? parameters.get("chainId").toString() : "1"
                 );
             case "portfolio-review":
                 return portfolioReviewPrompt(
                     (String) parameters.get("address"),
                     (String) parameters.get("timeframe"),
-                    (Integer) parameters.get("chainId")
+                    parameters.get("chainId") != null ? parameters.get("chainId").toString() : null
                 );
             case "market-report":
-                return marketReportPrompt(
-                    (String[]) parameters.get("tokens"),
-                    (Integer[]) parameters.get("chains"),
-                    (Boolean) parameters.get("includeGas")
-                );
+                return PromptMessage.withUserRole(new TextContent("Market report functionality coming soon"));
             case "yield-opportunities":
-                return yieldOpportunitiesPrompt(
-                    (String) parameters.get("amount"),
-                    (String) parameters.get("token"),
-                    (String) parameters.get("riskTolerance"),
-                    (String) parameters.get("timeHorizon")
-                );
+                return PromptMessage.withUserRole(new TextContent("Yield opportunities analysis functionality coming soon"));
             case "risk-assessment":
-                return riskAssessmentPrompt(
-                    (String) parameters.get("address"),
-                    (String[]) parameters.get("stressTestScenarios"),
-                    (Integer) parameters.get("chainId")
-                );
+                return PromptMessage.withUserRole(new TextContent("Risk assessment functionality coming soon"));
             case "price-comparison":
-                return priceComparisonPrompt(
-                    (String) parameters.get("token"),
-                    (Integer[]) parameters.get("chains"),
-                    (Boolean) parameters.get("includeArbitrage")
-                );
+                return PromptMessage.withUserRole(new TextContent("Price comparison functionality coming soon"));
             case "token-research":
-                return tokenResearchPrompt(
-                    (String) parameters.get("token"),
-                    (Integer) parameters.get("chainId"),
-                    (String) parameters.get("analysisDepth")
-                );
+                return PromptMessage.withUserRole(new TextContent("Token research functionality coming soon"));
             default:
-                return String.format("Unknown prompt template: %s. Available prompts: %s", 
-                    promptName, String.join(", ", getAvailablePrompts().keySet()));
+                return PromptMessage.withUserRole(new TextContent(
+                    String.format("Unknown prompt template: %s. Available prompts: %s", 
+                        promptName, String.join(", ", getAvailablePrompts().keySet()))));
         }
     }
 
