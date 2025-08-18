@@ -11,6 +11,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -40,6 +42,9 @@ public class GasOptimizationTool {
 
     @Inject
     ApiResponseMapper responseMapper;
+    
+    @Inject
+    ObjectMapper objectMapper;
 
     /**
      * Analyze gas costs and provide optimization recommendations.
@@ -61,24 +66,59 @@ public class GasOptimizationTool {
             log.info("Analyzing gas optimization for chain {} operation {} urgency {} amount {}", 
                     parsedChainId, operation, urgencyLevel, amount);
 
-            String result = String.format(
-                "{\"tool\": \"analyzeGasOptimization\"," +
-                "\"chain_id\": %d," +
-                "\"chain_name\": \"%s\"," +
-                "\"operation_type\": \"%s\"," +
-                "\"urgency\": \"%s\"," +
-                "\"amount\": \"%s\"," +
-                "\"gas_optimization\": \"available\"," +
-                "\"cost_analysis\": \"ready\"," +
-                "\"timing_recommendations\": \"available\"," +
-                "\"recommendation\": \"Gas optimization analysis functionality available\"," +
-                "\"timestamp\": %d" +
-                "}",
-                parsedChainId, getChainName(parsedChainId), operation, urgencyLevel, 
-                amount != null ? amount : "not_specified", System.currentTimeMillis()
-            );
-            
-            return ToolResponse.success(new TextContent(result));
+            // Prepare response data structure
+            Map<String, Object> responseData = new HashMap<>();
+            responseData.put("tool", "analyzeGasOptimization");
+            responseData.put("chain_id", parsedChainId);
+            responseData.put("chain_name", getChainName(parsedChainId));
+            responseData.put("operation_type", operation);
+            responseData.put("urgency", urgencyLevel);
+            responseData.put("amount", amount != null ? amount : "not_specified");
+            responseData.put("timestamp", System.currentTimeMillis());
+
+            try {
+                // For swap operations, get real gas estimates from quotes
+                if ("swap".equals(operation) && amount != null && !amount.trim().isEmpty()) {
+                    Map<String, Object> gasData = getSwapGasEstimate(parsedChainId, amount);
+                    responseData.put("gas_analysis", gasData);
+                } else {
+                    // For other operations, provide estimated ranges based on operation type
+                    Map<String, Object> gasEstimate = getOperationGasEstimate(parsedChainId, operation);
+                    responseData.put("gas_analysis", gasEstimate);
+                }
+                
+                // Add optimization recommendations based on urgency and chain
+                Map<String, Object> recommendations = generateGasRecommendations(parsedChainId, operation, urgencyLevel);
+                responseData.put("recommendations", recommendations);
+                
+                // Add timing analysis
+                Map<String, Object> timing = getTimingAnalysis(parsedChainId, urgencyLevel);
+                responseData.put("timing_analysis", timing);
+                
+                responseData.put("status", "success");
+                
+            } catch (Exception e) {
+                log.warn("Error during gas analysis: {}", e.getMessage());
+                responseData.put("status", "limited_data");
+                responseData.put("error", e.getMessage());
+                
+                // Fallback to basic estimates
+                responseData.put("gas_analysis", getBasicGasEstimate(parsedChainId, operation));
+                responseData.put("recommendations", Map.of("general", "Use off-peak hours for lower gas costs"));
+            }
+
+            // Convert to JSON using Jackson
+            try {
+                String jsonResponse = objectMapper.writeValueAsString(responseData);
+                return ToolResponse.success(new TextContent(jsonResponse));
+            } catch (JsonProcessingException e) {
+                log.error("Error serializing gas analysis response to JSON", e);
+                String fallbackResponse = String.format(
+                    "{\"tool\": \"analyzeGasOptimization\", \"error\": \"JSON serialization failed\", \"chain_id\": %d, \"timestamp\": %d}",
+                    parsedChainId, System.currentTimeMillis()
+                );
+                return ToolResponse.success(new TextContent(fallbackResponse));
+            }
             
         } catch (Exception e) {
             log.error("Error analyzing gas optimization for operation {}", operationType, e);
@@ -262,6 +302,231 @@ public class GasOptimizationTool {
     }
 
     // === HELPER METHODS ===
+    
+    private Map<String, Object> getSwapGasEstimate(Integer chainId, String amount) {
+        Map<String, Object> gasData = new HashMap<>();
+        
+        try {
+            // Try to get gas estimate using a sample swap quote
+            // Using common tokens for gas estimation: USDC to WETH on each chain
+            String srcToken = getCommonToken(chainId, "USDC");
+            String dstToken = getCommonToken(chainId, "WETH");
+            
+            if (srcToken != null && dstToken != null) {
+                BigInteger swapAmount = parseAmount(amount, 6); // USDC has 6 decimals typically
+                
+                QuoteRequest request = QuoteRequest.builder()
+                    .chainId(chainId)
+                    .src(srcToken)
+                    .dst(dstToken)
+                    .amount(swapAmount)
+                    .includeGas(true)
+                    .build();
+
+                CompletableFuture<QuoteResponse> future = integrationService.getSwapQuote(request);
+                QuoteResponse response = future.join();
+                
+                if (response != null && response.getGas() != null) {
+                    BigInteger gasEstimate = response.getGas();
+                    gasData.put("estimated_gas_units", gasEstimate.toString());
+                    gasData.put("gas_source", "real_swap_quote");
+                    
+                    // Estimate gas cost based on typical gas prices for the chain
+                    long gasUnits = gasEstimate.longValue();
+                    double costEstimate = estimateGasCost(chainId, gasUnits);
+                    gasData.put("estimated_cost_usd", costEstimate);
+                    gasData.put("gas_price_gwei_estimate", getTypicalGasPrice(chainId));
+                } else {
+                    gasData = getBasicGasEstimate(chainId, "swap");
+                }
+            } else {
+                gasData = getBasicGasEstimate(chainId, "swap");
+            }
+            
+        } catch (Exception e) {
+            log.warn("Could not get real swap gas estimate: {}", e.getMessage());
+            gasData = getBasicGasEstimate(chainId, "swap");
+        }
+        
+        return gasData;
+    }
+    
+    private Map<String, Object> getOperationGasEstimate(Integer chainId, String operation) {
+        Map<String, Object> gasData = new HashMap<>();
+        
+        long baseGasUnits;
+        switch (operation.toLowerCase()) {
+            case "approve":
+                baseGasUnits = 46000;  // ERC20 approve
+                break;
+            case "transfer":
+                baseGasUnits = 21000;  // ETH transfer
+                break;
+            case "liquidity":
+                baseGasUnits = 150000; // LP operations
+                break;
+            case "stake":
+                baseGasUnits = 100000; // Staking operations
+                break;
+            default:
+                baseGasUnits = 80000;  // General operation
+                break;
+        }
+        
+        // Adjust for chain-specific overhead
+        long adjustedGas = adjustGasForChain(chainId, baseGasUnits);
+        double costEstimate = estimateGasCost(chainId, adjustedGas);
+        
+        gasData.put("estimated_gas_units", String.valueOf(adjustedGas));
+        gasData.put("gas_source", "operation_estimate");
+        gasData.put("estimated_cost_usd", costEstimate);
+        gasData.put("gas_price_gwei_estimate", getTypicalGasPrice(chainId));
+        gasData.put("operation_type", operation);
+        
+        return gasData;
+    }
+    
+    private Map<String, Object> getBasicGasEstimate(Integer chainId, String operation) {
+        Map<String, Object> gasData = new HashMap<>();
+        
+        gasData.put("estimated_gas_units", "estimated_range");
+        gasData.put("gas_source", "basic_estimate");
+        gasData.put("estimated_cost_usd", 5.0); // Basic fallback estimate
+        gasData.put("gas_price_gwei_estimate", getTypicalGasPrice(chainId));
+        gasData.put("note", "Limited data available, estimates are approximate");
+        
+        return gasData;
+    }
+    
+    private Map<String, Object> generateGasRecommendations(Integer chainId, String operation, String urgency) {
+        Map<String, Object> recommendations = new HashMap<>();
+        
+        switch (urgency.toLowerCase()) {
+            case "low":
+                recommendations.put("strategy", "Use lowest gas price, accept slower confirmation");
+                recommendations.put("timing", "Off-peak hours (2-6 AM UTC)");
+                recommendations.put("gas_price_multiplier", 0.8);
+                break;
+            case "high":
+                recommendations.put("strategy", "Use higher gas price for fast confirmation");
+                recommendations.put("timing", "Immediate execution recommended");
+                recommendations.put("gas_price_multiplier", 1.5);
+                break;
+            default:
+                recommendations.put("strategy", "Standard gas price for normal confirmation");
+                recommendations.put("timing", "Current conditions acceptable");
+                recommendations.put("gas_price_multiplier", 1.0);
+                break;
+        }
+        
+        recommendations.put("chain_specific", getChainSpecificTips(chainId));
+        
+        return recommendations;
+    }
+    
+    private Map<String, Object> getTimingAnalysis(Integer chainId, String urgency) {
+        Map<String, Object> timing = new HashMap<>();
+        
+        LocalDateTime now = LocalDateTime.now();
+        int hour = now.getHour();
+        
+        boolean isPeakHour = (hour >= 8 && hour <= 22); // Rough peak hours
+        
+        timing.put("current_hour_utc", hour);
+        timing.put("is_peak_hour", isPeakHour);
+        timing.put("peak_hours", "8:00-22:00 UTC");
+        timing.put("off_peak_hours", "22:00-8:00 UTC");
+        
+        if ("low".equals(urgency) && isPeakHour) {
+            timing.put("recommendation", "Consider waiting for off-peak hours to reduce costs");
+        } else if ("high".equals(urgency)) {
+            timing.put("recommendation", "Execute now regardless of peak hours");
+        } else {
+            timing.put("recommendation", "Current timing is acceptable");
+        }
+        
+        return timing;
+    }
+    
+    private String getCommonToken(Integer chainId, String tokenType) {
+        // Return common token addresses for gas estimation
+        switch (chainId) {
+            case 1: // Ethereum
+                if ("USDC".equals(tokenType)) return "0xA0b86a33E6441e2bB27fB4c4c97b4a63c0bD18e5"; // USDC
+                if ("WETH".equals(tokenType)) return "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"; // WETH
+                break;
+            case 137: // Polygon
+                if ("USDC".equals(tokenType)) return "0x2791Bca1f2de4661ED88A30c99A7a9449Aa84174"; // USDC
+                if ("WETH".equals(tokenType)) return "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"; // WETH
+                break;
+            case 56: // BSC
+                if ("USDC".equals(tokenType)) return "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d"; // USDC
+                if ("WETH".equals(tokenType)) return "0x2170Ed0880ac9A755fd29B2688956BD959F933F8"; // WETH
+                break;
+        }
+        return null; // Chain not supported for gas estimation
+    }
+    
+    private BigInteger parseAmount(String amount, int decimals) {
+        try {
+            double value = Double.parseDouble(amount);
+            return BigInteger.valueOf((long)(value * Math.pow(10, decimals)));
+        } catch (NumberFormatException e) {
+            return BigInteger.valueOf(1000).multiply(BigInteger.valueOf(10).pow(decimals)); // Default 1000 tokens
+        }
+    }
+    
+    private double estimateGasCost(Integer chainId, long gasUnits) {
+        double gasPriceGwei = getTypicalGasPrice(chainId);
+        double gasCostEth = (gasUnits * gasPriceGwei) / 1_000_000_000.0; // Convert gwei to ETH
+        
+        // Rough ETH price estimates for cost calculation
+        double ethPriceUsd = 2000.0; // Approximate ETH price
+        if (chainId == 56) ethPriceUsd = 300.0; // BNB price estimate
+        if (chainId == 137) ethPriceUsd = 0.8; // MATIC price estimate
+        
+        return gasCostEth * ethPriceUsd;
+    }
+    
+    private double getTypicalGasPrice(Integer chainId) {
+        // Typical gas prices in gwei for different chains
+        switch (chainId) {
+            case 1: return 20.0; // Ethereum
+            case 137: return 50.0; // Polygon
+            case 56: return 3.0; // BSC
+            case 42161: return 0.1; // Arbitrum
+            case 10: return 0.001; // Optimism
+            case 43114: return 25.0; // Avalanche
+            default: return 20.0;
+        }
+    }
+    
+    private long adjustGasForChain(Integer chainId, long baseGas) {
+        // Some chains have different gas usage patterns
+        switch (chainId) {
+            case 42161: // Arbitrum
+            case 10: // Optimism
+                return (long)(baseGas * 1.2); // L2 overhead
+            default:
+                return baseGas;
+        }
+    }
+    
+    private String getChainSpecificTips(Integer chainId) {
+        switch (chainId) {
+            case 1:
+                return "Consider L2 alternatives for frequent transactions";
+            case 137:
+                return "Generally low cost, timing less critical";
+            case 56:
+                return "Very low cost, execute at any time";
+            case 42161:
+            case 10:
+                return "L2 benefits with lower costs than Ethereum mainnet";
+            default:
+                return "Monitor network congestion for optimal timing";
+        }
+    }
 
     private CompletableFuture<NetworkConditions> analyzeNetworkConditions(Integer chainId) {
         // Simplified network analysis - in real implementation, this would use Gas Price API

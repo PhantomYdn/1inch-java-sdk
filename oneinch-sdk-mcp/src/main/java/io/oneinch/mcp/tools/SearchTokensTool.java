@@ -13,6 +13,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -37,6 +39,9 @@ public class SearchTokensTool {
 
     @Inject
     ApiResponseMapper responseMapper;
+    
+    @Inject
+    ObjectMapper objectMapper;
 
     /**
      * Search for tokens across one or multiple chains.
@@ -60,20 +65,77 @@ public class SearchTokensTool {
             log.info("Searching tokens for query '{}' on chains {} limit {} with metrics {}", 
                     query, String.join(",", chainIdArray), searchLimit, withMetrics);
 
-            String result = String.format(
-                "{\"tool\": \"searchTokens\"," +
-                "\"query\": \"%s\"," +
-                "\"chains_searched\": [%s]," +
-                "\"limit_per_chain\": %d," +
-                "\"include_metrics\": %s," +
-                "\"search_available\": \"Multi-chain token search functionality available\"," +
-                "\"recommendation\": \"Token search across %d chains ready\"," +
-                "\"timestamp\": %d" +
-                "}",
-                query, String.join(",", chainIdArray), searchLimit, withMetrics, chainIdArray.length, System.currentTimeMillis()
-            );
+            // Prepare response data structure
+            Map<String, Object> responseData = new HashMap<>();
+            responseData.put("tool", "searchTokens");
+            responseData.put("query", query);
+            responseData.put("chains_searched", List.of(chainIdArray));
+            responseData.put("limit_per_chain", searchLimit);
+            responseData.put("include_metrics", withMetrics);
+            responseData.put("timestamp", System.currentTimeMillis());
+
+            List<CompletableFuture<Map<String, Object>>> searchFutures = new ArrayList<>();
             
-            return ToolResponse.success(new TextContent(result));
+            // Execute searches on each chain
+            for (String chainIdStr : chainIdArray) {
+                try {
+                    Integer chainId = Integer.parseInt(chainIdStr.trim());
+                    CompletableFuture<Map<String, Object>> chainSearchFuture = searchTokensOnChain(query, chainId, searchLimit, withMetrics);
+                    searchFutures.add(chainSearchFuture);
+                } catch (NumberFormatException e) {
+                    log.warn("Invalid chain ID: {}", chainIdStr);
+                    // Add error entry for invalid chain
+                    CompletableFuture<Map<String, Object>> errorFuture = CompletableFuture.completedFuture(
+                        Map.of("chain_id", chainIdStr, "error", "Invalid chain ID", "results", List.of())
+                    );
+                    searchFutures.add(errorFuture);
+                }
+            }
+
+            // Wait for all searches to complete
+            try {
+                List<Map<String, Object>> allResults = searchFutures.stream()
+                    .map(CompletableFuture::join)
+                    .collect(Collectors.toList());
+                
+                responseData.put("results_by_chain", allResults);
+                
+                // Calculate summary statistics
+                int totalResults = allResults.stream()
+                    .mapToInt(chainResult -> {
+                        Object results = chainResult.get("results");
+                        return results instanceof List ? ((List<?>) results).size() : 0;
+                    })
+                    .sum();
+                
+                responseData.put("total_results", totalResults);
+                responseData.put("chains_with_results", allResults.stream()
+                    .mapToLong(chainResult -> {
+                        Object results = chainResult.get("results");
+                        return (results instanceof List && !((List<?>) results).isEmpty()) ? 1 : 0;
+                    })
+                    .sum());
+                
+                responseData.put("status", "success");
+                
+            } catch (Exception e) {
+                log.error("Error during multi-chain search", e);
+                responseData.put("status", "partial_error");
+                responseData.put("error", e.getMessage());
+            }
+
+            // Convert to JSON using Jackson
+            try {
+                String jsonResponse = objectMapper.writeValueAsString(responseData);
+                return ToolResponse.success(new TextContent(jsonResponse));
+            } catch (JsonProcessingException e) {
+                log.error("Error serializing search response to JSON", e);
+                String fallbackResponse = String.format(
+                    "{\"tool\": \"searchTokens\", \"error\": \"JSON serialization failed\", \"query\": \"%s\", \"timestamp\": %d}",
+                    query, System.currentTimeMillis()
+                );
+                return ToolResponse.success(new TextContent(fallbackResponse));
+            }
             
         } catch (Exception e) {
             log.error("Error searching tokens for query '{}'", query, e);
@@ -257,6 +319,62 @@ public class SearchTokensTool {
     }
 
     // === HELPER METHODS ===
+    
+    private CompletableFuture<Map<String, Object>> searchTokensOnChain(String query, Integer chainId, int limit, boolean withMetrics) {
+        return CompletableFuture.supplyAsync(() -> {
+            Map<String, Object> chainResult = new HashMap<>();
+            chainResult.put("chain_id", chainId);
+            chainResult.put("chain_name", getChainName(chainId));
+            chainResult.put("query", query);
+            
+            try {
+                TokenSearchRequest request = TokenSearchRequest.builder()
+                    .chainId(chainId)
+                    .query(query)
+                    .limit(limit)
+                    .build();
+
+                CompletableFuture<List<Token>> searchFuture = integrationService.searchTokens(request);
+                List<Token> tokens = searchFuture.join();
+                
+                if (tokens != null && !tokens.isEmpty()) {
+                    List<Map<String, Object>> tokenResults = tokens.stream()
+                        .map(token -> {
+                            Map<String, Object> tokenData = new HashMap<>();
+                            tokenData.put("symbol", token.getSymbol());
+                            tokenData.put("name", token.getName());
+                            tokenData.put("address", token.getAddress());
+                            tokenData.put("decimals", token.getDecimals());
+                            tokenData.put("chain_id", token.getChainId());
+                            
+                            if (token.getLogoURI() != null) {
+                                tokenData.put("logo_uri", token.getLogoURI());
+                            }
+                            
+                            return tokenData;
+                        })
+                        .collect(Collectors.toList());
+                    
+                    chainResult.put("results", tokenResults);
+                    chainResult.put("found_count", tokens.size());
+                    chainResult.put("status", "success");
+                } else {
+                    chainResult.put("results", List.of());
+                    chainResult.put("found_count", 0);
+                    chainResult.put("status", "no_results");
+                }
+                
+            } catch (Exception e) {
+                log.warn("Search failed on chain {}: {}", chainId, e.getMessage());
+                chainResult.put("results", List.of());
+                chainResult.put("found_count", 0);
+                chainResult.put("status", "error");
+                chainResult.put("error", e.getMessage());
+            }
+            
+            return chainResult;
+        });
+    }
 
     private CompletableFuture<ChainSearchResult> searchOnChain(String query, Integer chainId, int limit, boolean withMetrics) {
         TokenSearchRequest request = TokenSearchRequest.builder()

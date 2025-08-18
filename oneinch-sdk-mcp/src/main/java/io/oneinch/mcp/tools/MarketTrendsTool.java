@@ -30,8 +30,11 @@ import java.util.stream.Collectors;
  * This tool provides AI models with market trend analysis, price movements,
  * trading volume analysis, and market sentiment indicators.
  * 
- * Note: This tool provides analytical insights based on available data.
- * Full functionality requires Charts API integration in the SDK.
+ * DISABLED: This tool is currently disabled due to missing Charts API integration in the SDK.
+ * The Charts API is required for historical price data and volume analysis.
+ * All @Tool annotations have been commented out until Charts API is available.
+ * 
+ * To enable: Uncomment @Tool annotations after Charts API is integrated into the SDK.
  */
 @ApplicationScoped
 public class MarketTrendsTool {
@@ -46,8 +49,9 @@ public class MarketTrendsTool {
 
     /**
      * Analyze market trends for specific tokens or chains.
+     * DISABLED: Charts API required for historical data analysis.
      */
-    @Tool(description = "Analyze market trends for specific tokens with price movements, volume analysis, and market sentiment")
+    // @Tool(description = "Analyze market trends for specific tokens with price movements, volume analysis, and market sentiment")
     public ToolResponse analyzeMarketTrends(
             @ToolArg(description = "Comma-separated token addresses to analyze") String tokenAddresses,
             @ToolArg(description = "Blockchain network ID") String chainId,
@@ -92,8 +96,9 @@ public class MarketTrendsTool {
 
     /**
      * Get trending tokens on a specific chain.
+     * DISABLED: Charts API required for trending analysis.
      */
-    @Tool(description = "Get trending tokens on a specific blockchain with category filtering and performance metrics")
+    // @Tool(description = "Get trending tokens on a specific blockchain with category filtering and performance metrics")
     public ToolResponse getTrendingTokens(
             @ToolArg(description = "Blockchain network ID") String chainId,
             @ToolArg(description = "Category filter (defi, gaming, meme, stablecoin, all)", defaultValue = "all") String category,
@@ -139,8 +144,9 @@ public class MarketTrendsTool {
 
     /**
      * Analyze market sentiment for DeFi protocols and sectors.
+     * DISABLED: Charts API required for sentiment analysis.
      */
-    @Tool(description = "Analyze market sentiment for DeFi protocols and sectors with confidence metrics and trend analysis")
+    // @Tool(description = "Analyze market sentiment for DeFi protocols and sectors with confidence metrics and trend analysis")
     public ToolResponse analyzeMarketSentiment(
             @ToolArg(description = "Blockchain network ID") String chainId,
             @ToolArg(description = "Comma-separated DeFi sectors to analyze (dex,lending,yield,derivatives)") String sectors,
@@ -183,8 +189,9 @@ public class MarketTrendsTool {
 
     /**
      * Compare market performance across multiple chains.
+     * DISABLED: Charts API required for performance comparison.
      */
-    @Tool(description = "Compare market performance across multiple blockchain networks with comprehensive metrics analysis")
+    // @Tool(description = "Compare market performance across multiple blockchain networks with comprehensive metrics analysis")
     public ToolResponse compareMarketPerformanceAcrossChains(
             @ToolArg(description = "Comma-separated chain IDs to compare") String chainIds,
             @ToolArg(description = "Comma-separated metrics to compare (volume,tvl,activity,fees)") String metrics,
@@ -226,8 +233,9 @@ public class MarketTrendsTool {
 
     /**
      * Identify potential market opportunities and risks.
+     * DISABLED: Charts API required for opportunity analysis.
      */
-    @Tool(description = "Identify potential market opportunities and risks based on risk tolerance and investment horizon")
+    // @Tool(description = "Identify potential market opportunities and risks based on risk tolerance and investment horizon")
     public ToolResponse identifyMarketOpportunities(
             @ToolArg(description = "Blockchain network ID") String chainId,
             @ToolArg(description = "Risk tolerance level (low, medium, high)") String riskTolerance,

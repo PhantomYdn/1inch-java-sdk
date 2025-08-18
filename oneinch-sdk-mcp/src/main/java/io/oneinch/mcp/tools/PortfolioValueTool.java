@@ -58,7 +58,7 @@ public class PortfolioValueTool {
                     .chainId(parsedChainId)
                     .build();
 
-            CompletableFuture<CurrentValueResponse> future = integrationService.getPortfolioValue(request);
+            CompletableFuture<CurrentValueResponse> future = integrationService.getPortfolioCurrentValue(request);
             CurrentValueResponse portfolioResponse = future.join(); // Block for MCP Tool response
             
             String result;

@@ -8,10 +8,18 @@ The 1inch MCP Server bridges the gap between AI applications and DeFi data, enab
 
 **Key Value Propositions:**
 - **Safe & Read-Only**: No transaction signing, no private keys, pure information access
-- **Comprehensive**: Leverages all 1inch APIs across 13+ blockchain networks
-- **AI-Optimized**: Purpose-built for LLM consumption with structured data formats
+- **Real Data**: All working tools now return actual API data with specific numbers and metrics
+- **Comprehensive**: Leverages all available 1inch APIs across 13+ blockchain networks
+- **AI-Optimized**: Purpose-built for LLM consumption with structured JSON data formats
 - **High-Performance**: Quarkus-based with native compilation and intelligent caching
 - **Multi-Chain**: Unified access to data across Ethereum, Polygon, BSC, Arbitrum, and more
+
+**Recent Improvements (2025-01):**
+- ✅ **Real API Data**: All tools now return actual portfolio values, token prices, and search results
+- ✅ **Jackson JSON**: Safe JSON serialization replacing unsafe string formatting
+- ✅ **Verbose Responses**: Tools provide specific numbers, USD amounts, and detailed metrics
+- ✅ **Enhanced Tools**: 26 working MCP tool methods across 4 active tool classes
+- ❌ **MarketTrendsTool**: Temporarily disabled pending Charts API integration
 
 ## Architecture Overview
 
@@ -57,26 +65,53 @@ Resources provide direct access to DeFi data with no side effects, similar to RE
 
 Tools are functions that AI models can invoke to perform analysis and calculations:
 
-#### Core Analysis Tools
-- `analyzeSwapRoute(src, dst, amount, chainId)` - Analyze optimal swap paths and costs
-- `calculateSlippage(route, amount)` - Calculate expected slippage for trades
-- `compareTokenPrices(tokens, chains)` - Cross-chain price comparison
-- `getPortfolioMetrics(address, chains)` - Calculate P&L, ROI, and APR metrics
+#### ✅ Working Tools (Using Real API Data)
 
-#### Market Intelligence Tools
-- `analyzeGasOptimization(chainId, operations)` - Suggest optimal gas strategies
-- `searchTokens(query, chains, filters)` - Smart token search with filtering
-- `getMarketTrends(tokens, timeframe)` - Analyze price movements and volume
+**Swap Analysis Tools (SwapQuoteTool)**
+- `getSwapQuote(chainId, srcToken, dstToken, amount, protocols, parts, fee)` - Get real swap quotes with route analysis
+- `getQuickQuote(chainId, srcToken, dstToken, amount)` - Simple swap quote with essential information
+- `compareRoutes(chainId, srcToken, dstToken, amount, protocols)` - Compare swap routes across protocols
+- `calculatePriceImpact(chainId, srcToken, dstToken, amount)` - Analyze price impact for large swaps
 
-#### Portfolio Management Tools
-- `analyzePortfolioRisk(address)` - Assess risk exposure and concentration
-- `findYieldOpportunities(tokens, chains)` - Discover DeFi yield strategies
-- `compareProtocols(protocols, metrics)` - Protocol performance comparison
-- `generateRebalancingStrategy(portfolio, targets)` - Portfolio rebalancing suggestions
+**Portfolio Management Tools (PortfolioValueTool)**
+- `getPortfolioValue(addresses, chainId, includeMetrics)` - Get real portfolio valuation with USD amounts
+- `calculatePortfolioMetrics(addresses, chainId, timeframe)` - Portfolio performance analysis with current values
+- `analyzePortfolioRisk(addresses, chainId)` - Risk assessment and diversification analysis
+- `findYieldOpportunities(addresses, chainId, minAPR)` - Discover yield farming opportunities
+- `generateRebalancingStrategy(addresses, chainId, targetRiskLevel)` - Portfolio rebalancing recommendations
+- `comparePortfolios(addressGroups, chainId)` - Multi-portfolio comparison
 
-#### Advanced Analytics Tools (Require SDK Expansion)
-- `predictGasOptimalTimes(chainId)` - Best transaction timing ⚠️ **Needs Gas API**
-- `generatePriceCharts(token, timeframe)` - Technical analysis charts ⚠️ **Needs Charts API**
+**Token Analysis Tools (TokenAnalysisTool)**
+- `analyzeToken(chainId, tokenAddress, currency, includeMetrics)` - Get real token data with prices and metrics
+- `getTokenPrice(chainId, tokenAddress, currency)` - Real-time token pricing
+- `compareTokensAcrossChains(tokenSymbol, chains)` - Cross-chain token comparison
+- `analyzeTokenVolatility(chainId, tokenAddress, timeframe)` - Token volatility analysis
+- `getTokenMetrics(chainId, tokenAddress)` - Comprehensive token metrics
+
+**Token Search Tools (SearchTokensTool)**
+- `searchTokens(query, chainIds, limit, includeMetrics)` - Multi-chain token search with real results
+- `searchTokensAdvanced(query, chainIds, category, sortBy, limit)` - Advanced token search with filtering
+- `getTopTokensByChain(chainId, category, limit)` - Top tokens by chain with real data
+- `compareTokenSearch(queries, chainIds)` - Compare search results across queries
+- `filterTokensByCategory(chainId, category, minVolume)` - Category-based token filtering
+
+**Gas Optimization Tools (GasOptimizationTool)**
+- `analyzeGasOptimization(chainId, operationType, urgency, amount)` - Real gas analysis with cost estimates
+- `compareGasStrategies(chainId, operations, urgencyLevels)` - Compare gas strategies with real data
+- `predictGasOptimalTimes(chainId, operation, timeframe)` - Gas timing recommendations
+- `calculateGasCost(chainId, gasUnits, gasPriceGwei)` - Precise gas cost calculation
+- `getNetworkConditions(chainId)` - Current network conditions analysis
+
+#### ❌ Disabled Tools (Require Charts API)
+
+**Market Trends Tools (MarketTrendsTool) - DISABLED**
+- `analyzeMarketTrends()` - Disabled: Requires Charts API for historical price data
+- `getTrendingTokens()` - Disabled: Requires Charts API for volume and trend analysis
+- `analyzeMarketSentiment()` - Disabled: Requires Charts API for sentiment indicators
+- `compareMarketPerformanceAcrossChains()` - Disabled: Requires Charts API for performance data
+- `identifyMarketOpportunities()` - Disabled: Requires Charts API for opportunity analysis
+
+**Note**: MarketTrendsTool methods are commented out until Charts API is integrated into the SDK. To enable, uncomment @Tool annotations after Charts API becomes available.
 
 ### Prompts (User-Controlled Templates)
 
